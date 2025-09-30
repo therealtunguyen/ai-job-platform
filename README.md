@@ -5,27 +5,39 @@
 
 ---
 
-## Table of contents
+## Table of Contents
 
-# Overview
-
-# Features (MVP)
-
-# Architecture & tech stack
-
-# Data formats & privacy
-
-# Non-functional requirements
-
-# Local development (copy/paste)
-
-# Deployment & infra suggestions
-
-# Contribution
-
-# Roadmap & TODOs
-
-# License & contact
+- [Overview](#overview)
+    - [Scope & Constraints](#scope--constraints)
+    - [Goals](#goals)
+- [Features (MVP)](#features-mvp)
+    - [Acceptance Highlights](#acceptance-highlights)
+- [Architecture & Rationale](#architecture--rationale)
+    - [Why These Choices](#why-these-choices)
+- [Security & Privacy](#security--privacy)
+    - [NFR-001 Security](#nfr-001-security)
+    - [Data Minimization](#data-minimization)
+- [Performance & Scalability](#performance--scalability)
+    - [NFR-002 Performance](#nfr-002-performance)
+    - [NFR-003 Scalability](#nfr-003-scalability)
+- [Local Development](#local-development)
+    - [Prerequisites](#prerequisites)
+    - [Example `.env`](#example-env)
+    - [Install & Run](#install--run)
+- [Deployment & Infra Suggestions](#deployment--infra-suggestions)
+    - [MVP Stack](#mvp-stack)
+    - [Monitoring](#monitoring)
+    - [Backup & DR](#backup--dr)
+- [Contribution](#contribution)
+    - [How to Contribute](#how-to-contribute)
+    - [PR Checklist](#pr-checklist)
+- [Roadmap & TODOs](#roadmap--todos)
+    - [Short-term (MVP)](#short-term-mvp)
+    - [Future (post-MVP)](#future-post-mvp)
+- [Known Limitations](#known-limitations)
+- [License](#license)
+- [Contact](#contact)
+- [Quick Copy Checklist](#quick-copy-checklist)
 
 ---
 
@@ -83,17 +95,17 @@ Key modules:
 
 Cross-cutting: Supabase Auth (JWT), Redis caching (optional), structured logging, rate limiting, input sanitization, RLS policies in DB.
 
-Mermaid overview (paste into README-supported renderers if needed):
+Mermaid overview:
 
 ```mermaid
-flowchart TB
-  A[Frontend: React + TS] -->|REST| B[API Gateway / Express + TS]
-  B --> C[Business Logic]
-  C --> D[(Postgres via Supabase)]
-  C --> E[AI Services (CV parse / matching / feedback)]
-  C --> F[Storage (secure CV files)]
-  C --> G[Redis (cache, optional)]
-  B --> H[Auth: Supabase Auth]
+flowchart TD
+    A[Frontend: React + TS] -->|REST| B[API Gateway / Express + TS]
+    B --> C[Business Logic]
+    C --> D[(Postgres via Supabase)]
+    C --> E["AI Services<br>(CV parse / matching / feedback)"]
+    C --> F["Storage<br>(secure CV files)"]
+    C --> G["Redis<br>(cache, optional)"]
+    B --> H[Auth: Supabase Auth]
 ```
 
 **Why these choices**
@@ -187,16 +199,6 @@ npm --filter backend dev
 npm --filter frontend dev
 ```
 
-## DB migrations
-
-(If using Supabase or migration tool)
-
-```bash
-# example with supabase CLI
-supabase db push
-# or use your chosen migration tool (knex, prisma, typeorm, etc.)
-```
-
 ---
 
 # Deployment & infra suggestions
@@ -283,6 +285,7 @@ MIT © Ho Chi Minh City University of Technology
 # Contact
 
 Maintainer: Tyler Nguyen
+
 Repo issues: use GitHub Issues for feature requests and bugs.
 
 ---
