@@ -18,6 +18,7 @@ export interface LoginCredentials {
 export interface SignupData extends LoginCredentials {
     userType: "JOB_SEEKER" | "EMPLOYER";
     fullName?: string;
+    profilePicture?: string;
 }
 
 /**
@@ -67,15 +68,20 @@ export const registerUser = async (
 
             // Create additional profile based on user type
             if (userData.userType === "JOB_SEEKER") {
+                const seekerData = {
+                    user_id: data.user.id,
+                    full_name: userData.fullName || "",
+                    status: "INCOMPLETE",
+                };
+
+                // Profile picture is optional - add it if provided
+                if (userData.profilePicture) {
+                    (seekerData as any).profile_picture = userData.profilePicture;
+                }
+
                 const { error: seekerError } = await supabase
                     .from("job_seekers")
-                    .insert([
-                        {
-                            user_id: data.user.id,
-                            full_name: userData.fullName || "",
-                            status: "INCOMPLETE",
-                        },
-                    ]);
+                    .insert([seekerData]);
 
                 if (seekerError) {
                     console.error(
@@ -84,14 +90,20 @@ export const registerUser = async (
                     );
                 }
             } else if (userData.userType === "EMPLOYER") {
+                // For employers, include the logo if provided
+                const employerData = {
+                    user_id: data.user.id,
+                    company_name: userData.fullName || "",
+                };
+
+                // Logo is optional - add it if provided
+                if (userData.profilePicture) {
+                    (employerData as any).logo = userData.profilePicture;
+                }
+
                 const { error: employerError } = await supabase
                     .from("employers")
-                    .insert([
-                        {
-                            user_id: data.user.id,
-                            company_name: userData.fullName || "",
-                        },
-                    ]);
+                    .insert([employerData]);
 
                 if (employerError) {
                     console.error(
@@ -250,4 +262,3 @@ export const verifyToken = async (token: string) => {
         return { user: null, error };
     }
 };
-

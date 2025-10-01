@@ -246,6 +246,7 @@ export type Database = {
           contact_person: string | null
           description: string | null
           industry: string | null
+          logo: string | null
           phone: string | null
           user_id: string
         }
@@ -255,6 +256,7 @@ export type Database = {
           contact_person?: string | null
           description?: string | null
           industry?: string | null
+          logo?: string | null
           phone?: string | null
           user_id: string
         }
@@ -264,6 +266,7 @@ export type Database = {
           contact_person?: string | null
           description?: string | null
           industry?: string | null
+          logo?: string | null
           phone?: string | null
           user_id?: string
         }

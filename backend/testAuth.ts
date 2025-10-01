@@ -20,6 +20,7 @@ async function testAuth() {
         password: "12345678",
         userType: "JOB_SEEKER",
         fullName: "Test User",
+        profilePicture: "https://picsum.photos/200", // Placeholder for profile picture
     });
 
     if (registrationResult.error) {
@@ -69,4 +70,3 @@ async function testAuth() {
 
 // Run the test
 testAuth().catch(console.error);
-

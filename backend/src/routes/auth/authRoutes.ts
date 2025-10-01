@@ -5,11 +5,12 @@ import {
     logout,
     getCurrentUserProfile,
 } from "../../controllers/auth/authController";
+import { upload } from "../../utils/fileUpload";
 
 const router = express.Router();
 
-// Registration route
-router.post("/register", register);
+// Registration route (handles both with and without avatar)
+router.post("/register", upload.single("avatar"), register);
 
 // Login route
 router.post("/login", login);
@@ -21,4 +22,3 @@ router.post("/logout", logout);
 router.get("/me", getCurrentUserProfile);
 
 export default router;
-
