@@ -149,6 +149,36 @@ flowchart TD
 
 # Local development (copy-paste)
 
+### Connecting to the Supabase Project
+
+To ensure everyone is working with the same Supabase backend, follow these steps:
+
+1.  **Install the Supabase CLI** (if you haven't already):
+    ```bash
+    npm install supabase --save-dev
+    ```
+
+2.  **Log in to the Supabase CLI:**
+    This will require you to create a Supabase account if you don't have one.
+    ```bash
+    npx supabase login
+    ```
+    Follow the instructions in your browser to authorize the CLI.
+
+3.  **Link your local project to the remote Supabase project:**
+    You will need the **Project Reference ID**. Ask the project maintainer for this value.
+    ```bash
+    # Replace <project-ref> with the ID provided to you
+    npx supabase link --project-ref <project-ref>
+    ```
+    You will be prompted for the database password, which you can also get from the project maintainer.
+
+4.  **(Optional) Generating Database Types:**
+    After linking the project, you can generate TypeScript types directly from the database schema. This is the recommended way to keep your frontend and backend types in sync.
+    ```bash
+    npx supabase gen types typescript --linked > backend/src/types/supabase.ts
+    ```
+
 ## Prerequisites
 
 - Node.js >= 18
