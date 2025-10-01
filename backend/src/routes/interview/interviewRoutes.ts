@@ -1,5 +1,8 @@
 import express from "express";
-import { startInterview, submitAnswer } from "../controllers/interview/interviewController";
+import {
+    startInterview,
+    submitAnswer,
+} from "../../controllers/interview/interviewController";
 
 const router = express.Router();
 
