@@ -33,13 +33,13 @@ const Header = () => {
           <nav className="hidden items-center space-x-8 md:flex">
             <a
               onClick={() => navigate("/find-jobs")}
-              className="font-medium text-gray-600 transition-colors hover:text-gray-900"
+              className="font-medium text-gray-600 transition-colors hover:text-gray-900 cursor-pointer"
             >
               Find Jobs
             </a>
             <a
               onClick={() => navigate("/employer-dashboard")}
-              className="font-medium text-gray-600 transition-colors hover:text-gray-900"
+              className="font-medium text-gray-600 transition-colors hover:text-gray-900 cursor-pointe cursor-pointer"
             >
               For Employers
             </a>

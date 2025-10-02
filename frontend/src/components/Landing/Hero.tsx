@@ -49,7 +49,7 @@ const Hero = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group bg-gradient-to-r from-[#29436c] to-[#90ad71] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-[#213552] hover:to-[#7ea260] transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-2"
+              className="group bg-gradient-to-r from-[#29436c] to-[#90ad71] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-[#213552] hover:to-[#7ea260] transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-2 cursor-pointer"
               onClick={() => navigate("/find-jobs")}
             >
               <Search className="w-5 h-5"/>
@@ -60,7 +60,7 @@ const Hero = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-white border-2 border-[#29436c] text-[#29436c] px-8 py-4 rounded-xl font-semibold text-lg hover:bg-[#f5f8fb] transition-all duration-300 shadow-sm hover:shadow-md"
+              className="bg-white border-2 border-[#29436c] text-[#29436c] px-8 py-4 rounded-xl font-semibold text-lg hover:bg-[#f5f8fb] transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
               onClick={() => {
                 navigate(
                   isAuthenticated && user?.role === "employer"

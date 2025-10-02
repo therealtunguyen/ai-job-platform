@@ -216,7 +216,7 @@ const Login = () => {
           <button
             type='submit'
             disabled={formState.loading}
-          className='w-full bg-gradient-to-r from-[#29436c] to-[#90ad71] text-white py-3 rounded-lg font-semibold hover:from-[#213552] hover:to-[#7ea260] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2'
+          className='w-full bg-gradient-to-r from-[#29436c] to-[#90ad71] text-white py-3 rounded-lg font-semibold hover:from-[#213552] hover:to-[#7ea260] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 cursor-pointer'
           >
             {
               formState.loading ? (
@@ -234,7 +234,7 @@ const Login = () => {
             <p className='text-gray-600 '>
               Don't have an account?
               <a href='/signup' className='text-blue-600 hover:text-blue-700 font-medium'>
-                Create on here
+                Create one here
               </a>
             </p>
           </div>
