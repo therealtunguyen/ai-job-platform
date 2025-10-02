@@ -7,6 +7,7 @@ import SignUp from '@/pages/Auth/SignUp'
 import LandingPage from '@/pages/Landing/LandingPage'
 import JobSeekerDashBoard from '@/pages/JobSeeker/JobSeekerDashBoard'
 import EmployerDashBoard from '@/pages/Employer/EmployerDashBoard'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const router = createBrowserRouter([
   {
@@ -27,12 +28,14 @@ const router = createBrowserRouter([
   },
   {
     element: <EmployerDashBoard />,
-    path: '//employer-dashboard'
+    path: '/employer-dashboard'
   },
 ])
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router}/>
+    <AuthProvider>
+      <RouterProvider router={router}/>
+    </AuthProvider>
   </StrictMode>,
 )

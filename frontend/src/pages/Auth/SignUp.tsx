@@ -15,6 +15,8 @@ import {
   Loader,
 } from "lucide-react";
 import { validateAvatar, validateEmail, validatePassword } from "@/utils/helper";
+import axiosInstance from "@/utils/axiosInstance";
+import { API_PATHS } from "@/utils/apiPath";
 
 interface SignUpFormData {
   fullName: string;
@@ -33,6 +35,7 @@ interface SignUpFormState {
 }
 
 const SignUp = () => {
+  
   const [formData, setFormData] = useState<SignUpFormData>({
     fullName: "",
     email: "",
@@ -133,8 +136,31 @@ const SignUp = () => {
     setFormState((prev) => ({ ...prev, loading: true }));
 
     try {
-      // TODO: gọi API đăng ký ở đây
-      console.log("SignUp data:", formData);
+      const formDataToSend = new FormData();
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("password", formData.password);
+      formDataToSend.append("userType", formData.role);
+      formDataToSend.append("fullName", formData.fullName);
+      
+      // Thêm avatar nếu có
+      if (formData.avatar) {
+        formDataToSend.append("avatar", formData.avatar);
+      }
+
+      console.log("Sending signup data:", {
+        email: formData.email,
+        userType: formData.role,
+        fullName: formData.fullName,
+        hasAvatar: !!formData.avatar
+      });
+
+      // Don't set Content-Type manually; let the browser add the multipart boundary
+      const response = await axiosInstance.post(
+        API_PATHS.AUTH.REGISTER,
+        formDataToSend
+      );
+
+      console.log("Signup response:", response.data);
 
       setFormState((prev) => ({
         ...prev,
@@ -142,14 +168,20 @@ const SignUp = () => {
         errors: {},
         success: true,
       }));
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
     } catch (error) {
-      console.log("error", error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyErr = error as any;
+      console.log("Signup error:", anyErr?.response?.data || anyErr);
 
       const errorMessage =
         error instanceof Error
           ? error.message
           : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (error as any).response?.data?.message ||
+            anyErr?.response?.data?.error ||
+            anyErr?.response?.data?.message ||
             "Registration failed. Please try again.";
 
       setFormState((prev) => ({
@@ -175,7 +207,7 @@ const SignUp = () => {
             Account Created!
           </h2>
           <p className="mb-4 text-gray-600">
-            Welcome to JobPortal! Your account has been successfully created.
+            Welcome to JobPortal! Your account has been successfully created and you're now logged in.
           </p>
           <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[#29436c] border-t-transparent" />
           <p className="mt-2 text-sm text-gray-500">
@@ -348,9 +380,9 @@ const SignUp = () => {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => handleRoleChange("jobseeker")}
+                onClick={() => handleRoleChange("JOB_SEEKER")}
                 className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
-                  formData.role === "jobseeker"
+                  formData.role === "JOB_SEEKER"
                     ? "border-blue-500 bg-blue-50 text-blue-700"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
@@ -363,9 +395,9 @@ const SignUp = () => {
               </button>
               <button
                 type="button"
-                onClick={() => handleRoleChange("employer")}
+                onClick={() => handleRoleChange("EMPLOYER")}
                 className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
-                  formData.role === "employer"
+                  formData.role === "EMPLOYER"
                     ? "border-blue-500 bg-blue-50 text-blue-700"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
