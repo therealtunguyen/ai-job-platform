@@ -6,7 +6,6 @@ const axiosInstance = axios.create(
     baseURL: BASE_URL,
     timeout: 80000,
     headers: {
-      "Content-Type": "application/json",
       Accept: "application/json"
     }
   }
@@ -17,6 +16,11 @@ axiosInstance.interceptors.request.use(
     const accessToken = localStorage.getItem("key");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    // Only set Content-Type to application/json if data is not FormData
+    // When sending FormData, browser automatically sets the correct multipart Content-Type with boundary
+    if (!(config.data instanceof FormData)) {
+      config.headers["Content-Type"] = "application/json";
     }
     return config
   },
