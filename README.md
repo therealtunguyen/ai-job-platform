@@ -1,6 +1,6 @@
-# JobMatchVN — AI-powered job matching for Vietnam
+# SkillSync — AI-powered job matching for Vietnam
 
-> **JobMatchVN** is an MVP recruitment platform focused on the Vietnamese market.
+> **SkillSync** is an MVP recruitment platform focused on the Vietnamese market.
 > It helps new grads and young workers upload CVs (PDF/DOCX/plain text), automatically extracts profile data, matches candidates to jobs using AI scoring, and offers mock interview practice in Vietnamese/English. Employers can post jobs and search candidates.
 
 ---
@@ -154,23 +154,28 @@ flowchart TD
 To ensure everyone is working with the same Supabase backend, follow these steps:
 
 1.  **Install the Supabase CLI** (if you haven't already):
+
     ```bash
     npm install supabase --save-dev
     ```
 
 2.  **Log in to the Supabase CLI:**
     This will require you to create a Supabase account if you don't have one.
+
     ```bash
     npx supabase login
     ```
+
     Follow the instructions in your browser to authorize the CLI.
 
 3.  **Link your local project to the remote Supabase project:**
     You will need the **Project Reference ID**. Ask the project maintainer for this value.
+
     ```bash
     # Replace <project-ref> with the ID provided to you
     npx supabase link --project-ref <project-ref>
     ```
+
     You will be prompted for the database password, which you can also get from the project maintainer.
 
 4.  **(Optional) Generating Database Types:**
@@ -223,10 +228,10 @@ npm install
 
 # run dev (frontend + backend separated)
 # Backend
-npm --filter backend dev
+npm run dev --workspace=backend
 
 # Frontend
-npm --filter frontend dev
+npm run dev --workspace=frontend
 ```
 
 ---
@@ -235,10 +240,10 @@ npm --filter frontend dev
 
 **MVP stack**
 
-- Host frontend: Vercel / Netlify (React build)
+- Host frontend: Vercel (React build)
 - Backend: DigitalOcean App Platform / Fly / Render or container on Cloud Run
 - Database: Supabase (managed Postgres)
-- Storage: Supabase Storage / S3-compatible
+- Storage: Supabase Storage
 - Auth: Supabase Auth (JWT)
 - Redis: Managed provider (Upstash/Redis Labs) if caching needed
 - CI/CD: GitHub Actions — run tests, lint, build, and deploy
