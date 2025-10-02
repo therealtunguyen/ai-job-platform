@@ -46,8 +46,8 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
         }
 
         // Define the file path in the storage bucket
-        const fileName = `${userProfile.user_type.toLowerCase()}_${userId}_${Date.now()}_${req.file.originalname}`;
-        const filePath = `${bucketName}/${fileName}`;
+        const fileName = `${Date.now()}_${req.file.originalname}`;
+        const filePath = `${userId}/${fileName}`;
 
         // Upload the file to Supabase storage
         const uploadResult = await uploadFileToSupabase(
@@ -240,4 +240,3 @@ export const deleteProfileImage = async (req: Request, res: Response) => {
         });
     }
 };
-
