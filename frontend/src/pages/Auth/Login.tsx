@@ -3,9 +3,14 @@ import { validateEmail, validatePassword } from "@/utils/helper";
 import React, { useState } from "react";
 import {motion} from 'framer-motion'
 import { AlertCircle, CheckCircle, Eye, EyeOff, Loader, Lock, Mail } from "lucide-react";
+import axiosInstance from "@/utils/axiosInstance";
+import { API_PATHS } from "@/utils/apiPath";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 const Login = () => {
+  const { login } = useAuth();
+  
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
@@ -39,7 +44,6 @@ const Login = () => {
     const errors: Record<string, string> = {
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
-      role: !formData.role ? "Please select a role" : "",
     };
 
     // Xoá các lỗi rỗng
@@ -59,14 +63,48 @@ const Login = () => {
     setFormState((prev) => ({ ...prev, loading: true }));
 
     try {
-      // TODO: gọi API đăng nhập ở đây
-      console.log("Login data:", formData);
-
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      console.log("Login response:", response.data); // Debug log
+      
       setFormState((prev) => ({
         ...prev,
         loading: false,
+        success: true,
         errors: {},
       }));
+
+      // Kiểm tra response structure - token nằm trong session
+      const token = response.data?.session?.access_token || response.data?.token || response.data?.accessToken || response.data?.access_token;
+      
+      console.log("Extracted token:", token); // Debug log
+
+      if(token) {
+        // Lấy user data từ response và map user_type thành role
+        const backendUser = response.data?.user || response.data;
+        const userData = {
+          id: backendUser.user_id,
+          email: formData.email,
+          role: backendUser.user_type, // Map user_type từ backend thành role cho frontend
+          name: backendUser.full_name || backendUser.company_name || formData.email
+        };
+        console.log("Calling login with:", userData, token); // Debug log
+        login(userData, token);
+
+        console.log("Redirecting to /find-jobs..."); // Debug log
+        // Redirect ngay lập tức thay vì chờ 2 giây
+        window.location.href = "/find-jobs";
+      } else {
+        console.error("No token found in response:", response.data);
+        setFormState((prev) => ({
+          ...prev,
+          loading: false,
+          errors: { submit: "No token received from server" },
+        }));
+      }
     } catch (error) {
       console.log("error", error);
 

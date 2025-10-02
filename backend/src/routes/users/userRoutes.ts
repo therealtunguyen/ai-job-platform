@@ -1,10 +1,19 @@
 import express from "express";
-import { createUser, getUser, updateUser } from "../../controllers/users/userController";
+import {
+    createUser,
+    getUser,
+    updateUser,
+} from "../../controllers/users/userController";
+import profileImageRoutes from "./profileImageRoutes";
+import { authenticateToken } from "../../middleware/auth/jwtAuth";
 
 const router = express.Router();
 
-router.post("/", createUser);
-router.get("/:id", getUser);
-router.put("/:id", updateUser);
+// Protected routes - require authentication
+router.get("/me", authenticateToken, getUser); // Get current user's profile
+router.put("/me", authenticateToken, updateUser); // Update current user's profile
+
+// Profile image routes
+router.use("/profile-image", profileImageRoutes);
 
 export default router;

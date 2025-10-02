@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,4 +12,5 @@ const serviceKey = process.env.SUPABASE_SERVICE_KEY;
 // For public usage / limited server operations, you can use anon key.
 const supabase = createClient(url, serviceKey ?? anonKey);
 
-export default supabase;
+export { supabase };
+export type { SupabaseClient };
