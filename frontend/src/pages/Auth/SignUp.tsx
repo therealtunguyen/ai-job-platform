@@ -177,7 +177,7 @@ const SignUp = () => {
           <p className="mb-4 text-gray-600">
             Welcome to JobPortal! Your account has been successfully created.
           </p>
-          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[#29436c] border-t-transparent" />
           <p className="mt-2 text-sm text-gray-500">
             Redirecting to your dashboard...
           </p>
@@ -395,7 +395,7 @@ const SignUp = () => {
           <button
             type="submit"
             disabled={formState.loading}
-            className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 py-3 font-semibold text-white transition-all duration-300 hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] py-3 font-semibold text-white transition-all duration-300 hover:from-[#213552] hover:to-[#7ea260] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {formState.loading ? (
               <>

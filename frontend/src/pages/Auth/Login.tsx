@@ -202,7 +202,7 @@ const Login = () => {
 
           {
             formState.errors.submit && (
-              <div className='bg-red-50 border border-red-200 rounded-lg p-3'>
+          <div className='bg-red-50 border border-red-200 rounded-lg p-3'>
                 <p className='text-red-700 text-sm flex items-center '>
                   <AlertCircle className='w-4 h-4 mr-2'/>
                   {
@@ -216,7 +216,7 @@ const Login = () => {
           <button
             type='submit'
             disabled={formState.loading}
-            className='w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2'
+          className='w-full bg-gradient-to-r from-[#29436c] to-[#90ad71] text-white py-3 rounded-lg font-semibold hover:from-[#213552] hover:to-[#7ea260] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2'
           >
             {
               formState.loading ? (

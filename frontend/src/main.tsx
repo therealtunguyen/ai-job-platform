@@ -5,6 +5,8 @@ import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import Login from '@/pages/Auth/Login'
 import SignUp from '@/pages/Auth/SignUp'
 import LandingPage from '@/pages/Landing/LandingPage'
+import JobSeekerDashBoard from '@/pages/JobSeeker/JobSeekerDashBoard'
+import EmployerDashBoard from '@/pages/Employer/EmployerDashBoard'
 
 const router = createBrowserRouter([
   {
@@ -18,7 +20,15 @@ const router = createBrowserRouter([
   {
     element: <LandingPage />,
     path: '/'
-  }
+  },
+  {
+    element: <JobSeekerDashBoard />,
+    path: '/find-jobs'
+  },
+  {
+    element: <EmployerDashBoard />,
+    path: '//employer-dashboard'
+  },
 ])
 
 createRoot(document.getElementById('root')!).render(
