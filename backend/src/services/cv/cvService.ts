@@ -9,9 +9,7 @@ export const processCv = async (file: Express.Multer.File, userId: string) => {
   try {
     // Generate a unique filename
     const timestamp = Date.now();
-    const originalName = file.originalname;
-    const fileExt = originalName.split('.').pop()?.toLowerCase() || 'pdf';
-    const fileName = `cv_${userId}_${timestamp}.${fileExt}`;
+    const fileName = `cv_${userId}_${timestamp}_${file.originalname}`;
     
     // Upload file to Supabase storage in the "cvs" bucket
     const { data, error } = await supabase.storage
@@ -23,7 +21,10 @@ export const processCv = async (file: Express.Multer.File, userId: string) => {
     
     if (error) {
       console.error("CV upload error:", error);
-      return { success: false, error };
+      return { 
+        success: false,
+        error: error.message || "Upload failed",
+      };
     }
     
     // Get the public URL for the file
@@ -32,7 +33,7 @@ export const processCv = async (file: Express.Multer.File, userId: string) => {
       .getPublicUrl(fileName);
     
     if (!urlData?.publicUrl) {
-      return { success: false, error: "Failed to get public URL" };
+      return { success: false, error: "Could not get public URL" };
     }
     
     // Update the job_seekers table to link the CV to the job seeker
@@ -47,10 +48,14 @@ export const processCv = async (file: Express.Multer.File, userId: string) => {
     
     return {
       success: true,
-      fileUrl: urlData.publicUrl
+      fileUrl: urlData.publicUrl,
+      fileName,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("CV processing error:", error);
-    return { success: false, error };
+    return {
+      success: false,
+      error: error.message || "Internal server error",
+    };
   }
 };

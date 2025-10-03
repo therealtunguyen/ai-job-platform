@@ -35,17 +35,11 @@ export const uploadCv = (req: Request, res: Response) => {
     
     try {
       // Get user ID from request (set by auth middleware)
-      const user = (req as any).user;
-      console.log("User object from auth middleware:", user);
-      
-      // Handle different possible user ID locations based on auth implementation
-      const userId = user?.id || user?.sub || 
-                    (user?.user_id) || 
-                    (user?.user && user?.user.id);
+      const userId = (req as any).user?.id;
+      console.log("User object from auth middleware:", userId);
       
       if (!userId) {
-        console.error("Authentication error: No valid user ID found in request", { user });
-        return res.status(401).json({ error: "Authentication required: Valid user ID not found" });
+        return res.status(401).json({ error: "User not authenticated" });
       }
       
       console.log("Using user ID for CV upload:", userId);
