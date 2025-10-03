@@ -96,7 +96,7 @@ const Login = () => {
 
         console.log("Redirecting to /find-jobs..."); // Debug log
         // Redirect ngay lập tức thay vì chờ 2 giây
-        window.location.href = "/find-jobs";
+        window.location.href = "/jobseeker-dashboard";
       } else {
         console.error("No token found in response:", response.data);
         setFormState((prev) => ({
