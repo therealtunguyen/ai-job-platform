@@ -1,9 +1,9 @@
 import express from "express";
-import { submitApplication, getApplicationStatus } from "../../controllers/application/applicationController";
+import * as applicationController from "../../controllers/application/applicationController";
 
 const router = express.Router();
 
-router.post("/", submitApplication);
-router.get("/:id/status", getApplicationStatus);
-
+router.post("/", applicationController.submitApplication);
+router.get("/:id/status", applicationController.getApplicationStatus);
+router.patch("/:id/status", applicationController.updateApplicationStatus);
 export default router;
