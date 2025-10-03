@@ -36,13 +36,9 @@ export const uploadCv = (req: Request, res: Response) => {
     try {
       // Get user ID from request (set by auth middleware)
       const userId = (req as any).user?.id;
-      console.log("User object from auth middleware:", userId);
-      
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
-      
-      console.log("Using user ID for CV upload:", userId);
       
       // Process and store CV
       const result = await processCv(req.file, userId);
@@ -58,7 +54,8 @@ export const uploadCv = (req: Request, res: Response) => {
       console.log("CV uploaded successfully:", result.fileUrl);
       res.status(200).json({ 
         message: "CV uploaded successfully", 
-        fileUrl: result.fileUrl 
+        fileUrl: result.fileUrl,
+        fileName: result.fileName
       });
     } catch (error: any) {
       console.error("Unexpected CV upload error:", error);

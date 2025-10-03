@@ -9,7 +9,7 @@ export const processCv = async (file: Express.Multer.File, userId: string) => {
   try {
     // Generate a unique filename
     const timestamp = Date.now();
-    const fileName = `cv_${userId}_${timestamp}_${file.originalname}`;
+    const fileName = `${userId}/${timestamp}_${file.originalname}`;
     
     // Upload file to Supabase storage in the "cvs" bucket
     const { data, error } = await supabase.storage
@@ -39,7 +39,7 @@ export const processCv = async (file: Express.Multer.File, userId: string) => {
     // Update the job_seekers table to link the CV to the job seeker
     const { error: updateError } = await supabase
       .from("job_seekers")
-      .update({ CV_url: urlData.publicUrl })
+      .update({ cv_file_path: urlData.publicUrl })
       .eq("user_id", userId);
     
     if (updateError) {
