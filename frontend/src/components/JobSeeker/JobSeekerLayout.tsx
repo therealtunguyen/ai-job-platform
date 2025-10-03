@@ -1,0 +1,32 @@
+import { useState } from "react";
+import JobSeekerNavbar from "./JobSeekerNavbar";
+
+interface JobSeekerLayoutProps {
+  children: React.ReactNode;
+  activeMenu?: string;
+}
+
+const JobSeekerLayout = ({ children, activeMenu = "/jobseeker-dashboard" }: JobSeekerLayoutProps) => {
+  const [currentActiveMenu, setCurrentActiveMenu] = useState(activeMenu);
+
+  const handleMenuClick = (path: string) => {
+    setCurrentActiveMenu(path);
+  };
+
+  return (
+    <div className="flex min-h-screen pt-16">
+      {/* Navbar */}
+      <JobSeekerNavbar 
+        activeMenu={currentActiveMenu} 
+        onMenuClick={handleMenuClick} 
+      />
+
+      {/* Main Content */}
+      <div className="flex-1">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+export default JobSeekerLayout;
