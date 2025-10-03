@@ -8,7 +8,42 @@ export interface AuthResponse {
     user: User | null;
     session: any;
     error: any;
+    name?: string | null;
 }
+
+/**
+ * Helper function to get the name based on user type
+ * @param userId - The ID of the user
+ * @param userType - The type of user (JOB_SEEKER or EMPLOYER)
+ * @returns The name (full_name for job seeker, company_name for employer) or null
+ */
+const getNameByUserType = async (userId: string, userType: string) => {
+    let name: string | null = null;
+
+    if (userType === "JOB_SEEKER") {
+        const { data: seekerData, error: seekerError } = await supabase
+            .from("job_seekers")
+            .select("full_name")
+            .eq("user_id", userId)
+            .single();
+
+        if (!seekerError && seekerData) {
+            name = seekerData.full_name;
+        }
+    } else if (userType === "EMPLOYER") {
+        const { data: employerData, error: employerError } = await supabase
+            .from("employers")
+            .select("company_name")
+            .eq("user_id", userId)
+            .single();
+
+        if (!employerError && employerData) {
+            name = employerData.company_name;
+        }
+    }
+
+    return name;
+};
 
 export interface LoginCredentials {
     email: string;
@@ -36,7 +71,7 @@ export const registerUser = async (
 
         if (error) {
             console.error("Supabase Auth Error:", error.message);
-            return { user: null, session: null, error: error };
+            return { user: null, session: null, error: error, name: null };
         }
 
         if (data.user) {
@@ -63,6 +98,7 @@ export const registerUser = async (
                         message:
                             "Profile creation failed: " + profileError.message,
                     },
+                    name: null,
                 };
             }
 
@@ -76,7 +112,8 @@ export const registerUser = async (
 
                 // Profile picture is optional - add it if provided
                 if (userData.profilePicture) {
-                    (seekerData as any).profile_picture = userData.profilePicture;
+                    (seekerData as any).profile_picture =
+                        userData.profilePicture;
                 }
 
                 const { error: seekerError } = await supabase
@@ -113,6 +150,12 @@ export const registerUser = async (
                 }
             }
 
+            // Determine the name based on user type
+            const name =
+                userData.userType === "JOB_SEEKER"
+                    ? userData.fullName || null
+                    : userData.fullName || null;
+
             return {
                 user: {
                     user_id: data.user.id,
@@ -123,6 +166,7 @@ export const registerUser = async (
                 },
                 session: data.session,
                 error: null,
+                name: name,
             };
         } else {
             // Handle case where user already exists
@@ -130,11 +174,12 @@ export const registerUser = async (
                 user: null,
                 session: null,
                 error: { message: "User already exists" },
+                name: null,
             };
         }
     } catch (error: any) {
         console.error("Registration error:", error);
-        return { user: null, session: null, error };
+        return { user: null, session: null, error, name: null };
     }
 };
 
@@ -173,24 +218,37 @@ export const loginUser = async (
 
             if (profileError) {
                 console.error("Error fetching user profile:", profileError);
-                return { user: null, session: null, error: profileError };
+                return {
+                    user: null,
+                    session: null,
+                    error: profileError,
+                    name: null,
+                };
             }
+
+            // Fetch the name based on user type
+            const name = await getNameByUserType(
+                userProfile.user_id,
+                userProfile.user_type,
+            );
 
             return {
                 user: userProfile,
                 session: data.session,
                 error: null,
+                name: name,
             };
         } else {
             return {
                 user: null,
                 session: null,
                 error: { message: "Invalid login response" },
+                name: null,
             };
         }
     } catch (error: any) {
         console.error("Login error:", error);
-        return { user: null, session: null, error };
+        return { user: null, session: null, error, name: null };
     }
 };
 
@@ -219,11 +277,11 @@ export const getCurrentUser = async () => {
 
         if (error) {
             console.error("Error getting session:", error.message);
-            return { user: null, session: null, error };
+            return { user: null, session: null, error, name: null };
         }
 
         if (!session) {
-            return { user: null, session: null, error: null };
+            return { user: null, session: null, error: null, name: null };
         }
 
         // Get user profile
@@ -234,13 +292,24 @@ export const getCurrentUser = async () => {
             .single();
 
         if (profileError) {
-            return { user: null, session: null, error: profileError };
+            return {
+                user: null,
+                session: null,
+                error: profileError,
+                name: null,
+            };
         }
 
-        return { user: userProfile, session, error: null };
+        // Fetch the name based on user type
+        const name = await getNameByUserType(
+            userProfile!.user_id,
+            userProfile!.user_type,
+        );
+
+        return { user: userProfile, session, error: null, name: name };
     } catch (error: any) {
         console.error("Get current user error:", error);
-        return { user: null, session: null, error };
+        return { user: null, session: null, error, name: null };
     }
 };
 
@@ -253,12 +322,34 @@ export const verifyToken = async (token: string) => {
 
         if (error) {
             console.error("Token verification error:", error.message);
-            return { user: null, error };
+            return { user: null, error, name: null };
         }
 
-        return { user: data.user, error: null };
+        if (data.user) {
+            // Get user profile to determine user type
+            const { data: userProfile, error: profileError } = await supabase
+                .from("user_profiles")
+                .select("user_type")
+                .eq("user_id", data.user.id)
+                .single();
+
+            if (profileError) {
+                console.error("Error fetching user profile:", profileError);
+                return { user: null, error: profileError, name: null };
+            }
+
+            // Fetch the name based on user type
+            const name = await getNameByUserType(
+                data.user.id,
+                userProfile!.user_type,
+            );
+
+            return { user: data.user, error: null, name: name };
+        }
+
+        return { user: data.user, error: null, name: null };
     } catch (error: any) {
         console.error("Token verification error:", error);
-        return { user: null, error };
+        return { user: null, error, name: null };
     }
 };

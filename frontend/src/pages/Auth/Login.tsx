@@ -84,12 +84,13 @@ const Login = () => {
 
       if(token) {
         // Lấy user data từ response và map user_type thành role
-        const backendUser = response.data?.user || response.data;
+        const backendUser = response.data;
+                console.log("Backend user data:", backendUser); // Debug log
         const userData = {
-          id: backendUser.user_id,
+          id: backendUser.user.user_id,
           email: formData.email,
-          role: backendUser.user_type, // Map user_type từ backend thành role cho frontend
-          name: backendUser.full_name || backendUser.company_name || formData.email
+          role: backendUser.user.user_type, // Map user_type từ backend thành role cho frontend
+          name: backendUser.name
         };
         console.log("Calling login with:", userData, token); // Debug log
         login(userData, token);

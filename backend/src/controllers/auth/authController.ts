@@ -44,11 +44,14 @@ export const register = async (req: Request, res: Response) => {
                     userId,
                     userType,
                     file: req.file,
-                    prefix: "registration" // Add a prefix to distinguish registration uploads
+                    prefix: "registration", // Add a prefix to distinguish registration uploads
                 });
 
                 if (!uploadResult.success) {
-                    console.error("Profile picture upload error during registration:", uploadResult.error);
+                    console.error(
+                        "Profile picture upload error during registration:",
+                        uploadResult.error,
+                    );
                     // Continue with registration even if profile picture fails - just log the error
                 }
             }
@@ -57,6 +60,7 @@ export const register = async (req: Request, res: Response) => {
         res.status(201).json({
             message: "User registered successfully",
             user: result.user,
+            name: result.name,
         });
     } catch (error: any) {
         console.error("Registration error:", error);
@@ -87,6 +91,7 @@ export const login = async (req: Request, res: Response) => {
             message: "Login successful",
             user: result.user,
             session: result.session,
+            name: result.name,
         });
     } catch (error: any) {
         console.error("Login error:", error);
@@ -127,7 +132,7 @@ export const getCurrentUserProfile = async (req: Request, res: Response) => {
             return res.status(401).json({ error: "User not authenticated" });
         }
 
-        res.status(200).json({ user: result.user });
+        res.status(200).json({ user: result.user, name: result.name });
     } catch (error: any) {
         console.error("Get user profile error:", error);
         res.status(500).json({ error: "Internal server error" });
