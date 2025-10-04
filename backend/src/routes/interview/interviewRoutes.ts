@@ -1,4 +1,5 @@
 import express from "express";
+import { authenticateToken } from "../../middleware/auth/jwtAuth";
 import {
     startInterview,
     submitAnswer,
@@ -6,7 +7,7 @@ import {
 
 const router = express.Router();
 
-router.post("/start", startInterview);
-router.post("/:interviewId/submit", submitAnswer);
+router.post("/start", authenticateToken, startInterview);
+router.post("/:interviewId/submit", authenticateToken, submitAnswer);
 
 export default router;

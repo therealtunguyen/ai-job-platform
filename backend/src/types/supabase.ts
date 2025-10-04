@@ -120,46 +120,7 @@ export type Database = {
         Row: {
           ai_evaluation_score: number | null
           ai_feedback: string | null
-          difficulty: Database["public"]["Enums"]["difficulty_enum"] | null
-          entry_id: string
-          question_asked_at: string | null
-          question_text: string | null
-          question_type: string | null
           response_quality:
-            | Database["public"]["Enums"]["response_quality_enum"]
-            | null
-          response_submitted_at: string | null
-          response_text: string | null
-          session_id: string
-          suggested_improvements: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          ai_evaluation_score?: number | null
-          ai_feedback?: string | null
-          difficulty?: Database["public"]["Enums"]["difficulty_enum"] | null
-          entry_id?: string
-          question_asked_at?: string | null
-          question_text?: string | null
-          question_type?: string | null
-          response_quality?:
-            | Database["public"]["Enums"]["response_quality_enum"]
-            | null
-          response_submitted_at?: string | null
-          response_text?: string | null
-          session_id: string
-          suggested_improvements?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          ai_evaluation_score?: number | null
-          ai_feedback?: string | null
-          difficulty?: Database["public"]["Enums"]["difficulty_enum"] | null
-          entry_id?: string
-          question_asked_at?: string | null
-          question_text?: string | null
-          question_type?: string | null
-          response_quality?:
             | Database["public"]["Enums"]["response_quality_enum"]
             | null
           response_submitted_at?: string | null
