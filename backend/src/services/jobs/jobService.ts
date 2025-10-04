@@ -43,11 +43,12 @@ export async function getJobById(id: string): Promise<Job | null> {
   return data;
 }
 
-export async function updateJob(id: string, updates: UpdateJobDTO): Promise<Job | null> {
+export async function updateJob(id: string, updates: UpdateJobDTO, employerId: string): Promise<Job | null> {
   const { data, error } = await supabase
     .from(TABLE)
     .update({ ...updates })
     .eq("job_id", id)
+    .eq("employer_id", employerId)
     .select()
     .single<Job>();
   if (error) {
@@ -57,11 +58,12 @@ export async function updateJob(id: string, updates: UpdateJobDTO): Promise<Job 
   return data;
 }
 
-export async function deleteJob(id: string): Promise<boolean> {
+export async function deleteJob(id: string, employerId: string): Promise<boolean> {
   const { error, count } = await supabase
     .from(TABLE)
     .delete({ count: "exact" })
-    .eq("job_id", id);
+    .eq("job_id", id)
+    .eq("employer_id", employerId);
   if (error) throw error;
   return (count ?? 0) > 0;
 }

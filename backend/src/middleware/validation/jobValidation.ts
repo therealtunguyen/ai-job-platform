@@ -68,7 +68,7 @@ const jobValidationSchema: Record<string, ValidationChain> = {
 };
 
 // Fields that are required when creating a new job.
-const requiredCreateFields = ["title", "employer_id"];
+const requiredCreateFields = ["title"];
 
 // Validator for creating a job.
 export const createJobValidator = Object.entries(jobValidationSchema).map(

@@ -14,7 +14,9 @@ export async function createJob(req: Request, res: Response) {
     return res.status(400).json({ errors: errors.array() });
   }
   try {
-    const job = await createNewJob(req.body);
+    const employerId = (req as any).user.id;
+    const jobData = { ...req.body, employer_id: employerId };
+    const job = await createNewJob(jobData);
     res.status(201).json(job);
   } catch (e: any) {
     res.status(500).json({ message: "Failed to create job", error: e.message });
@@ -60,8 +62,9 @@ export async function updateJob(req: Request, res: Response) {
     return res.status(400).json({ errors: errors.array() });
   }
   try {
-    const updated = await updateJobService(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ message: "Job not found" });
+    const employerId = (req as any).user.id;
+    const updated = await updateJobService(req.params.id, req.body, employerId);
+    if (!updated) return res.status(404).json({ message: "Job not found or you do not have permission to update it" });
     res.json(updated);
   } catch (e: any) {
     res.status(500).json({ message: "Failed to update job", error: e.message });
@@ -70,8 +73,9 @@ export async function updateJob(req: Request, res: Response) {
 
 export async function deleteJob(req: Request, res: Response) {
   try {
-    const ok = await deleteJobService(req.params.id);
-    if (!ok) return res.status(404).json({ message: "Job not found" });
+    const employerId = (req as any).user.id;
+    const ok = await deleteJobService(req.params.id, employerId);
+    if (!ok) return res.status(404).json({ message: "Job not found or you do not have permission to delete it" });
     res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ message: "Failed to delete job", error: e.message });
