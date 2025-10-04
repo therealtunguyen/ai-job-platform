@@ -13,14 +13,21 @@ const TRANSITIONS: Record<string, string[]> = {
 
 // Placeholder for application tracking service
 export const createApplication = async (applicationData: any) => {
-  console.log("Creating application", applicationData);
+  const payload = {
+    ...applicationData,
+    status: applicationData.status ?? "submitted",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
   const { data, error } = await supabase
-    .from('applications')
-    .insert([applicationData])
+    .from("applications")
+    .insert([payload])
     .select()
     .single();
+
   if (error) throw new Error(error.message);
-  return { id: "app-789", status: "submitted", ...applicationData };
+  return data;
 };
 
 // Fetch application by ID
@@ -35,6 +42,13 @@ export const getApplicationById = async (id: string) => {
     throw new Error(error.message);
   }
   return data;
+};
+
+export const submitApplication = async (applicationData: any) => {
+  if (!applicationData.candidate_name || !applicationData.job_id) {
+    throw new Error("Missing required fields: candidate_name and job_id");
+  }
+  return await createApplication(applicationData);
 };
 
 // Update application status with transition validation
@@ -54,11 +68,12 @@ export const updateApplicationStatus = async (id: string, newStatus: string) => 
   }
 
   const { data, error } = await supabase
-    .from('applications')
+    .from("applications")
     .update({ status: newStatus, updated_at: new Date().toISOString() })
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
+
   if (error) throw new Error(error.message);
   return data;
 };
