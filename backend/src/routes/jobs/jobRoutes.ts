@@ -1,11 +1,24 @@
 import express from "express";
-import { createJob, getJob, updateJob, deleteJob } from "../../controllers/jobs/jobController";
+import {
+	createJob,
+	getJob,
+	updateJob,
+	deleteJob,
+	listJobHandler,
+} from "../../controllers/jobs/jobController";
+import { createJobValidator, updateJobValidator } from "../../middleware/validation/jobValidation";
+import { authenticateToken } from "../../middleware/auth/jwtAuth";
 
 const router = express.Router();
 
-router.post("/", createJob);
+// Public routes: anyone can list and view jobs
+router.get("/", listJobHandler);
 router.get("/:id", getJob);
-router.put("/:id", updateJob);
-router.delete("/:id", deleteJob);
+
+// Protected routes: only authenticated users can create, update, or delete jobs
+router.post("/", authenticateToken, createJobValidator, createJob);
+router.put("/:id", authenticateToken, updateJobValidator, updateJob);
+router.delete("/:id", authenticateToken, deleteJob);
 
 export default router;
+
