@@ -44,6 +44,18 @@ export const processCv = async (file: Express.Multer.File, userId: string) => {
     
     if (updateError) {
       console.error("Failed to update job seeker CV URL:", updateError);
+
+      // Attempt to delete the uploaded file to prevent orphaned files
+      const { error: removeError } = await supabase.storage
+        .from("cvs")
+        .remove([fileName]);
+      if (removeError) {
+        console.error("Failed to remove orphaned CV file:", removeError);
+      }
+      return {
+        success: false,
+        error: "Failed to link CV to user. Uploaded file has been removed.",
+      };
     }
     
     return {
