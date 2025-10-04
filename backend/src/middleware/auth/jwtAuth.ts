@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { supabase } from "../../supabaseClient";
 import { verifyToken } from "../../services/auth/authService";
 
 // JWT authentication middleware
@@ -25,6 +26,19 @@ export const authenticateToken = async (
 
         // Add user to request object for use in route handlers
         (req as any).user = user;
+
+        // Get user type from the database to make it available in request handlers
+        if (user.id) {
+            const { data: userProfile, error: profileError } = await supabase
+                .from("user_profiles")
+                .select("user_type")
+                .eq("user_id", user.id)
+                .single();
+
+            if (!profileError && userProfile) {
+                (req as any).user.user_type = userProfile.user_type;
+            }
+        }
 
         next();
     } catch (error: any) {
