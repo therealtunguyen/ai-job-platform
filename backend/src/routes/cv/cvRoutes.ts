@@ -6,6 +6,6 @@ const router = express.Router();
 
 // Apply authentication middleware to protect the upload route
 router.post("/upload", authenticateToken, uploadCv);
-router.get("/:id", getCv);
+router.get("/:id", authenticateToken, getCv);
 
 export default router;
