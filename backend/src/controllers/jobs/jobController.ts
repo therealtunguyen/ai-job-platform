@@ -34,6 +34,18 @@ export async function getJob(req: Request, res: Response) {
 export async function listJobHandler(req: Request, res: Response) {
   const limit = parseInt((req.query.limit as string) || "50", 10);
   const offset = parseInt((req.query.offset as string) || "0", 10);
+
+  if (
+    Number.isNaN(limit) ||
+    Number.isNaN(offset) ||
+    limit < 1 ||
+    limit > 100 ||
+    offset < 0
+  ) {
+    return res.status(400).json({
+      message: "Invalid query parameters: limit must be between 1 and 100; offset must be >= 0.",
+    });
+  }
   try {
     const jobs = await listJobs(limit, offset);
     res.json({ data: jobs, limit, offset });
