@@ -1,6 +1,5 @@
 import { supabase } from "../../supabaseClient";
 
-const ALLOWED_STATUSES = ["submitted", "reviewed", "interview", "offered", "accepted", "rejected"] as const;
 
 const TRANSITIONS: Record<string, string[]> = {
   submitted: ["reviewed", "rejected"],
@@ -13,11 +12,12 @@ const TRANSITIONS: Record<string, string[]> = {
 
 // Placeholder for application tracking service
 export const createApplication = async (applicationData: any) => {
+  if (!applicationData.candidate_name || !applicationData.job_id) {
+    throw new Error("Missing required fields: Candidate name and JobID");
+  }
   const payload = {
     ...applicationData,
     status: applicationData.status ?? "submitted",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
   };
 
   const { data, error } = await supabase
@@ -44,16 +44,13 @@ export const getApplicationById = async (id: string) => {
   return data;
 };
 
-export const submitApplication = async (applicationData: any) => {
-  if (!applicationData.candidate_name || !applicationData.job_id) {
-    throw new Error("Missing required fields: candidate_name and job_id");
-  }
-  return await createApplication(applicationData);
-};
-
 // Update application status with transition validation
 export const updateApplicationStatus = async (id: string, newStatus: string) => {
-  if (!ALLOWED_STATUSES.includes(newStatus as any)) {
+  const allStatuses = new Set<string>([
+    ...Object.keys(TRANSITIONS),
+    ...Object.values(TRANSITIONS).flat(),
+  ]);
+  if (!allStatuses.has(newStatus)) {
     throw new Error("Invalid status");
   }
 
@@ -69,10 +66,21 @@ export const updateApplicationStatus = async (id: string, newStatus: string) => 
 
   const { data, error } = await supabase
     .from("applications")
-    .update({ status: newStatus, updated_at: new Date().toISOString() })
+    .update({ status: newStatus })
     .eq("id", id)
     .select()
     .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+// Get all applications for a specific employer
+export const getAllApplicationsForEmployer = async (employerId: string) => {
+  const { data, error } = await supabase
+    .from("applications")
+    .select("*")
+    .eq("employer_id", employerId);
 
   if (error) throw new Error(error.message);
   return data;

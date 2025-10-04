@@ -3,7 +3,8 @@ import * as applicationController from "../../controllers/application/applicatio
 
 const router = express.Router();
 
-router.post("/", applicationController.submit);
+router.post("/", applicationController.create);
+router.get("/", applicationController.getAllApplications);
 router.patch("/:id/status", applicationController.updateStatus);
 
 export default router;
