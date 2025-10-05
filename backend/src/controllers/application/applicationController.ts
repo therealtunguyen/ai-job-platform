@@ -2,40 +2,31 @@ import { Request, Response, NextFunction } from "express";
 import * as applicationService from "../../services/application/applicationService";
 
 // Placeholder for submitting an application
-export const create = async (req: Request, res: Response, next: NextFunction) => {
+export const create = async (req: Request, res: Response) => {
   try {
     const created = await applicationService.createApplication(req.body);
+    console.log("Created application:", created);
     return res.status(201).json(created);
   } catch (err) {
-    next(err);
+    console.error("Error create application:", err);
+    const message = err instanceof Error ? err.message : "Unknown server error";
+    return res.status(400).json({ error: message });
   }
 };
 
 // Placeholder for getting application status
-export const updateStatus = async (req: Request, res: Response, next: NextFunction) => {
+export const getAll = async (req: Request, res: Response) => {
+  const employer_id = req.query.employer_id as string | undefined;
+
   try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const updated = await applicationService.updateApplicationStatus(id, status);
-    return res.status(200).json(updated);
+    const rows = employer_id
+      ? await applicationService.listApplicationsByEmployer(employer_id)
+      : await applicationService.listAllApplications(); // new fallback
+    return res.json({ data: rows });
   } catch (err) {
-    next(err);
-  }
-};
-
-// New controller to get all applications for a specific employer
-export const getAllApplications = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const employerId = req.query.employer_id as string;
-
-    if (!employerId) {
-      return res.status(400).json({ error: "Missing required query parameter: employer_id" });
-    }
-
-    const applications = await applicationService.getAllApplicationsForEmployer(employerId);
-    return res.status(200).json(applications);
-  } catch (err) {
-    next(err);
+    console.error("Error listing applications:", err);
+    const message = err instanceof Error ? err.message : "Unknown server error";
+    return res.status(500).json({ error: message });
   }
 };
 

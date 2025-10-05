@@ -32,7 +32,10 @@ app.get("/", (req, res) => {
 });
 
 // Error Handling Middleware
-app.use(errorHandler);
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
