@@ -28,3 +28,4 @@ const JobSeekerLayout = ({ children, activeMenu = "/jobseeker-dashboard" }: JobS
 };
 
 export default JobSeekerLayout;
+
