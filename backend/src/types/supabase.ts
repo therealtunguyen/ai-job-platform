@@ -118,28 +118,55 @@ export type Database = {
       }
       conversation_entries: {
         Row: {
+          ai_evaluation_score: number | null
+          ai_feedback: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_enum"] | null
           entry_id: string
           question_asked_at: string | null
           question_text: string | null
+          question_type: string | null
+          response_quality:
+            | Database["public"]["Enums"]["response_quality_enum"]
+            | null
           response_submitted_at: string | null
           response_text: string | null
           session_id: string
+          suggested_improvements: string | null
+          updated_at: string | null
         }
         Insert: {
+          ai_evaluation_score?: number | null
+          ai_feedback?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_enum"] | null
           entry_id?: string
           question_asked_at?: string | null
           question_text?: string | null
+          question_type?: string | null
+          response_quality?:
+            | Database["public"]["Enums"]["response_quality_enum"]
+            | null
           response_submitted_at?: string | null
           response_text?: string | null
           session_id: string
+          suggested_improvements?: string | null
+          updated_at?: string | null
         }
         Update: {
+          ai_evaluation_score?: number | null
+          ai_feedback?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_enum"] | null
           entry_id?: string
           question_asked_at?: string | null
           question_text?: string | null
+          question_type?: string | null
+          response_quality?:
+            | Database["public"]["Enums"]["response_quality_enum"]
+            | null
           response_submitted_at?: string | null
           response_text?: string | null
           session_id?: string
+          suggested_improvements?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -272,6 +299,60 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_feedback: {
+        Row: {
+          ai_suggestion: string | null
+          created_at: string | null
+          entry_id: string
+          feedback_category: string | null
+          feedback_id: string
+          feedback_text: string | null
+          max_score: number | null
+          score_obtained: number | null
+          session_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_suggestion?: string | null
+          created_at?: string | null
+          entry_id: string
+          feedback_category?: string | null
+          feedback_id?: string
+          feedback_text?: string | null
+          max_score?: number | null
+          score_obtained?: number | null
+          session_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_suggestion?: string | null
+          created_at?: string | null
+          entry_id?: string
+          feedback_category?: string | null
+          feedback_id?: string
+          feedback_text?: string | null
+          max_score?: number | null
+          score_obtained?: number | null
+          session_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_feedback_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_entries"
+            referencedColumns: ["entry_id"]
+          },
+          {
+            foreignKeyName: "interview_feedback_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "mock_interviews"
+            referencedColumns: ["session_id"]
+          },
+        ]
+      }
       job_matches: {
         Row: {
           candidate_id: string
@@ -344,6 +425,39 @@ export type Database = {
           },
         ]
       }
+      job_seeker_languages: {
+        Row: {
+          added_at: string | null
+          job_seeker_id: string
+          language_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          job_seeker_id: string
+          language_id: string
+        }
+        Update: {
+          added_at?: string | null
+          job_seeker_id?: string
+          language_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_seeker_languages_job_seeker_id_fkey"
+            columns: ["job_seeker_id"]
+            isOneToOne: false
+            referencedRelation: "job_seekers"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_seeker_languages_language_id_fkey"
+            columns: ["language_id"]
+            isOneToOne: false
+            referencedRelation: "language"
+            referencedColumns: ["language_id"]
+          },
+        ]
+      }
       job_seeker_skills: {
         Row: {
           added_at: string | null
@@ -374,6 +488,45 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "skills"
             referencedColumns: ["skill_id"]
+          },
+        ]
+      }
+      job_seeker_social_networks: {
+        Row: {
+          added_at: string | null
+          job_seeker_id: string
+          profile_url: string | null
+          social_network_id: string
+          username: string | null
+        }
+        Insert: {
+          added_at?: string | null
+          job_seeker_id: string
+          profile_url?: string | null
+          social_network_id: string
+          username?: string | null
+        }
+        Update: {
+          added_at?: string | null
+          job_seeker_id?: string
+          profile_url?: string | null
+          social_network_id?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_seeker_social_networks_job_seeker_id_fkey"
+            columns: ["job_seeker_id"]
+            isOneToOne: false
+            referencedRelation: "job_seekers"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_seeker_social_networks_social_network_id_fkey"
+            columns: ["social_network_id"]
+            isOneToOne: false
+            referencedRelation: "social_networks"
+            referencedColumns: ["social_network_id"]
           },
         ]
       }
@@ -478,27 +631,81 @@ export type Database = {
           },
         ]
       }
+      language: {
+        Row: {
+          code: string
+          created_at: string
+          direction: string
+          language_id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          direction?: string
+          language_id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          direction?: string
+          language_id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mock_interviews: {
         Row: {
+          ai_raw_response: Json | null
+          answered_questions: number | null
           candidate_id: string
           completed_at: string | null
+          completion_percentage: number | null
+          config: Json | null
+          improvement_areas: string[] | null
+          overall_feedback: string | null
+          overall_score: number | null
           session_id: string
           started_at: string | null
           status: Database["public"]["Enums"]["session_status_enum"] | null
+          strengths: string[] | null
+          total_questions: number | null
         }
         Insert: {
+          ai_raw_response?: Json | null
+          answered_questions?: number | null
           candidate_id: string
           completed_at?: string | null
+          completion_percentage?: number | null
+          config?: Json | null
+          improvement_areas?: string[] | null
+          overall_feedback?: string | null
+          overall_score?: number | null
           session_id?: string
           started_at?: string | null
           status?: Database["public"]["Enums"]["session_status_enum"] | null
+          strengths?: string[] | null
+          total_questions?: number | null
         }
         Update: {
+          ai_raw_response?: Json | null
+          answered_questions?: number | null
           candidate_id?: string
           completed_at?: string | null
+          completion_percentage?: number | null
+          config?: Json | null
+          improvement_areas?: string[] | null
+          overall_feedback?: string | null
+          overall_score?: number | null
           session_id?: string
           started_at?: string | null
           status?: Database["public"]["Enums"]["session_status_enum"] | null
+          strengths?: string[] | null
+          total_questions?: number | null
         }
         Relationships: [
           {
@@ -531,6 +738,39 @@ export type Database = {
           description?: string | null
           name?: string
           skill_id?: string
+        }
+        Relationships: []
+      }
+      social_networks: {
+        Row: {
+          base_url: string | null
+          code: string
+          created_at: string
+          icon_url: string | null
+          metadata: Json | null
+          name: string
+          social_network_id: string
+          updated_at: string
+        }
+        Insert: {
+          base_url?: string | null
+          code: string
+          created_at?: string
+          icon_url?: string | null
+          metadata?: Json | null
+          name: string
+          social_network_id?: string
+          updated_at?: string
+        }
+        Update: {
+          base_url?: string | null
+          code?: string
+          created_at?: string
+          icon_url?: string | null
+          metadata?: Json | null
+          name?: string
+          social_network_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -608,6 +848,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_type_enum"]
       }
+      update_interview_metrics: {
+        Args: { p_session_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       application_status_enum:
@@ -625,6 +869,7 @@ export type Database = {
         | "PARSED"
         | "FAILED"
         | "ARCHIVED"
+      difficulty_enum: "easy" | "medium" | "hard"
       job_status_enum:
         | "DRAFT"
         | "ACTIVE"
@@ -633,6 +878,7 @@ export type Database = {
         | "FILLED"
         | "ARCHIVED"
       profile_status_enum: "INCOMPLETE" | "COMPLETE" | "VERIFIED" | "SUSPENDED"
+      response_quality_enum: "excellent" | "good" | "average" | "poor"
       session_status_enum: "STARTED" | "IN_PROGRESS" | "COMPLETED" | "ABANDONED"
       user_type_enum: "JOB_SEEKER" | "EMPLOYER"
     }
@@ -782,6 +1028,7 @@ export const Constants = {
         "FAILED",
         "ARCHIVED",
       ],
+      difficulty_enum: ["easy", "medium", "hard"],
       job_status_enum: [
         "DRAFT",
         "ACTIVE",
@@ -791,6 +1038,7 @@ export const Constants = {
         "ARCHIVED",
       ],
       profile_status_enum: ["INCOMPLETE", "COMPLETE", "VERIFIED", "SUSPENDED"],
+      response_quality_enum: ["excellent", "good", "average", "poor"],
       session_status_enum: ["STARTED", "IN_PROGRESS", "COMPLETED", "ABANDONED"],
       user_type_enum: ["JOB_SEEKER", "EMPLOYER"],
     },

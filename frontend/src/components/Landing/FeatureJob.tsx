@@ -1,5 +1,5 @@
 import React from "react";
-import JobCard from "../../pages/JobSeeker/JobCard";
+import JobCard from "../../pages/Employer/JobCard";
 import { useNavigate } from "react-router-dom";
 
 const FeatureJob = () => {
@@ -78,7 +78,7 @@ const FeatureJob = () => {
         {/* Load More Button */}
         <div className="mt-12 text-center">
           <button
-            className="rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none cursor-pointer"
+            className="cursor-pointer rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
             onClick={() => {
               navigate("/find-jobs");
             }}
