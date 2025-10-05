@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import { faker } from "@faker-js/faker"; // For generating realistic dummy data
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -19,54 +20,54 @@ async function createDummyUsers() {
     const users = [
         // Job Seekers
         {
-            email: "jobseeker1@example.com",
+            email: faker.internet.email({ firstName: "jobseeker1" }),
             password: "S_password1",
             data: { type: "JOB_SEEKER" },
         },
         {
-            email: "jobseeker2@example.com",
+            email: faker.internet.email({ firstName: "jobseeker2" }),
             password: "S_password2",
             data: { type: "JOB_SEEKER" },
         },
         {
-            email: "jobseeker3@example.com",
+            email: faker.internet.email({ firstName: "jobseeker3" }),
             password: "S_password3",
             data: { type: "JOB_SEEKER" },
         },
         {
-            email: "jobseeker4@example.com",
+            email: faker.internet.email({ firstName: "jobseeker4" }),
             password: "S_password4",
             data: { type: "JOB_SEEKER" },
         },
         {
-            email: "jobseeker5@example.com",
+            email: faker.internet.email({ firstName: "jobseeker5" }),
             password: "S_password5",
             data: { type: "JOB_SEEKER" },
         },
 
         // Employers
         {
-            email: "theemployer1@example.com",
+            email: faker.internet.email({ firstName: "employer1" }),
             password: "E_password1",
             data: { type: "EMPLOYER" },
         },
         {
-            email: "theemployer2@example.com",
+            email: faker.internet.email({ firstName: "employer2" }),
             password: "E_password2",
             data: { type: "EMPLOYER" },
         },
         {
-            email: "theemployer3@example.com",
+            email: faker.internet.email({ firstName: "employer3" }),
             password: "E_password3",
             data: { type: "EMPLOYER" },
         },
         {
-            email: "theemployer4@example.com",
+            email: faker.internet.email({ firstName: "employer4" }),
             password: "E_password4",
             data: { type: "EMPLOYER" },
         },
         {
-            email: "theemployer5@example.com",
+            email: faker.internet.email({ firstName: "employer5" }),
             password: "E_password5",
             data: { type: "EMPLOYER" },
         },
@@ -414,6 +415,177 @@ async function insertJobSeekerSkills(jobSeekers: any[], skills: any[]) {
     return data;
 }
 
+async function insertLanguages() {
+    const languages = [
+        {
+            language_id: uuidv4(),
+            name: "Mandarin Chinese",
+            code: "zh-CN",
+            direction: "ltr",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+        {
+            language_id: uuidv4(),
+            name: "Hindi",
+            code: "hi-IN",
+            direction: "ltr",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+        {
+            language_id: uuidv4(),
+            name: "Arabic",
+            code: "ar-SA",
+            direction: "rtl",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+        {
+            language_id: uuidv4(),
+            name: "Portuguese",
+            code: "pt-BR",
+            direction: "ltr",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+        {
+            language_id: uuidv4(),
+            name: "Russian",
+            code: "ru-RU",
+            direction: "ltr",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+    ];
+
+    const { data, error } = await supabase
+        .from("language")
+        .insert(languages)
+        .select();
+    if (error) throw error;
+    return data;
+}
+
+async function insertSocialNetworks() {
+    const socialNetworks = [
+        {
+            social_network_id: uuidv4(),
+            name: "Facebook",
+            code: "facebook",
+            base_url: "https://www.facebook.com/",
+            icon_url: "/icons/facebook.png",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            metadata: { category: "social" },
+        },
+        {
+            social_network_id: uuidv4(),
+            name: "Instagram",
+            code: "instagram",
+            base_url: "https://www.instagram.com/",
+            icon_url: "/icons/instagram.png",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            metadata: { category: "social" },
+        },
+        {
+            social_network_id: uuidv4(),
+            name: "YouTube",
+            code: "youtube",
+            base_url: "https://www.youtube.com/",
+            icon_url: "/icons/youtube.png",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            metadata: { category: "media" },
+        },
+        {
+            social_network_id: uuidv4(),
+            name: "Dribbble",
+            code: "dribbble",
+            base_url: "https://dribbble.com/",
+            icon_url: "/icons/dribbble.png",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            metadata: { category: "creative" },
+        },
+        {
+            social_network_id: uuidv4(),
+            name: "Behance",
+            code: "behance",
+            base_url: "https://www.behance.net/",
+            icon_url: "/icons/behance.png",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            metadata: { category: "creative" },
+        },
+    ];
+
+    const { data, error } = await supabase
+        .from("social_networks")
+        .insert(socialNetworks)
+        .select();
+    if (error) throw error;
+    return data;
+}
+
+async function insertJobSeekerLanguages(jobSeekers: any[], languages: any[]) {
+    const links = [];
+    for (let i = 0; i < jobSeekers.length; i++) {
+        // Each job seeker speaks 2-3 languages
+        const numLanguages = faker.number.int({ min: 2, max: 3 });
+        const selectedLanguages = faker.helpers.arrayElements(
+            languages,
+            numLanguages,
+        );
+
+        for (const language of selectedLanguages) {
+            links.push({
+                job_seeker_id: jobSeekers[i].user_id,
+                language_id: language.language_id,
+                added_at: new Date().toISOString(),
+            });
+        }
+    }
+
+    const { data, error } = await supabase
+        .from("job_seeker_languages")
+        .insert(links);
+    if (error) throw error;
+    return data;
+}
+
+async function insertJobSeekerSocialNetworks(
+    jobSeekers: any[],
+    socialNetworks: any[],
+) {
+    const links = [];
+    for (let i = 0; i < jobSeekers.length; i++) {
+        // Each job seeker has 1-3 social networks
+        const numNetworks = faker.number.int({ min: 1, max: 3 });
+        const selectedNetworks = faker.helpers.arrayElements(
+            socialNetworks,
+            numNetworks,
+        );
+
+        for (const network of selectedNetworks) {
+            links.push({
+                job_seeker_id: jobSeekers[i].user_id,
+                social_network_id: network.social_network_id,
+                username: faker.internet.username(),
+                profile_url: `${network.base_url}${faker.internet.username()}`,
+                added_at: new Date().toISOString(),
+            });
+        }
+    }
+
+    const { data, error } = await supabase
+        .from("job_seeker_social_networks")
+        .insert(links);
+    if (error) throw error;
+    return data;
+}
+
 async function insertJobRequiredSkills(jobs: any[], skills: any[]) {
     const links = [];
     for (const job of jobs) {
@@ -443,6 +615,10 @@ async function main() {
         const employers = await insertEmployers(users);
         await insertCvs(jobSeekers);
         const jobs = await insertJobs(employers);
+        const languages = await insertLanguages();
+        const socialNetworks = await insertSocialNetworks();
+        await insertJobSeekerLanguages(jobSeekers, languages);
+        await insertJobSeekerSocialNetworks(jobSeekers, socialNetworks);
         await insertJobMatches(jobSeekers, jobs);
         await insertApplications(jobSeekers, jobs);
         const sessions = await insertMockInterviews(jobSeekers);
