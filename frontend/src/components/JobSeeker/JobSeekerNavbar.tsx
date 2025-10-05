@@ -19,7 +19,7 @@ const JobSeekerNavbar = ({ activeMenu = "/jobseeker-dashboard", onMenuClick }: J
   };
 
   return (
-    <div className="w-64 bg-white p-4 text-gray-600 shadow-md">
+    <div className="w-64 bg-white p-4 text-gray-600 shadow-lg">
       <div className="mb-8">
         <h2 className="text-xl font-bold">Job Seeker</h2>
         <p className="text-sm text-gray-500">{user?.email}</p>
