@@ -7,6 +7,7 @@ import matchingRoutes from "./routes/matching/matchingRoutes";
 import applicationRoutes from "./routes/application/applicationRoutes";
 import userRoutes from "./routes/users/userRoutes";
 import authRoutes from "./routes/auth/authRoutes";
+import jobSeekerProfileRoutes from "./routes/jobSeekerProfileRoutes";
 import { errorHandler } from "./middleware/error/errorHandler";
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/matching", matchingRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/jobseekers", jobSeekerProfileRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {
