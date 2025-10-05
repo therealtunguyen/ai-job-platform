@@ -4,6 +4,8 @@ import {
     loginUser,
     logoutUser,
     getCurrentUser,
+    refreshToken,
+    updateUserEmail,
 } from "../../services/auth/authService";
 import { uploadAndSetProfileImage } from "../../services/users/profileImageService";
 import { supabase } from "../../supabaseClient";
@@ -113,6 +115,70 @@ export const logout = async (req: Request, res: Response) => {
         res.status(200).json({ message: "Logged out successfully" });
     } catch (error: any) {
         console.error("Logout error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// Refresh token
+export const refresh = async (req: Request, res: Response) => {
+    try {
+        const { refreshToken: refreshTokenValue } = req.body;
+
+        if (!refreshTokenValue) {
+            return res.status(400).json({
+                error: "Refresh token is required",
+            });
+        }
+
+        const result = await refreshToken(refreshTokenValue);
+
+        if (result.error) {
+            return res.status(401).json({
+                error: result.error.message || "Token refresh failed",
+            });
+        }
+
+        if (!result.session) {
+            return res.status(401).json({ error: "No session returned" });
+        }
+
+        res.status(200).json({
+            message: "Token refreshed successfully",
+            accessToken: result.session.access_token,
+            refreshToken: result.session.refresh_token,
+        });
+    } catch (error: any) {
+        console.error("Token refresh error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// Update user email
+export const updateEmail = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.id;
+        const { email } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
+
+        const result = await updateUserEmail(userId, email);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        res.status(200).json({
+            message: "Email updated successfully",
+            data: result.data,
+        });
+    } catch (error: any) {
+        console.error("Update email error:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 };

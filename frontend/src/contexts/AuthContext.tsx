@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (userData: User, token: string) => void;
+  login: (userData: User, token: string, refreshToken?: string) => void;
   logout: () => void;
   updateUser: (updateUserData: Partial<User>) => void;
   checkAuthStatus: () => Promise<void>;
@@ -69,12 +69,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const login = (userData: User, token: string) => {
-    console.log("Login function called with:", { userData, token }); // Debug log
+  const login = (userData: User, token: string, refreshToken?: string) => {
+    console.log("Login function called with:", { userData, token, refreshToken }); // Debug log
     
     localStorage.setItem("token", token);
     localStorage.setItem("key", token); // Để tương thích với axiosInstance
     localStorage.setItem("user", JSON.stringify(userData));
+    
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
 
     console.log("LocalStorage updated, setting state..."); // Debug log
     setUser(userData);

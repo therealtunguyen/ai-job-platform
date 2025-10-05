@@ -8,14 +8,14 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: "Nostidus",
-    email: "xaongoctan@gmail.com",
-    jobTitle: "Full stack & AI Engineer",
+    full_name: "",
+    email: "",
     phone: "",
     address: "",
-    expectedSalary: "",
-    description: "",
-    profileImage: "/me.jpg"
+    preferred_location: "",
+    expected_salary: "",
+    summary: "",
+    profile_picture: "/me.jpg"
   });
 
   // Load user profile data
@@ -28,14 +28,14 @@ const UserProfile = () => {
           const { user, profile } = response.data;
           setProfileData(prev => ({
             ...prev,
-            name: user?.full_name || profile?.full_name || prev.name,
-            email: user?.email || prev.email,
-            jobTitle: profile?.job_title || profile?.position || prev.jobTitle,
-            phone: profile?.phone || prev.phone,
-            address: profile?.address || profile?.location || prev.address,
-            expectedSalary: profile?.expected_salary || profile?.salary_expectation || prev.expectedSalary,
-            description: profile?.bio || profile?.summary || profile?.description || prev.description,
-            profileImage: user?.avatar_url || profile?.profile_image || prev.profileImage
+            full_name: profile?.full_name || "",
+            email: user?.email || "",
+            phone: profile?.phone || "",
+            address: profile?.address || "",
+            preferred_location: profile?.preferred_location || "",
+            expected_salary: profile?.expected_salary?.toString() || "",
+            summary: profile?.summary || "",
+            profile_picture: profile?.profile_picture || "/me.jpg"
           }));
         }
       } catch (error) {
@@ -59,21 +59,33 @@ const UserProfile = () => {
   const handleSaveProfile = async () => {
     try {
       setLoading(true);
-      // Map frontend fields to backend fields
+      
+      // Update profile data (excluding email)
       const updateData = {
-        full_name: profileData.name,
-        job_title: profileData.jobTitle,
+        full_name: profileData.full_name,
         phone: profileData.phone,
         address: profileData.address,
-        expected_salary: profileData.expectedSalary,
-        bio: profileData.description,
+        preferred_location: profileData.preferred_location,
+        expected_salary: profileData.expected_salary ? parseInt(profileData.expected_salary) : null,
+        summary: profileData.summary,
       };
       
       await axiosInstance.put(API_PATHS.USER.PUTUSER, updateData);
+      
+      // Update email separately if it has changed
+      const currentEmail = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).email : '';
+      if (profileData.email !== currentEmail) {
+        await axiosInstance.put(API_PATHS.AUTH.UPDATE_EMAIL, {
+          email: profileData.email
+        });
+      }
+      
       console.log("Profile saved successfully");
+      alert("Profile updated successfully!");
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving profile:", error);
+      alert("Error updating profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -95,15 +107,13 @@ const UserProfile = () => {
       const formData = new FormData();
       formData.append('cv', file);
       
-      await axiosInstance.post(API_PATHS.CV.UPLOAD, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await axiosInstance.post(API_PATHS.CV.UPLOAD, formData);
       
       console.log("CV uploaded successfully");
+      alert("CV uploaded successfully!");
     } catch (error) {
       console.error("Error uploading CV:", error);
+      alert("Error uploading CV. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -112,7 +122,61 @@ const UserProfile = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type (backend only accepts PDF)
+      if (file.type !== 'application/pdf') {
+        alert("Please select a PDF file.");
+        return;
+      }
+      
+      // Validate file size (10MB limit to match backend)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File size must be less than 10MB.");
+        return;
+      }
+      
       handleCVUpload(file);
+    }
+  };
+
+  const handleProfileImageUpload = async (file: File) => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('avatar', file);
+      
+      const response = await axiosInstance.post(API_PATHS.USER.PROFILEIMAGE, formData);
+      
+      if (response.data && response.data.publicUrl) {
+        setProfileData(prev => ({
+          ...prev,
+          profile_picture: response.data.publicUrl
+        }));
+        alert("Profile image uploaded successfully!");
+      }
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      alert("Error uploading profile image. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert("Please select an image file.");
+        return;
+      }
+      
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB.");
+        return;
+      }
+      
+      handleProfileImageUpload(file);
     }
   };
 
@@ -148,23 +212,29 @@ const UserProfile = () => {
                 <div className="flex items-center space-x-6">
                   <div className="relative">
                     <img 
-                      src={profileData.profileImage} 
+                      src={profileData.profile_picture} 
                       className="h-24 w-24 rounded-full border-4 border-white shadow-lg" 
                       alt="Profile"
                     />
-                    <button className="absolute -bottom-1 -right-1 rounded-full bg-white p-2 shadow-md hover:bg-gray-50">
+                    <label className="absolute -bottom-1 -right-1 cursor-pointer rounded-full bg-white p-2 shadow-md hover:bg-gray-50">
                       <Camera className="h-4 w-4 text-gray-600" />
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfileImageChange}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
                   <div className="text-white">
-                    <h2 className="text-2xl font-bold">{profileData.name}</h2>
+                    <h2 className="text-2xl font-bold">{profileData.full_name || "User"}</h2>
                     <div className="mt-1 flex items-center text-blue-100">
                       <Mail className="mr-2 h-4 w-4" />
                       <span>{profileData.email}</span>
                     </div>
                     <div className="mt-2 flex items-center text-blue-100">
                       <User className="mr-2 h-4 w-4" />
-                      <span>{profileData.jobTitle}</span>
+                      <span>{profileData.preferred_location || "Location not set"}</span>
                     </div>
                   </div>
                 </div>
@@ -182,7 +252,7 @@ const UserProfile = () => {
                     className="flex items-center space-x-2 rounded-lg bg-white px-4 py-2 text-blue-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
                   >
                     <User className="h-4 w-4" />
-                    <span>{loading ? 'Creating...' : `${profileData.name}'s Homepage`}</span>
+                    <span>{loading ? 'Creating...' : `${profileData.full_name || 'User'}'s Homepage`}</span>
                   </button>
                 </div>
               </div>
@@ -233,9 +303,9 @@ const UserProfile = () => {
                       <span>Full Name</span>
                     </label>
                     <input
-                      name="name"
+                      name="full_name"
                       type="text"
-                      value={profileData.name}
+                      value={profileData.full_name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
@@ -243,20 +313,20 @@ const UserProfile = () => {
                     />
                   </div>
 
-                  {/* Job Title */}
+                  {/* Preferred Location */}
                   <div className="space-y-2">
                     <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                      <User className="h-4 w-4" />
-                      <span>Job Title</span>
+                      <MapPin className="h-4 w-4" />
+                      <span>Preferred Location</span>
                     </label>
                     <input
-                      name="jobTitle"
+                      name="preferred_location"
                       type="text"
-                      value={profileData.jobTitle}
+                      value={profileData.preferred_location}
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
-                      placeholder="Enter your job title"
+                      placeholder="Enter your preferred location"
                     />
                   </div>
 
@@ -298,45 +368,46 @@ const UserProfile = () => {
                   <div className="space-y-2">
                     <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                       <DollarSign className="h-4 w-4" />
-                      <span>Expected Salary</span>
+                      <span>Expected Salary (VND)</span>
                     </label>
                     <input
-                      name="expectedSalary"
+                      name="expected_salary"
                       type="number"
-                      value={profileData.expectedSalary}
+                      value={profileData.expected_salary}
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
-                      placeholder="Enter expected salary"
+                      placeholder="Enter expected salary in VND"
                     />
                   </div>
 
-                  {/* Email (Read-only) */}
+                  {/* Email */}
                   <div className="space-y-2">
                     <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                       <Mail className="h-4 w-4" />
                       <span>Email Address</span>
                     </label>
                     <input
+                      name="email"
                       type="email"
                       value={profileData.email}
-                      disabled
-                      className="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-3 text-gray-500"
-                      placeholder="Email address"
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                      placeholder="Enter your email address"
                     />
-                    <p className="text-xs text-gray-500">Email cannot be changed</p>
                   </div>
                 </div>
 
-                {/* Description */}
+                {/* Summary */}
                 <div className="space-y-2">
                   <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                     <FileText className="h-4 w-4" />
                     <span>Professional Summary</span>
                   </label>
                   <textarea
-                    name="description"
-                    value={profileData.description}
+                    name="summary"
+                    value={profileData.summary}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     rows={4}
@@ -371,19 +442,24 @@ const UserProfile = () => {
                   Drag and drop your CV here, or click to browse
                 </p>
                 <div className="mb-4 text-sm text-gray-500">
-                  <p>Supported formats: PDF, DOC, DOCX</p>
-                  <p>Maximum file size: 5MB</p>
+                  <p>Supported formats: PDF only</p>
+                  <p>Maximum file size: 10MB</p>
                 </div>
                 <input
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf"
                   onChange={handleFileChange}
                   className="hidden"
                   id="cv-upload"
+                  disabled={loading}
                 />
                 <label
                   htmlFor="cv-upload"
-                  className="cursor-pointer rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 transition-colors"
+                  className={`cursor-pointer rounded-lg px-6 py-2 text-white transition-colors ${
+                    loading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 >
                   {loading ? 'Uploading...' : 'Choose File'}
                 </label>

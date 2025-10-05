@@ -79,8 +79,10 @@ const Login = () => {
 
       // Kiểm tra response structure - token nằm trong session
       const token = response.data?.session?.access_token || response.data?.token || response.data?.accessToken || response.data?.access_token;
+      const refreshToken = response.data?.session?.refresh_token;
       
       console.log("Extracted token:", token); // Debug log
+      console.log("Extracted refresh token:", refreshToken); // Debug log
 
       if(token) {
         // Lấy user data từ response và map user_type thành role
@@ -93,9 +95,9 @@ const Login = () => {
           name: backendUser.name
         };
         console.log("Calling login with:", userData, token); // Debug log
-        login(userData, token);
+        login(userData, token, refreshToken);
 
-        console.log("Redirecting to /find-jobs..."); // Debug log
+        console.log("Redirecting to /jobseeker-dashboard..."); // Debug log
         // Redirect ngay lập tức thay vì chờ 2 giây
         window.location.href = "/jobseeker-dashboard";
       } else {
