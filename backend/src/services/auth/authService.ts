@@ -314,6 +314,52 @@ export const getCurrentUser = async () => {
 };
 
 /**
+ * Refresh a JWT token
+ */
+export const refreshToken = async (refreshToken: string) => {
+    try {
+        const { data, error } = await supabase.auth.refreshSession({
+            refresh_token: refreshToken
+        });
+
+        if (error) {
+            console.error("Token refresh error:", error.message);
+            return { session: null, error };
+        }
+
+        if (data.session) {
+            return { session: data.session, error: null };
+        }
+
+        return { session: null, error: { message: "No session returned" } };
+    } catch (error: any) {
+        console.error("Token refresh error:", error);
+        return { session: null, error };
+    }
+};
+
+/**
+ * Update user email
+ */
+export const updateUserEmail = async (userId: string, newEmail: string) => {
+    try {
+        const { data, error } = await supabase.auth.admin.updateUserById(userId, {
+            email: newEmail
+        });
+
+        if (error) {
+            console.error("Email update error:", error.message);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error: any) {
+        console.error("Email update error:", error);
+        return { success: false, error: error.message || "Internal server error" };
+    }
+};
+
+/**
  * Verify a JWT token
  */
 export const verifyToken = async (token: string) => {

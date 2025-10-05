@@ -6,6 +6,7 @@ export const API_PATHS = {
     LOGIN: "/api/auth/login",
     LOGOUT: "/api/auth/logout",
     ME: "/api/auth/me",
+    UPDATE_EMAIL: "/api/auth/email",
   },
   CV : {
     UPLOAD: "/api/cv/upload",
@@ -27,8 +28,8 @@ export const API_PATHS = {
     UPDATE_EMPLOYER: "/api/users/employer",
     UPDATE_EMPLOYER_WITH_IMAGE: "/api/users/employer/profile-and-image",
     // Profile image routes
-    UPLOAD_IMAGE: "/api/users/me/image",
-    DELETE_IMAGE: "/api/users/me/image",
+    UPLOAD_IMAGE: "/api/users/profile-image/upload",
+    DELETE_IMAGE: "/api/users/profile-image/delete",
   },
   JOB_SEEKER: {
     LANGUAGES: "/api/jobseekers/languages",
