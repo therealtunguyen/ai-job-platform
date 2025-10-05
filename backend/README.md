@@ -84,6 +84,8 @@ src/
 │   ├── jobs/            # Job posting and management
 │   ├── matching/        # Job matching algorithms
 │   └── users/           # User profile and management
+│       ├── profileUpdateController.ts     # Profile update operations
+│       └── profileImageController.ts      # Profile image operations
 ├── middleware/          # Express middleware (auth, validation, etc.)
 ├── routes/              # API route definitions
 │   ├── application/     # Application API routes
@@ -93,6 +95,8 @@ src/
 │   ├── jobs/           # Job API routes
 │   ├── matching/       # Matching API routes
 │   └── users/          # User API routes
+│       ├── profileUpdateRoutes.ts         # Profile update API routes
+│       └── profileImageRoutes.ts          # Profile image API routes
 ├── services/            # Business logic and external service integration
 │   ├── application/     # Application processing services
 │   ├── auth/           # Authentication services
@@ -101,6 +105,8 @@ src/
 │   ├── jobs/           # Job services
 │   ├── matching/       # Job matching services
 │   └── users/          # User services (including new profileImageService)
+│       ├── profileUpdateService.ts        # Profile update business logic
+│       └── profileImageService.ts         # Profile image business logic
 ├── types/               # TypeScript type definitions
 ├── utils/               # Utility functions and helpers (file upload, etc.)
 ├── index.ts            # Application entry point
