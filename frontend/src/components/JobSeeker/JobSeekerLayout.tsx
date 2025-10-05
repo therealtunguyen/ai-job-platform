@@ -15,13 +15,11 @@ const JobSeekerLayout = ({ children, activeMenu = "/jobseeker-dashboard" }: JobS
 
   return (
     <div className="flex min-h-screen pt-16">
-      {/* Navbar */}
       <JobSeekerNavbar 
         activeMenu={currentActiveMenu} 
         onMenuClick={handleMenuClick} 
       />
 
-      {/* Main Content */}
       <div className="flex-1">
         {children}
       </div>
