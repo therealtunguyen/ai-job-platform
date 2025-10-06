@@ -1,30 +1,28 @@
 import { supabase } from "../../supabaseClient";
-import type { PostgrestSingleResponse } from "@supabase/supabase-js";
+import type { PostgrestSingleResponse, PostgrestResponse } from "@supabase/supabase-js";
 
 export type ApplicationPayload = {
-  candidate_id?: string;
-  candidate_name?: string;
+  candidate_id: string;
   job_id: string;
-  status?: string;
-  applied_at?: string; // ISO string
-  [key: string]: any;
+  status?: "submitted" | "reviewed" | "accepted" | "rejected" | "withdrawn" | "shortlisted" | "interviewed" | "offered";
+  applied_at?: string;
 };
 
 // Placeholder for application tracking service
 export const createApplication = async (payload: ApplicationPayload) => {
-  if (!payload.job_id) throw new Error("Missing required field: job_id");
-  if (!payload.candidate_id && !payload.candidate_name)
-    throw new Error("Missing required field: candidate_id or candidate_name");
+   if (!payload.job_id) throw new Error("Missing required field: job_id");
+  if (!payload.candidate_id) throw new Error("Missing required field: candidate_id");
 
   const record = {
-    ...payload,
-    status: payload.status ? payload.status.toString().toLowerCase() : "submitted",
+    candidate_id: payload.candidate_id,
+    job_id: payload.job_id,
+    status: payload.status || "SUBMITTED",
     applied_at: payload.applied_at ?? new Date().toISOString(),
   };
 
   const { data, error }: PostgrestSingleResponse<any> = await supabase
     .from("applications")
-    .insert([record])
+    .insert(record)
     .select()
     .single();
 
@@ -32,21 +30,15 @@ export const createApplication = async (payload: ApplicationPayload) => {
   return data;
 };
 
-export const listApplicationsByEmployer = async (employer_id: string) => {
-  if (!employer_id) throw new Error("Missing employer_id");
 
-  const { data, error }: PostgrestSingleResponse<any[]> = await supabase
+export const listApplicationsByJob = async (job_id: string) => {
+  if (!job_id) throw new Error("Missing job_id");
+
+  const { data, error }: PostgrestResponse<any[]> = await supabase
     .from("applications")
     .select("*")
-    .eq("employer_id", employer_id)
-    .limit(100);
+    .eq("job_id", job_id);
 
-  if (error) throw new Error(error.message || "Failed to fetch applications");
-  return data;
-};
-
-export const listAllApplications = async () => {
-  const { data, error } = await supabase.from("applications").select("*").limit(100);
   if (error) throw new Error(error.message || "Failed to fetch applications");
   return data;
 };

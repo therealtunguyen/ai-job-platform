@@ -15,19 +15,19 @@ export const create = async (req: Request, res: Response) => {
 };
 
 // Placeholder for getting application status
-export const getAll = async (req: Request, res: Response) => {
-  const employer_id = req.query.employer_id as string | undefined;
+export const getByJob = async (req: Request, res: Response) => {
+  const job_id = req.query.job_id as string | undefined;
 
   try {
-    const rows = employer_id
-      ? await applicationService.listApplicationsByEmployer(employer_id)
-      : await applicationService.listAllApplications(); // new fallback
+    if (!job_id) {
+      return res.status(400).json({ error: "Missing required query parameter: job_id" });
+    }
+
+    const rows = await applicationService.listApplicationsByJob(job_id);
     return res.json({ data: rows });
   } catch (err) {
-    console.error("Error listing applications:", err);
-    const message = err instanceof Error ? err.message : "Unknown server error";
-    return res.status(500).json({ error: message });
+    console.error("Error fetching applications by job:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 };
-
 
