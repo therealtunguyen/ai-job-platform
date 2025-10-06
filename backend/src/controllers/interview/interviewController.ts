@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
-import { startInterviewService } from "../../services/interview/interviewService";
+import {
+    startInterviewService,
+    updateInterviewMetrics,
+    submitAnswerService,
+} from "../../services/interview/interviewService";
+import {
+    evaluateInterviewResponse,
+    type ResponseFeedback,
+} from "../../utils/aiResponseEvaluator";
 
 // Function to start an interview
 export const startInterview = async (req: Request, res: Response) => {
@@ -10,7 +18,8 @@ export const startInterview = async (req: Request, res: Response) => {
             return res.status(401).json({ error: "User not authenticated" });
         }
 
-        const { jobId, interviewType, aiModel, difficulty, customConfig } = req.body;
+        const { jobId, interviewType, aiModel, difficulty, customConfig } =
+            req.body;
 
         // Validate required fields
         if (!user.id) {
@@ -21,38 +30,46 @@ export const startInterview = async (req: Request, res: Response) => {
         const errors: string[] = [];
 
         // Validate jobId if provided (should be a valid UUID format)
-        if (jobId && typeof jobId !== 'string') {
-            errors.push('Job ID must be a string');
-        } else if (jobId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
-            errors.push('Job ID must be a valid UUID');
+        if (jobId && typeof jobId !== "string") {
+            errors.push("Job ID must be a string");
+        } else if (
+            jobId &&
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+                jobId,
+            )
+        ) {
+            errors.push("Job ID must be a valid UUID");
         }
 
         // Validate interviewType
-        if (interviewType && typeof interviewType !== 'string') {
-            errors.push('Interview type must be a string');
+        if (interviewType && typeof interviewType !== "string") {
+            errors.push("Interview type must be a string");
         }
 
         // Validate aiModel if provided
-        if (aiModel && typeof aiModel !== 'string') {
-            errors.push('AI model must be a string');
+        if (aiModel && typeof aiModel !== "string") {
+            errors.push("AI model must be a string");
         }
 
         // Validate difficulty if provided
-        if (difficulty && typeof difficulty !== 'string') {
-            errors.push('Difficulty must be a string');
-        } else if (difficulty && !['easy', 'medium', 'hard'].includes(difficulty)) {
-            errors.push('Difficulty must be one of: easy, medium, hard');
+        if (difficulty && typeof difficulty !== "string") {
+            errors.push("Difficulty must be a string");
+        } else if (
+            difficulty &&
+            !["easy", "medium", "hard"].includes(difficulty)
+        ) {
+            errors.push("Difficulty must be one of: easy, medium, hard");
         }
 
         // Validate customConfig if provided
-        if (customConfig !== undefined && typeof customConfig !== 'object') {
-            errors.push('Custom config must be an object');
+        if (customConfig !== undefined && typeof customConfig !== "object") {
+            errors.push("Custom config must be an object");
         }
 
         if (errors.length > 0) {
-            return res.status(400).json({ 
-                error: "Validation failed", 
-                details: errors 
+            return res.status(400).json({
+                error: "Validation failed",
+                details: errors,
             });
         }
 
@@ -82,7 +99,171 @@ export const startInterview = async (req: Request, res: Response) => {
     }
 };
 
-// Placeholder for submitting interview answers
-export const submitAnswer = (req: Request, res: Response) => {
-    res.status(200).json({ message: "Answer submitted (placeholder)" });
+// Function to submit an answer to an interview question
+export const submitAnswer = async (req: Request, res: Response) => {
+    try {
+        // Extract user from request (assuming authentication middleware adds it)
+        const user = (req as any).user;
+        if (!user) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
+        const { interviewId } = req.params;
+        const { entryId, responseText, questionIndex } = req.body;
+
+        // Validate required fields
+        if (!interviewId) {
+            return res.status(400).json({ error: "Interview ID is required" });
+        }
+
+        if (!entryId) {
+            return res.status(400).json({ error: "Entry ID is required" });
+        }
+
+        if (!responseText) {
+            return res.status(400).json({ error: "Response text is required" });
+        }
+
+        // Validate UUID formats
+        const uuidRegex =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(interviewId)) {
+            return res
+                .status(400)
+                .json({ error: "Invalid interview ID format" });
+        }
+
+        if (!uuidRegex.test(entryId)) {
+            return res.status(400).json({ error: "Invalid entry ID format" });
+        }
+
+        // Validate questionIndex if provided
+        if (
+            questionIndex !== undefined &&
+            (typeof questionIndex !== "number" || questionIndex < 1)
+        ) {
+            return res.status(400).json({
+                error: "Question index must be a positive number if provided",
+            });
+        }
+
+        // Call the service to submit the answer
+        const result = await submitAnswerService(
+            user.id,
+            interviewId,
+            entryId,
+            responseText,
+            questionIndex,
+        );
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        // Generate AI feedback for the response
+        let evaluationResult;
+        try {
+            // Get the question text for context in evaluation
+            const { questionText, questionType, difficulty, jobTitle } =
+                result.questionContext;
+
+            evaluationResult = await evaluateInterviewResponse({
+                question: questionText,
+                user_response: responseText,
+                question_type: questionType,
+                difficulty: difficulty,
+                job_role: jobTitle,
+                user_id: user.id,
+            });
+
+            // Update the conversation entry with AI evaluation
+            await updateConversationEntryWithAIResult(
+                entryId,
+                evaluationResult.feedback,
+            );
+
+            // Create interview feedback record
+            await createInterviewFeedbackRecord(
+                interviewId,
+                entryId,
+                evaluationResult.feedback,
+                user.id,
+            );
+
+            // Update the mock interview session metrics
+            await updateInterviewMetrics(interviewId);
+        } catch (evalError: any) {
+            console.error("Error generating AI feedback:", evalError);
+            // Don't fail the submission if AI evaluation fails, just log the error
+        }
+
+        res.status(200).json({
+            message: "Answer submitted successfully",
+            entryId: result.entryId,
+            questionIndex: result.questionIndex,
+            responseText: result.responseText,
+            aiFeedback: evaluationResult?.feedback || null,
+        });
+    } catch (error: any) {
+        console.error("Error submitting answer:", error);
+        res.status(500).json({
+            error: "Failed to submit answer",
+            details: error.message,
+        });
+    }
 };
+
+// Helper function to update conversation entry with AI results
+async function updateConversationEntryWithAIResult(
+    entryId: string,
+    feedback: ResponseFeedback,
+) {
+    const { supabase } = await import("../../supabaseClient");
+
+    const { error } = await supabase
+        .from("conversation_entries")
+        .update({
+            ai_evaluation_score: feedback.evaluation_score,
+            ai_feedback: feedback.feedback_text,
+            suggested_improvements: feedback.suggested_improvements,
+            response_quality: feedback.response_quality,
+        })
+        .eq("entry_id", entryId);
+
+    if (error) {
+        console.error(
+            "Error updating conversation entry with AI results:",
+            error,
+        );
+        throw error;
+    }
+}
+
+// Helper function to create interview feedback record
+async function createInterviewFeedbackRecord(
+    sessionId: string,
+    entryId: string,
+    feedback: ResponseFeedback,
+    userId: string,
+) {
+    const { supabase } = await import("../../supabaseClient");
+
+    const feedbackRecord = {
+        session_id: sessionId,
+        entry_id: entryId,
+        feedback_text: feedback.feedback_text,
+        ai_suggestion: feedback.suggested_improvements,
+        score_obtained: feedback.evaluation_score,
+        feedback_category: feedback.response_quality,
+        created_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+        .from("interview_feedback")
+        .insert(feedbackRecord);
+
+    if (error) {
+        console.error("Error creating interview feedback record:", error);
+        throw error;
+    }
+}

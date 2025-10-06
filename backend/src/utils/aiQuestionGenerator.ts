@@ -133,8 +133,6 @@ async function generateInterviewQuestions(
             console.log(
                 `AI call success: user=${user_id}, model=${OPENAI_MODEL}, tokens=${tokens}, latency=${latency}ms`,
             );
-            console.log(`Full prompt: ${prompt}`);
-            console.log(`AI raw response: ${rawResponse}`);
 
             // Handle different possible response formats from the AI
             const parsed: any = JSON.parse(rawResponse);

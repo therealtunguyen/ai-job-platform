@@ -217,12 +217,12 @@ export const startInterviewService = async (
         }
 
         // Save each generated question to the conversation_entries table
-        const conversationEntries = questions.map(question => ({
+        const conversationEntries = questions.map((question) => ({
             session_id: data.session_id,
             question_text: question.prompt,
             question_type: question.type,
             difficulty: question.difficulty,
-            question_asked_at: new Date().toISOString()
+            question_asked_at: new Date().toISOString(),
         }));
 
         if (conversationEntries.length > 0) {
@@ -320,5 +320,231 @@ export const updateInterviewSessionService = async (
     } catch (error: any) {
         console.error("Error updating interview session:", error);
         throw new Error(`Error updating interview session: ${error.message}`);
+    }
+};
+
+// Interface for submit answer service response
+export interface SubmitAnswerResponse {
+    success: boolean;
+    entryId?: string;
+    questionIndex?: number;
+    responseText?: string;
+    error?: string;
+    aiFeedback?: any;
+    questionContext: {
+        questionText: string;
+        questionType: string;
+        difficulty: "easy" | "medium" | "hard";
+        jobTitle?: string;
+    };
+}
+
+/**
+ * Service function to submit an answer to an interview question
+ */
+export const submitAnswerService = async (
+    userId: string,
+    sessionId: string,
+    entryId: string,
+    responseText: string,
+    questionIndex?: number,
+): Promise<SubmitAnswerResponse> => {
+    try {
+        // First, verify that the user owns this interview session
+        const { data: sessionData, error: sessionError } = await supabase
+            .from("mock_interviews")
+            .select("session_id, candidate_id, config")
+            .eq("session_id", sessionId)
+            .eq("candidate_id", userId)
+            .single();
+
+        if (sessionError || !sessionData) {
+            return {
+                success: false,
+                error: "Interview session not found or access denied",
+                questionContext: {
+                    questionText: "",
+                    questionType: "",
+                    difficulty: "medium",
+                    jobTitle: undefined,
+                },
+            };
+        }
+
+        // Verify that the entry belongs to this session and user
+        const { data: entryData, error: entryError } = await supabase
+            .from("conversation_entries")
+            .select("entry_id, question_text, question_type, difficulty")
+            .eq("entry_id", entryId)
+            .eq("session_id", sessionId)
+            .single();
+
+        if (entryError || !entryData) {
+            return {
+                success: false,
+                error: "Question entry not found",
+                questionContext: {
+                    questionText: "",
+                    questionType: "",
+                    difficulty: "medium",
+                    jobTitle: undefined,
+                },
+            };
+        }
+
+        // Update the conversation entry with the user's response
+        const { error: responseError } = await supabase
+            .from("conversation_entries")
+            .update({
+                response_text: responseText,
+                response_submitted_at: new Date().toISOString(),
+            })
+            .eq("entry_id", entryId)
+            .eq("session_id", sessionId);
+
+        if (responseError) {
+            return {
+                success: false,
+                error: `Failed to save response: ${responseError.message}`,
+                questionContext: {
+                    questionText: entryData.question_text,
+                    questionType: entryData.question_type,
+                    difficulty: entryData.difficulty as
+                        | "easy"
+                        | "medium"
+                        | "hard",
+                    jobTitle: undefined,
+                },
+            };
+        }
+
+        // Check if all questions are answered to update session status
+        const { count: totalQuestions } = await supabase
+            .from("conversation_entries")
+            .select("*", { count: "exact" })
+            .eq("session_id", sessionId);
+
+        const { count: answeredQuestions } = await supabase
+            .from("conversation_entries")
+            .select("*", { count: "exact" })
+            .eq("session_id", sessionId)
+            .not("response_text", "is", null);
+
+        // Update session status if all questions are answered
+        if (answeredQuestions === totalQuestions) {
+            const { error: sessionUpdateError } = await supabase
+                .from("mock_interviews")
+                .update({
+                    status: "COMPLETED",
+                    completed_at: new Date().toISOString(),
+                })
+                .eq("session_id", sessionId);
+
+            if (sessionUpdateError) {
+                console.error(
+                    "Error updating session to completed:",
+                    sessionUpdateError,
+                );
+                // Don't fail the submission if this update fails
+            }
+        }
+
+        // Get job title for context if available
+        let jobTitle: string | undefined;
+        if (sessionData.config && sessionData.config.jobId) {
+            const { data: jobData, error: jobError } = await supabase
+                .from("jobs")
+                .select("title")
+                .eq("job_id", sessionData.config.jobId)
+                .single();
+
+            if (!jobError && jobData) {
+                jobTitle = jobData.title;
+            }
+        }
+
+        return {
+            success: true,
+            entryId: entryId,
+            questionIndex: questionIndex,
+            responseText: responseText,
+            questionContext: {
+                questionText: entryData.question_text,
+                questionType: entryData.question_type,
+                difficulty: entryData.difficulty as "easy" | "medium" | "hard",
+                jobTitle: jobTitle,
+            },
+        };
+    } catch (error: any) {
+        console.error("Error in submitAnswerService:", error);
+        return {
+            success: false,
+            error: error.message,
+            questionContext: {
+                questionText: "",
+                questionType: "",
+                difficulty: "medium",
+                jobTitle: undefined,
+            },
+        };
+    }
+};
+
+/**
+ * Function to update interview metrics after responses are submitted
+ */
+export const updateInterviewMetrics = async (sessionId: string) => {
+    try {
+        // Calculate total questions
+        const { count: total_q } = await supabase
+            .from("conversation_entries")
+            .select("*", { count: "exact" })
+            .eq("session_id", sessionId);
+
+        // Calculate answered questions
+        const { count: answered_q } = await supabase
+            .from("conversation_entries")
+            .select("*", { count: "exact" })
+            .eq("session_id", sessionId)
+            .not("response_text", "is", null);
+
+        // Calculate average score
+        const { data: avgScoreData, error: avgScoreError } = await supabase
+            .from("conversation_entries")
+            .select("AVG(ai_evaluation_score)")
+            .eq("session_id", sessionId)
+            .not("ai_evaluation_score", "is", null);
+
+        let avg_score: number | null = 0;
+        if (
+            !avgScoreError &&
+            avgScoreData &&
+            avgScoreData[0] &&
+            avgScoreData[0].AVG !== null
+        ) {
+            avg_score = Number(avgScoreData[0].AVG);
+        }
+
+        // Update the mock_interviews table
+        const { error } = await supabase
+            .from("mock_interviews")
+            .update({
+                total_questions: total_q ?? 0,
+                answered_questions: answered_q ?? 0,
+                completion_percentage:
+                    total_q && total_q > 0
+                        ? ((answered_q ?? 0) / total_q) * 100
+                        : 0,
+                overall_score: avg_score ? avg_score * (total_q ?? 0) : 0,
+            })
+            .eq("session_id", sessionId);
+
+        if (error) {
+            console.error("Error updating interview metrics:", error);
+            throw error;
+        }
+    } catch (error: any) {
+        console.error("Error updating interview metrics:", error);
+        throw error;
     }
 };
