@@ -18,7 +18,7 @@ interface StartInterviewResponse {
     status: string;
     startedAt: string;
     aiConfig: any;
-    questions?: Question[];
+    questions?: (Question & { entryId: string | null })[];
     message?: string;
 }
 
@@ -225,24 +225,35 @@ export const startInterviewService = async (
             question_asked_at: new Date().toISOString(),
         }));
 
+        let insertedEntries: { entry_id: string }[] = [];
         if (conversationEntries.length > 0) {
-            const { error: conversationError } = await supabase
-                .from("conversation_entries")
-                .insert(conversationEntries);
+            const { data: insertedData, error: conversationError } =
+                await supabase
+                    .from("conversation_entries")
+                    .insert(conversationEntries)
+                    .select("entry_id"); // Select the entry_id of inserted records
 
             if (conversationError) {
                 console.error(
                     `Failed to save conversation entries: ${conversationError.message}`,
                 );
+            } else {
+                insertedEntries = insertedData;
             }
         }
+
+        // Create a mapping of questions with their corresponding entry IDs
+        const questionsWithEntryIds = questions.map((question, index) => ({
+            ...question,
+            entryId: insertedEntries[index]?.entry_id || null,
+        }));
 
         return {
             sessionId: data.session_id,
             status: "IN_PROGRESS", // Return the updated status
             startedAt: data.started_at,
             aiConfig: newInterview.config,
-            questions: questions,
+            questions: questionsWithEntryIds,
             message: "Interview started successfully",
         };
     } catch (error: any) {
