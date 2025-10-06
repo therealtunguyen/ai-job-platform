@@ -102,8 +102,6 @@ async function evaluateInterviewResponse(
             console.log(
                 `AI evaluation success: user=${user_id}, model=${OPENAI_MODEL}, tokens=${tokens}, latency=${latency}ms`,
             );
-            console.log(`Full prompt: ${prompt}`);
-            console.log(`AI raw response: ${rawResponse}`);
 
             // Parse the response
             let parsed: any;

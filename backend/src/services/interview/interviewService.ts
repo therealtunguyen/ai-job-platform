@@ -278,7 +278,28 @@ export const startInterviewService = async (
     }
 };
 
-export const getInterviewSessionService = async (
+export const getUserInterviewsService = async (candidateId: string) => {
+    try {
+        const { data, error } = await supabase
+            .from("mock_interviews")
+            .select("*")
+            .eq("candidate_id", candidateId)
+            .order("started_at", { ascending: false }); // Order by most recent first
+
+        if (error) {
+            throw new Error(
+                `Failed to retrieve user interviews: ${error.message}`,
+            );
+        }
+
+        return data;
+    } catch (error: any) {
+        console.error("Error retrieving user interviews:", error);
+        throw new Error(`Error retrieving user interviews: ${error.message}`);
+    }
+};
+
+export const getInterviewByIdService = async (
     sessionId: string,
     candidateId: string,
 ) => {
@@ -287,7 +308,7 @@ export const getInterviewSessionService = async (
             .from("mock_interviews")
             .select("*")
             .eq("session_id", sessionId)
-            .eq("candidate_id", candidateId)
+            .eq("candidate_id", candidateId) // Verify that the user owns this session
             .single();
 
         if (error) {
@@ -302,7 +323,7 @@ export const getInterviewSessionService = async (
 
         return data;
     } catch (error: any) {
-        console.error("Error retrieving interview session:", error);
+        console.error("Error retrieving interview by ID:", error);
         throw new Error(`Error retrieving interview session: ${error.message}`);
     }
 };
@@ -338,7 +359,6 @@ export const updateInterviewSessionService = async (
 export interface SubmitAnswerResponse {
     success: boolean;
     entryId?: string;
-    questionIndex?: number;
     responseText?: string;
     error?: string;
     aiFeedback?: any;
@@ -358,7 +378,6 @@ export const submitAnswerService = async (
     sessionId: string,
     entryId: string,
     responseText: string,
-    questionIndex?: number,
 ): Promise<SubmitAnswerResponse> => {
     try {
         // First, verify that the user owns this interview session
@@ -410,8 +429,7 @@ export const submitAnswerService = async (
                 response_text: responseText,
                 response_submitted_at: new Date().toISOString(),
             })
-            .eq("entry_id", entryId)
-            .eq("session_id", sessionId);
+            .eq("entry_id", entryId);
 
         if (responseError) {
             return {
@@ -477,7 +495,6 @@ export const submitAnswerService = async (
         return {
             success: true,
             entryId: entryId,
-            questionIndex: questionIndex,
             responseText: responseText,
             questionContext: {
                 questionText: entryData.question_text,

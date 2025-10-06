@@ -3,11 +3,15 @@ import { authenticateToken } from "../../middleware/auth/jwtAuth";
 import {
     startInterview,
     submitAnswer,
+    getUserInterviews,
+    getInterviewById,
 } from "../../controllers/interview/interviewController";
 
 const router = express.Router();
 
-router.post("/start", authenticateToken, startInterview);
+router.post("/create", authenticateToken, startInterview);
 router.post("/:interviewId/submit", authenticateToken, submitAnswer);
+router.get("/:interviewId", authenticateToken, getInterviewById);
+router.get("/", authenticateToken, getUserInterviews);
 
 export default router;

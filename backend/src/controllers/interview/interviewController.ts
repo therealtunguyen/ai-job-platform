@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
+import { supabase } from "../../supabaseClient";
 import {
     startInterviewService,
     updateInterviewMetrics,
     submitAnswerService,
+    getUserInterviewsService,
+    getInterviewByIdService,
 } from "../../services/interview/interviewService";
 import {
     evaluateInterviewResponse,
@@ -99,6 +102,88 @@ export const startInterview = async (req: Request, res: Response) => {
     }
 };
 
+// Function to get all interview sessions for a user
+export const getUserInterviews = async (req: Request, res: Response) => {
+    try {
+        // Extract user from request (assuming authentication middleware adds it)
+        const user = (req as any).user;
+        if (!user) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
+        // Call the service to get user interviews
+        const interviews = await getUserInterviewsService(user.id);
+
+        res.status(200).json({
+            interviews: interviews,
+            count: interviews.length,
+            message: "Interviews retrieved successfully",
+        });
+    } catch (error: any) {
+        console.error("Error getting user interviews:", error);
+        res.status(500).json({
+            error: "Failed to retrieve user interviews",
+            details: error.message,
+        });
+    }
+};
+
+// Function to get a specific interview by ID
+export const getInterviewById = async (req: Request, res: Response) => {
+    try {
+        // Extract user from request (assuming authentication middleware adds it)
+        const user = (req as any).user;
+        if (!user) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
+        const { interviewId } = req.params;
+
+        // Validate required fields
+        if (!interviewId) {
+            return res.status(400).json({ error: "Session ID is required" });
+        }
+
+        // Validate UUID format
+        const uuidRegex =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(interviewId)) {
+            return res.status(400).json({ error: "Invalid session ID format" });
+        }
+
+        // Call the service to get the specific interview
+        const interview = await getInterviewByIdService(interviewId, user.id);
+
+        // Get the conversation entries for this interview session
+        const { data: conversationEntries, error: entriesError } =
+            await supabase
+                .from("conversation_entries")
+                .select("*")
+                .eq("session_id", interviewId)
+                .order("question_asked_at", { ascending: true });
+
+        if (entriesError) {
+            console.error(
+                "Error retrieving conversation entries:",
+                entriesError,
+            );
+            // Continue without entries since interview data is available
+        }
+
+        res.status(200).json({
+            interview: interview,
+            conversationEntries: conversationEntries || [],
+            message: "Interview retrieved successfully",
+        });
+    } catch (error: any) {
+        console.error("Error getting interview by ID:", error);
+        res.status(500).json({
+            error: "Failed to retrieve interview",
+            details: error.message,
+        });
+    }
+};
+
 // Function to submit an answer to an interview question
 export const submitAnswer = async (req: Request, res: Response) => {
     try {
@@ -109,7 +194,7 @@ export const submitAnswer = async (req: Request, res: Response) => {
         }
 
         const { interviewId } = req.params;
-        const { entryId, responseText, questionIndex } = req.body;
+        const { entryId, responseText } = req.body;
 
         // Validate required fields
         if (!interviewId) {
@@ -137,23 +222,12 @@ export const submitAnswer = async (req: Request, res: Response) => {
             return res.status(400).json({ error: "Invalid entry ID format" });
         }
 
-        // Validate questionIndex if provided
-        if (
-            questionIndex !== undefined &&
-            (typeof questionIndex !== "number" || questionIndex < 1)
-        ) {
-            return res.status(400).json({
-                error: "Question index must be a positive number if provided",
-            });
-        }
-
         // Call the service to submit the answer
         const result = await submitAnswerService(
             user.id,
             interviewId,
             entryId,
             responseText,
-            questionIndex,
         );
 
         if (!result.success) {
@@ -187,7 +261,6 @@ export const submitAnswer = async (req: Request, res: Response) => {
                 interviewId,
                 entryId,
                 evaluationResult.feedback,
-                user.id,
             );
 
             // Update the mock interview session metrics
@@ -200,7 +273,6 @@ export const submitAnswer = async (req: Request, res: Response) => {
         res.status(200).json({
             message: "Answer submitted successfully",
             entryId: result.entryId,
-            questionIndex: result.questionIndex,
             responseText: result.responseText,
             aiFeedback: evaluationResult?.feedback || null,
         });
@@ -244,7 +316,6 @@ async function createInterviewFeedbackRecord(
     sessionId: string,
     entryId: string,
     feedback: ResponseFeedback,
-    userId: string,
 ) {
     const { supabase } = await import("../../supabaseClient");
 
