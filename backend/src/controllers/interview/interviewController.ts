@@ -6,6 +6,7 @@ import {
     submitAnswerService,
     getUserInterviewsService,
     getInterviewByIdService,
+    abandonInterviewSession,
 } from "../../services/interview/interviewService";
 import {
     evaluateInterviewResponse,
@@ -338,3 +339,44 @@ async function createInterviewFeedbackRecord(
         throw error;
     }
 }
+
+// Function to abandon an interview session
+export const abandonInterview = async (req: Request, res: Response) => {
+    try {
+        // Extract user from request (assuming authentication middleware adds it)
+        const user = (req as any).user;
+        if (!user) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
+        const { interviewId } = req.params;
+
+        // Validate required fields
+        if (!interviewId) {
+            return res.status(400).json({ error: "Interview ID is required" });
+        }
+
+        // Validate UUID format
+        const uuidRegex =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(interviewId)) {
+            return res.status(400).json({ error: "Invalid interview ID format" });
+        }
+
+        // Call the service to abandon the interview
+        const result = await abandonInterviewSession(interviewId, user.id);
+
+        res.status(200).json({
+            sessionId: result.session_id,
+            status: result.status,
+            completedAt: result.completed_at,
+            message: "Interview session abandoned successfully",
+        });
+    } catch (error: any) {
+        console.error("Error abandoning interview:", error);
+        res.status(500).json({
+            error: "Failed to abandon interview session",
+            details: error.message,
+        });
+    }
+};

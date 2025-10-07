@@ -193,7 +193,7 @@ export const startInterviewService = async (
             user_id: candidateId,
         });
 
-        // Update the interview record with AI response and change status to IN_PROGRESS
+        // Update the interview record with AI response (keep status as STARTED)
         const updatedConfig = {
             ...(newInterview.config as Record<string, any>),
             questions: questions,
@@ -204,7 +204,7 @@ export const startInterviewService = async (
             .update({
                 ai_raw_response: rawResponse,
                 config: updatedConfig,
-                status: "IN_PROGRESS", // Update status to IN_PROGRESS after questions are generated
+                // Keep status as STARTED - will change to IN_PROGRESS only after first answer
             })
             .eq("session_id", data.session_id);
 
@@ -250,7 +250,7 @@ export const startInterviewService = async (
 
         return {
             sessionId: data.session_id,
-            status: "IN_PROGRESS", // Return the updated status
+            status: "STARTED", // Return the initial status
             startedAt: data.started_at,
             aiConfig: newInterview.config,
             questions: questionsWithEntryIds,
@@ -447,17 +447,36 @@ export const submitAnswerService = async (
             };
         }
 
-        // Check if all questions are answered to update session status
-        const { count: totalQuestions } = await supabase
-            .from("conversation_entries")
-            .select("*", { count: "exact" })
-            .eq("session_id", sessionId);
-
+        // Check if this is the first answered question to update session status to IN_PROGRESS
         const { count: answeredQuestions } = await supabase
             .from("conversation_entries")
             .select("*", { count: "exact" })
             .eq("session_id", sessionId)
             .not("response_text", "is", null);
+
+        // Update session status to IN_PROGRESS if this is the first answer
+        if (answeredQuestions === 1) {
+            const { error: statusUpdateError } = await supabase
+                .from("mock_interviews")
+                .update({
+                    status: "IN_PROGRESS",
+                })
+                .eq("session_id", sessionId);
+
+            if (statusUpdateError) {
+                console.error(
+                    "Error updating session to IN_PROGRESS:",
+                    statusUpdateError,
+                );
+                // Don't fail the submission if this update fails
+            }
+        }
+
+        // Check if all questions are answered to update session status to COMPLETED
+        const { count: totalQuestions } = await supabase
+            .from("conversation_entries")
+            .select("*", { count: "exact" })
+            .eq("session_id", sessionId);
 
         // Update session status if all questions are answered
         if (answeredQuestions === totalQuestions) {
@@ -574,5 +593,32 @@ export const updateInterviewMetrics = async (sessionId: string) => {
     } catch (error: any) {
         console.error("Error updating interview metrics:", error);
         throw error;
+    }
+};
+
+/**
+ * Function to abandon an interview session
+ */
+export const abandonInterviewSession = async (sessionId: string, userId: string) => {
+    try {
+        const { data, error } = await supabase
+            .from("mock_interviews")
+            .update({
+                status: "ABANDONED",
+                completed_at: new Date().toISOString(),
+            })
+            .eq("session_id", sessionId)
+            .eq("candidate_id", userId)
+            .select()
+            .single();
+
+        if (error) {
+            throw new Error(`Failed to abandon interview session: ${error.message}`);
+        }
+
+        return data;
+    } catch (error: any) {
+        console.error("Error abandoning interview session:", error);
+        throw new Error(`Error abandoning interview session: ${error.message}`);
     }
 };
