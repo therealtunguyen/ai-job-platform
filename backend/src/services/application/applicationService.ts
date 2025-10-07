@@ -79,39 +79,68 @@ export const createAppWithValidation = async (
         status_updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase
+    const { data: appData, error: appError } = await supabase
         .from("applications")
         .insert([newApplication])
         .select()
         .single();
 
-    if (error) {
-        throw new Error(`Failed to create application: ${error.message}`);
+    if (appError) {
+        throw new Error(`Failed to create application: ${appError.message}`);
     }
 
-    // Increment the applicant count for the job
-    // First get the current applicant count
-    const { data: jobForUpdate, error: jobFetchError } = await supabase
+    // Increment the applicant count for the job using the job data we already fetched
+    const newApplicantCount = (job.applicant_count || 0) + 1;
+    const { error: updateError } = await supabase
         .from("jobs")
-        .select("applicant_count")
-        .eq("job_id", applicationData.job_id)
-        .single();
+        .update({ applicant_count: newApplicantCount })
+        .eq("job_id", applicationData.job_id);
 
-    if (!jobFetchError && jobForUpdate) {
-        const newApplicantCount = (jobForUpdate.applicant_count || 0) + 1;
-        const { error: updateError } = await supabase
-            .from("jobs")
-            .update({ applicant_count: newApplicantCount })
-            .eq("job_id", applicationData.job_id);
+    if (updateError) {
+        console.error("Error updating job applicant count:", updateError);
+        // Implement more robust compensation logic to address the data inconsistency issue
+        // In a production system, database transactions are the ideal solution
+        try {
+            // Attempt to rollback by deleting the application we just created
+            const rollbackResult = await supabase
+                .from("applications")
+                .delete()
+                .eq("application_id", appData.application_id);
 
-        if (updateError) {
-            console.error("Error updating job applicant count:", updateError);
-            // NOTE: This is not ideal as we have a created application but couldn't update job count
-            // In a production system, you'd want to use database transactions
+            if (rollbackResult.error) {
+                console.error(
+                    "Failed to rollback application creation:",
+                    rollbackResult.error,
+                );
+                // Log this critical state - application exists but job count wasn't updated
+                console.error(
+                    `CRITICAL: Application ${appData.application_id} exists but job applicant count was not updated. ` +
+                        `Manual intervention required.`,
+                );
+                throw new Error(
+                    `Failed to update job applicant count: ${updateError.message}. ` +
+                        `Rollback of application creation also failed: ${rollbackResult.error.message}. ` +
+                        `Manual data fix required.`,
+                );
+            } else {
+                console.info(
+                    `Rolled back application ${appData.application_id} due to job count update failure. ` +
+                        `Application will need to be resubmitted by the user.`,
+                );
+                throw new Error(
+                    `Failed to update job applicant count: ${updateError.message}. Application submission has been rolled back, please try again.`,
+                );
+            }
+        } catch (rollbackError) {
+            console.error("Unexpected error during rollback:", rollbackError);
+            throw new Error(
+                `System error: Application was created but job count update failed. ` +
+                    `Automatic rollback also failed. Please contact support with error ID.`,
+            );
         }
     }
 
-    return data as ApplicationRow;
+    return appData as ApplicationRow;
 };
 
 // Function to get application status based on application ID

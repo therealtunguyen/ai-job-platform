@@ -208,44 +208,37 @@ export const listUserApplications = async (req: Request, res: Response) => {
             });
         }
 
+        // Fetch user profile once to reuse the result
+        const { data: userProfile, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("user_type")
+            .eq("user_id", userId)
+            .single();
+
+        if (profileError || !userProfile) {
+            return res.status(403).json({
+                error: "User profile not found",
+            });
+        }
+
         // Verify that the authenticated user is requesting their own applications
         if (userId !== requestedUserId) {
             // Check if the user is an employer trying to access job seeker applications
-            const { data: userProfile, error: profileError } = await supabase
-                .from("user_profiles")
-                .select("user_type")
-                .eq("user_id", userId)
-                .single();
-
-            if (
-                profileError ||
-                !userProfile ||
-                userProfile.user_type !== "EMPLOYER"
-            ) {
+            if (userProfile.user_type !== "EMPLOYER") {
                 return res.status(403).json({
                     error: "You can only access your own applications",
                 });
             }
         }
 
+        // Only job seekers should be able to list their applications this way
+        if (userProfile.user_type !== "JOB_SEEKER") {
+            return res.status(403).json({
+                error: "Only job seekers can access this endpoint",
+            });
+        }
+
         try {
-            // Only job seekers should be able to list their applications this way
-            const { data: profile, error: profileError } = await supabase
-                .from("user_profiles")
-                .select("user_type")
-                .eq("user_id", userId)
-                .single();
-
-            if (
-                profileError ||
-                !profile ||
-                profile.user_type !== "JOB_SEEKER"
-            ) {
-                return res.status(403).json({
-                    error: "Only job seekers can access this endpoint",
-                });
-            }
-
             const applications = await listUserApps(requestedUserId);
             res.status(200).json({ applications });
         } catch (error: any) {
