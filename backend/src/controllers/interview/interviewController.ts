@@ -4,6 +4,7 @@ import {
     startInterviewService,
     updateInterviewMetrics,
     submitAnswerService,
+    submitAnswerWithAiFeedback,
     getUserInterviewsService,
     getInterviewByIdService,
     abandonInterviewSession,
@@ -223,26 +224,27 @@ export const submitAnswer = async (req: Request, res: Response) => {
             return res.status(400).json({ error: "Invalid entry ID format" });
         }
 
-        // Call the service to submit the answer
+        // First, submit the answer to record user response
         const result = await submitAnswerService(
             user.id,
             interviewId,
             entryId,
             responseText,
         );
+        console.log("Submit answer result:", result);
 
         if (!result.success) {
             return res.status(400).json({ error: result.error });
         }
 
         // Generate AI feedback for the response
-        let evaluationResult;
+        let evaluationResult: ResponseFeedback | null = null;
         try {
             // Get the question text for context in evaluation
             const { questionText, questionType, difficulty, jobTitle } =
                 result.questionContext;
 
-            evaluationResult = await evaluateInterviewResponse({
+            const aiEvaluationResult = await evaluateInterviewResponse({
                 question: questionText,
                 user_response: responseText,
                 question_type: questionType,
@@ -251,31 +253,43 @@ export const submitAnswer = async (req: Request, res: Response) => {
                 user_id: user.id,
             });
 
-            // Update the conversation entry with AI evaluation
-            await updateConversationEntryWithAIResult(
-                entryId,
-                evaluationResult.feedback,
-            );
-
-            // Create interview feedback record
-            await createInterviewFeedbackRecord(
-                interviewId,
-                entryId,
-                evaluationResult.feedback,
-            );
-
-            // Update the mock interview session metrics
-            await updateInterviewMetrics(interviewId);
+            evaluationResult = aiEvaluationResult.feedback;
         } catch (evalError: any) {
             console.error("Error generating AI feedback:", evalError);
-            // Don't fail the submission if AI evaluation fails, just log the error
+            // Continue with submission even if AI evaluation fails,
+            // but don't update with AI results
+        }
+
+        // If AI evaluation was successful, update both tables with AI data
+        if (evaluationResult) {
+            try {
+                await submitAnswerWithAiFeedback(
+                    entryId,
+                    interviewId,
+                    evaluationResult,
+                );
+            } catch (atomicUpdateError: any) {
+                console.error(
+                    "Error in atomic update operation:",
+                    atomicUpdateError,
+                );
+                // The user's response is still saved, but AI data wasn't added
+            }
+        }
+
+        // Update the mock interview session metrics regardless of AI success
+        try {
+            await updateInterviewMetrics(interviewId);
+        } catch (metricsError: any) {
+            console.error("Error updating interview metrics:", metricsError);
+            // Don't fail the submission if metrics update fails
         }
 
         res.status(200).json({
             message: "Answer submitted successfully",
             entryId: result.entryId,
             responseText: result.responseText,
-            aiFeedback: evaluationResult?.feedback || null,
+            aiFeedback: evaluationResult || null,
         });
     } catch (error: any) {
         console.error("Error submitting answer:", error);
@@ -285,60 +299,6 @@ export const submitAnswer = async (req: Request, res: Response) => {
         });
     }
 };
-
-// Helper function to update conversation entry with AI results
-async function updateConversationEntryWithAIResult(
-    entryId: string,
-    feedback: ResponseFeedback,
-) {
-    const { supabase } = await import("../../supabaseClient");
-
-    const { error } = await supabase
-        .from("conversation_entries")
-        .update({
-            ai_evaluation_score: feedback.evaluation_score,
-            ai_feedback: feedback.feedback_text,
-            suggested_improvements: feedback.suggested_improvements,
-            response_quality: feedback.response_quality,
-        })
-        .eq("entry_id", entryId);
-
-    if (error) {
-        console.error(
-            "Error updating conversation entry with AI results:",
-            error,
-        );
-        throw error;
-    }
-}
-
-// Helper function to create interview feedback record
-async function createInterviewFeedbackRecord(
-    sessionId: string,
-    entryId: string,
-    feedback: ResponseFeedback,
-) {
-    const { supabase } = await import("../../supabaseClient");
-
-    const feedbackRecord = {
-        session_id: sessionId,
-        entry_id: entryId,
-        feedback_text: feedback.feedback_text,
-        ai_suggestion: feedback.suggested_improvements,
-        score_obtained: feedback.evaluation_score,
-        feedback_category: feedback.response_quality,
-        created_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-        .from("interview_feedback")
-        .insert(feedbackRecord);
-
-    if (error) {
-        console.error("Error creating interview feedback record:", error);
-        throw error;
-    }
-}
 
 // Function to abandon an interview session
 export const abandonInterview = async (req: Request, res: Response) => {
@@ -360,7 +320,9 @@ export const abandonInterview = async (req: Request, res: Response) => {
         const uuidRegex =
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(interviewId)) {
-            return res.status(400).json({ error: "Invalid interview ID format" });
+            return res
+                .status(400)
+                .json({ error: "Invalid interview ID format" });
         }
 
         // Call the service to abandon the interview

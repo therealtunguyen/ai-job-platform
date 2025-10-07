@@ -4,6 +4,7 @@ import {
     generateInterviewQuestions,
     Question,
 } from "../../utils/aiQuestionGenerator";
+import { type ResponseFeedback } from "../../utils/aiResponseEvaluator";
 
 interface StartInterviewRequest {
     jobId?: string;
@@ -454,6 +455,10 @@ export const submitAnswerService = async (
             .eq("session_id", sessionId)
             .not("response_text", "is", null);
 
+        console.log(
+            `Response submitted. Total answered questions: ${answeredQuestions}`,
+        );
+
         // Update session status to IN_PROGRESS if this is the first answer
         if (answeredQuestions === 1) {
             const { error: statusUpdateError } = await supabase
@@ -542,56 +547,80 @@ export const submitAnswerService = async (
  */
 export const updateInterviewMetrics = async (sessionId: string) => {
     try {
-        // Calculate total questions
-        const { count: total_q } = await supabase
-            .from("conversation_entries")
-            .select("*", { count: "exact" })
-            .eq("session_id", sessionId);
+        const { data: metricsData, error: metricsError } = await supabase.rpc(
+            "update_interview_metrics",
+            {
+                p_session_id: sessionId,
+            },
+        );
 
-        // Calculate answered questions
-        const { count: answered_q } = await supabase
-            .from("conversation_entries")
-            .select("*", { count: "exact" })
-            .eq("session_id", sessionId)
-            .not("response_text", "is", null);
-
-        // Calculate average score
-        const { data: avgScoreData, error: avgScoreError } = await supabase
-            .from("conversation_entries")
-            .select("AVG(ai_evaluation_score)")
-            .eq("session_id", sessionId)
-            .not("ai_evaluation_score", "is", null);
-
-        let avg_score: number | null = 0;
-        if (
-            !avgScoreError &&
-            avgScoreData &&
-            avgScoreData[0] &&
-            avgScoreData[0].AVG !== null
-        ) {
-            avg_score = Number(avgScoreData[0].AVG);
+        if (metricsError) {
+            console.error(
+                "Error calling update_interview_metrics function:",
+                metricsError,
+            );
+            throw metricsError;
         }
 
-        // Update the mock_interviews table
-        const { error } = await supabase
-            .from("mock_interviews")
-            .update({
-                total_questions: total_q ?? 0,
-                answered_questions: answered_q ?? 0,
-                completion_percentage:
-                    total_q && total_q > 0
-                        ? ((answered_q ?? 0) / total_q) * 100
-                        : 0,
-                overall_score: avg_score ? avg_score * (total_q ?? 0) : 0,
-            })
-            .eq("session_id", sessionId);
-
-        if (error) {
-            console.error("Error updating interview metrics:", error);
-            throw error;
-        }
+        return metricsData;
     } catch (error: any) {
         console.error("Error updating interview metrics:", error);
+        throw error;
+    }
+};
+
+/* Function to submit AI feedback and update both conversation_entries and interview_feedback tables */
+export const submitAnswerWithAiFeedback = async (
+    entryId: string,
+    sessionId: string,
+    feedback: ResponseFeedback,
+) => {
+    try {
+        // Update the conversation entry with AI evaluation
+        const { error: conversationError } = await supabase
+            .from("conversation_entries")
+            .update({
+                ai_evaluation_score: feedback.evaluation_score,
+                ai_feedback: feedback.feedback_text,
+                suggested_improvements: feedback.suggested_improvements,
+                response_quality: feedback.response_quality,
+            })
+            .eq("entry_id", entryId);
+
+        if (conversationError) {
+            console.error(
+                "Error updating conversation entry with AI results:",
+                conversationError,
+            );
+            throw conversationError;
+        }
+
+        // Create interview feedback record
+        const feedbackRecord = {
+            session_id: sessionId,
+            entry_id: entryId,
+            feedback_text: feedback.feedback_text,
+            ai_suggestion: feedback.suggested_improvements,
+            score_obtained: feedback.evaluation_score,
+            feedback_category: feedback.response_quality,
+            created_at: new Date().toISOString(),
+        };
+
+        const { error: feedbackError } = await supabase
+            .from("interview_feedback")
+            .insert(feedbackRecord);
+
+        if (feedbackError) {
+            console.error(
+                "Error creating interview feedback record:",
+                feedbackError,
+            );
+            throw feedbackError;
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error in submitAnswerWithAiFeedback:", error);
         throw error;
     }
 };
@@ -599,7 +628,10 @@ export const updateInterviewMetrics = async (sessionId: string) => {
 /**
  * Function to abandon an interview session
  */
-export const abandonInterviewSession = async (sessionId: string, userId: string) => {
+export const abandonInterviewSession = async (
+    sessionId: string,
+    userId: string,
+) => {
     try {
         const { data, error } = await supabase
             .from("mock_interviews")
@@ -613,7 +645,9 @@ export const abandonInterviewSession = async (sessionId: string, userId: string)
             .single();
 
         if (error) {
-            throw new Error(`Failed to abandon interview session: ${error.message}`);
+            throw new Error(
+                `Failed to abandon interview session: ${error.message}`,
+            );
         }
 
         return data;
