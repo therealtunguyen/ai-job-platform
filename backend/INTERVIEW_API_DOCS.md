@@ -179,6 +179,31 @@ The interview API is accessible under `/api/interviews`.
     }
     ```
 
+### Abandon an Interview Session
+
+- **PUT** `/api/interviews/:interviewId/abandon`
+- **Headers**: `Authorization: Bearer <token>`
+- **URL Parameters**: `interviewId` - the session ID of the interview to abandon
+
+- **Success Response** (200):
+
+    ```json
+    {
+        "sessionId": "string",
+        "status": "string",
+        "completedAt": "string (ISO date)",
+        "message": "Interview session abandoned successfully"
+    }
+    ```
+
+- **Error Response** (400, 401, 500):
+    ```json
+    {
+        "error": "string",
+        "details": "string (optional)"
+    }
+    ```
+
 ## Integration Guide
 
 ### Starting an Interview
@@ -206,4 +231,3 @@ The interview API is accessible under `/api/interviews`.
     - 401: Unauthorized (missing or invalid token)
     - 404: Not found (interview session not found)
     - 500: Internal server error (contact backend team)
-
