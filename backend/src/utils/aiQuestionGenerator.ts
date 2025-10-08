@@ -77,13 +77,6 @@ interface GenerateParams {
     user_id: string; // For logging
 }
 
-interface Question {
-    index: number;
-    prompt: string;
-    type: string;
-    difficulty: "easy" | "medium" | "hard";
-}
-
 async function generateInterviewQuestions(
     params: GenerateParams,
 ): Promise<{ questions: Question[]; rawResponse?: Json }> {
