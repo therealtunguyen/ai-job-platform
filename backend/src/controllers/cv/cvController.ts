@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { processCv, getCvById } from "../../services/cv/cvService";
+import { parseCv } from "../../services/cv/parsingService";
+import { supabase } from "../../supabaseClient";
 import multer from "multer";
 
 // CV upload logic with integrated authentication and error handling
@@ -51,6 +53,41 @@ export const uploadCv = (req: Request, res: Response) => {
       }
       
       console.log("CV uploaded successfully:", result.fileUrl);
+      
+      // After successful upload, extract data from the CV
+      try {
+        console.log("Starting CV data extraction...");
+        
+        // We can parse directly from the buffer to avoid downloading the file we just uploaded
+        const extractedData = await parseCv(req.file.buffer);
+        console.log("Successfully extracted CV data:", extractedData);
+        
+        // Update the job_seeker profile with the extracted data
+        if (Object.keys(extractedData).length > 0) {
+          const updateData: any = {};
+          
+          // Add extracted fields to the update data
+          if (extractedData.full_name) updateData.full_name = extractedData.full_name;
+          if (extractedData.phone) updateData.phone = extractedData.phone;
+          if (extractedData.address) updateData.address = extractedData.address;
+          
+          // Update the job_seekers table with extracted information
+          const { error: updateError } = await supabase
+            .from("job_seekers")
+            .update(updateData)
+            .eq("user_id", userId);
+          
+          if (updateError) {
+            console.error("Error updating job seeker profile with extracted data:", updateError);
+          } else {
+            console.log("Job seeker profile updated with extracted CV data");
+          }
+        }
+      } catch (extractError) {
+        console.error("Error during CV data extraction:", extractError);
+        // We continue even if extraction fails, as the CV was uploaded successfully
+      }
+      
       res.status(200).json({ 
         message: "CV uploaded successfully", 
         fileUrl: result.fileUrl,
