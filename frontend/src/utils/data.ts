@@ -9,6 +9,8 @@ import {
   Award,
   LucideLayoutDashboard,
   LucideLogOut,
+  MessagesSquare,
+  BriefcaseBusiness,
 } from "lucide-react";
 
 export const jobSeekerFeatures = [
@@ -80,6 +82,18 @@ export const SIDE_MENU_JOBSEEKER_DASHBOARD = [
   },
   {
     id: "03",
+    icon: MessagesSquare,
+    label: "Interview",
+    path: "/logout",
+  },
+{
+    id: "04",
+    icon: BriefcaseBusiness ,
+    label: "Apply & Save Job",
+    path: "/logout",
+  },
+  {
+    id: "05",
     icon: LucideLogOut,
     label: "Logout",
     path: "/logout",

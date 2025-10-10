@@ -1,7 +1,7 @@
 import JobSeekerLayout from "@/components/JobSeeker/JobSeekerLayout";
 import { Mail, Upload, Download, User, MapPin, Phone, DollarSign, FileText, Camera, Save, Edit3 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { API_PATHS } from "@/utils/apiPath";
+import { API_PATHS, BASE_URL } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
 
 const UserProfile = () => {
@@ -15,7 +15,8 @@ const UserProfile = () => {
     preferred_location: "",
     expected_salary: "",
     summary: "",
-    profile_picture: "/me.jpg"
+    profile_picture: "/me.jpg",
+    cv_file_path: "",
   });
 
   // Load user profile data
@@ -23,9 +24,18 @@ const UserProfile = () => {
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get(API_PATHS.USER.GETUSER);
+        const response = await axiosInstance.get(API_PATHS.USERS.GET_PROFILE);
+        console.log("[GETUSER] raw response:", response.data);
         if (response.data) {
           const { user, profile } = response.data;
+          const rawCvPath = profile?.cv_file_path || "";
+          const resolvedCvUrl = /^https?:\/\//i.test(rawCvPath)
+            ? rawCvPath
+            : rawCvPath
+            ? `${BASE_URL}${rawCvPath.startsWith("/") ? rawCvPath : `/${rawCvPath}`}`
+            : "";
+          console.log("[GETUSER] cv_file_path:", rawCvPath);
+          console.log("[GETUSER] resolved CV URL:", resolvedCvUrl);
           setProfileData(prev => ({
             ...prev,
             full_name: profile?.full_name || "",
@@ -35,7 +45,8 @@ const UserProfile = () => {
             preferred_location: profile?.preferred_location || "",
             expected_salary: profile?.expected_salary?.toString() || "",
             summary: profile?.summary || "",
-            profile_picture: profile?.profile_picture || "/me.jpg"
+            profile_picture: profile?.profile_picture || "/me.jpg",
+            cv_file_path: profile?.cv_file_path || "",
           }));
         }
       } catch (error) {
@@ -70,7 +81,7 @@ const UserProfile = () => {
         summary: profileData.summary,
       };
       
-      await axiosInstance.put(API_PATHS.USER.PUTUSER, updateData);
+      await axiosInstance.put(API_PATHS.USERS.UPDATE_PROFILE, updateData);
       
       // Update email separately if it has changed
       const currentEmail = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).email : '';
@@ -93,11 +104,16 @@ const UserProfile = () => {
 
   const handleDownloadCV = async () => {
     try {
-      // TODO: Implement CV download when backend endpoint is available
-      console.log("CV download feature not yet implemented in backend");
-      alert("CV download feature is not yet available. Please contact support.");
+      const path = profileData.cv_file_path?.trim();
+      if (!path) {
+        alert("No CV uploaded yet.");
+        return;
+      }
+      const url = /^https?:\/\//i.test(path) ? path : `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+      window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
-      console.error("Error downloading CV:", error);
+      console.error("Error opening CV:", error);
+      alert("Could not open CV. Please try again.");
     }
   };
 
@@ -144,7 +160,7 @@ const UserProfile = () => {
       const formData = new FormData();
       formData.append('avatar', file);
       
-      const response = await axiosInstance.post(API_PATHS.USER.PROFILEIMAGE, formData);
+      const response = await axiosInstance.post(API_PATHS.USERS.UPLOAD_IMAGE, formData);
       
       if (response.data && response.data.publicUrl) {
         setProfileData(prev => ({
@@ -183,11 +199,8 @@ const UserProfile = () => {
   const handleCreateHomepage = async () => {
     try {
       setLoading(true);
-      // TODO: Implement homepage creation when backend endpoint is available
       console.log("Homepage creation feature not yet implemented in backend");
       alert("Homepage creation feature is not yet available. Please contact support.");
-      // For now, just navigate to a placeholder homepage
-      // window.location.href = `/homepage/${profileData.name.toLowerCase().replace(/\s+/g, '-')}`;
     } catch (error) {
       console.error("Error creating homepage:", error);
     } finally {
@@ -418,6 +431,8 @@ const UserProfile = () => {
               </form>
             </div>
           </div>
+
+        
 
           {/* CV Upload Section */}
           <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-xl">
