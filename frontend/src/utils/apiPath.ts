@@ -5,34 +5,63 @@ export const API_PATHS = {
     REGISTER: "/api/auth/register",
     LOGIN: "/api/auth/login",
     LOGOUT: "/api/auth/logout",
-    ME: "/api/auth/me",
+    REFRESH: "/api/auth/refresh",
     UPDATE_EMAIL: "/api/auth/email",
+    ME: "/api/auth/me",
   },
-  CV : {
+  CV: {
     UPLOAD: "/api/cv/upload",
-    GETID: "/api/cv/:id",
+    GET_BY_ID: "/api/cv/:id",
   },
-  JOB : {
-    GETLISTJOB: "/api/jobs/",
-    GETID: "/api/jobs/:id",
+  JOBS: {
+    LIST: "/api/jobs/",
+    GET_BY_ID: "/api/jobs/:id",
+    CREATE: "/api/jobs/",
+    UPDATE: "/api/jobs/:id",
+    DELETE: "/api/jobs/:id",
   },
-  USER: {
-    GETUSER: "/api/users/me",
-    PUTUSER: "/api/users/me",
-    PROFILEIMAGE: "/api/users/profile-image/upload",
-    DELETE_PROFILE_IMAGE: "/api/users/profile-image/delete",
+  APPLICATIONS: {
+    SUBMIT: "/api/applications/",
+    GET_BY_ID: "/api/applications/:id",
+    UPDATE_STATUS: "/api/applications/:id/status",
+    GET_USER_APPLICATIONS: "/api/applications/user/:userId",
+    GET_EMPLOYER_APPLICATIONS: "/api/applications/employer/:employerId",
+    GET_JOB_APPLICATIONS: "/api/applications/job/:jobId",
+  },
+  USERS: {
+    GET_PROFILE: "/api/users/me",
+    UPDATE_PROFILE: "/api/users/me",
+    // Profile image routes
+    UPLOAD_IMAGE: "/api/users/profile-image/upload",
+    DELETE_IMAGE: "/api/users/profile-image/delete",
     // Job Seeker specific routes
     UPDATE_JOB_SEEKER: "/api/users/job-seeker",
     UPDATE_JOB_SEEKER_WITH_IMAGE: "/api/users/job-seeker/profile-and-image",
     // Employer specific routes  
     UPDATE_EMPLOYER: "/api/users/employer",
     UPDATE_EMPLOYER_WITH_IMAGE: "/api/users/employer/profile-and-image",
-    // Profile image routes
-    UPLOAD_IMAGE: "/api/users/profile-image/upload",
-    DELETE_IMAGE: "/api/users/profile-image/delete",
   },
-  JOB_SEEKER: {
-    LANGUAGES: "/api/jobseekers/languages",
-    SOCIAL_NETWORKS: "/api/jobseekers/social-networks",
-  }
+  JOB_SEEKERS: {
+    LANGUAGES: {
+      GET: "/api/jobseekers/languages",
+      ADD: "/api/jobseekers/languages",
+      DELETE: "/api/jobseekers/languages/:languageId",
+    },
+    SOCIAL_NETWORKS: {
+      GET: "/api/jobseekers/social-networks",
+      ADD: "/api/jobseekers/social-networks",
+      UPDATE: "/api/jobseekers/social-networks/:socialNetworkId",
+      DELETE: "/api/jobseekers/social-networks/:socialNetworkId",
+    },
+  },
+  INTERVIEWS: {
+    CREATE: "/api/interviews/create",
+    SUBMIT_ANSWER: "/api/interviews/:interviewId/submit",
+    GET_BY_ID: "/api/interviews/:interviewId",
+    GET_USER_INTERVIEWS: "/api/interviews/",
+    ABANDON: "/api/interviews/:interviewId/abandon",
+  },
+  MATCHING: {
+    GET_MATCHES: "/api/matching/:userId",
+  },
 }
