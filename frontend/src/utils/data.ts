@@ -84,13 +84,13 @@ export const SIDE_MENU_JOBSEEKER_DASHBOARD = [
     id: "03",
     icon: MessagesSquare,
     label: "Interview",
-    path: "/logout",
+    path: "/jobseeker-interview",
   },
 {
     id: "04",
     icon: BriefcaseBusiness ,
     label: "Apply & Save Job",
-    path: "/logout",
+    path: "/jobseeker-apply-save-job",
   },
   {
     id: "05",

@@ -144,6 +144,26 @@ export class JobSeekerProfileController {
         }
     }
 
+    // GET /api/jobseekers/social-networks/available - Get available social networks
+    async getAvailableSocialNetworks(req: Request, res: Response) {
+        try {
+            const { data, error } = await this.supabase
+                .from("social_networks")
+                .select("*")
+                .order("name");
+
+            if (error) {
+                console.error("Error fetching available social networks:", error);
+                return res.status(500).json({ error: error.message });
+            }
+
+            res.json({ social_networks: data });
+        } catch (error) {
+            console.error("Error in getAvailableSocialNetworks:", error);
+            res.status(500).json({ error: "Internal server error" });
+        }
+    }
+
     // GET /api/jobseekers/social-networks - Get job seeker's social networks
     async getSocialNetworks(req: Request, res: Response) {
         try {
