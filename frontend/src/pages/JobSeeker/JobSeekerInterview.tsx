@@ -35,9 +35,9 @@ interface Evaluation {
   entryId: string;
   responseText: string;
   aiFeedback: {
-    score?: number;
-    feedback?: string;
-    suggestions?: string[];
+    evaluation_score?: number;
+    feedback_text?: string;
+    suggested_improvements?: string;
   };
 }
 
@@ -190,7 +190,7 @@ const JobSeekerInterview = () => {
                       </div>
                       <div className="text-right">
                         <div className="text-3xl font-bold text-blue-600">
-                          {Math.round(evaluations.reduce((acc, evaluation) => acc + (evaluation.aiFeedback.score || 0), 0) / evaluations.length)}/10
+                          {Math.round(evaluations.reduce((acc, evaluation) => acc + (evaluation.aiFeedback.evaluation_score || 0), 0) / evaluations.length)}/5
                         </div>
                         <div className="text-sm text-gray-600">Average Score</div>
                       </div>
@@ -223,15 +223,15 @@ const JobSeekerInterview = () => {
                               </div>
                             </div>
                             <div className="ml-6 text-right">
-                              <div className={`text-2xl font-bold ${getScoreColor(evaluation.aiFeedback.score || 0)}`}>
-                                {evaluation.aiFeedback.score || 0}/10
+                              <div className={`text-2xl font-bold ${getScoreColor(evaluation.aiFeedback.evaluation_score || 0)}`}>
+                                {evaluation.aiFeedback.evaluation_score || 0}/5
                               </div>
                               <div className="flex items-center space-x-1 mt-1">
                                 {[...Array(5)].map((_, i) => (
                                   <Star
                                     key={i}
                                     className={`h-4 w-4 ${
-                                      i < Math.round((evaluation.aiFeedback.score || 0) / 2)
+                                      i < evaluation.aiFeedback.evaluation_score!
                                         ? 'text-yellow-400 fill-current'
                                         : 'text-gray-300'
                                     }`}
@@ -241,27 +241,20 @@ const JobSeekerInterview = () => {
                             </div>
                           </div>
 
-                          {evaluation.aiFeedback.feedback && (
+                          {evaluation.aiFeedback.feedback_text && (
                             <div className="bg-blue-50 rounded-lg p-4">
                               <h5 className="font-medium text-blue-900 mb-2 flex items-center">
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 AI Feedback
                               </h5>
-                              <p className="text-blue-800">{evaluation.aiFeedback.feedback}</p>
+                              <p className="text-blue-800">{evaluation.aiFeedback.feedback_text}</p>
                             </div>
                           )}
 
-                          {evaluation.aiFeedback.suggestions && evaluation.aiFeedback.suggestions.length > 0 && (
+                          {evaluation.aiFeedback.suggested_improvements && (
                             <div className="bg-green-50 rounded-lg p-4 mt-4">
                               <h5 className="font-medium text-green-900 mb-2">Suggestions for Improvement:</h5>
-                              <ul className="space-y-1">
-                                {evaluation.aiFeedback.suggestions.map((suggestion, i) => (
-                                  <li key={i} className="text-green-800 flex items-start">
-                                    <span className="text-green-600 mr-2">•</span>
-                                    {suggestion}
-                                  </li>
-                                ))}
-                              </ul>
+                              <p className="text-green-800">{evaluation.aiFeedback.suggested_improvements}</p>
                             </div>
                           )}
                         </div>
@@ -460,7 +453,7 @@ const JobSeekerInterview = () => {
                       <div className="text-right">
                         {interview.overall_score && (
                           <span className={`font-semibold ${getScoreColor(interview.overall_score)}`}>
-                            {interview.overall_score}/10
+                            {interview.overall_score}/15
                           </span>
                         )}
                       </div>
