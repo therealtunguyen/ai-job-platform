@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import JobSeekerNavbar from "./JobSeekerNavbar";
 
 interface JobSeekerLayoutProps {
@@ -8,6 +8,11 @@ interface JobSeekerLayoutProps {
 
 const JobSeekerLayout = ({ children, activeMenu = "/jobseeker-dashboard" }: JobSeekerLayoutProps) => {
   const [currentActiveMenu, setCurrentActiveMenu] = useState(activeMenu);
+
+  // Update currentActiveMenu when activeMenu prop changes
+  useEffect(() => {
+    setCurrentActiveMenu(activeMenu);
+  }, [activeMenu]);
 
   const handleMenuClick = (path: string) => {
     setCurrentActiveMenu(path);
