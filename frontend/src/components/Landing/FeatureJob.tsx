@@ -7,12 +7,14 @@ import { API_PATHS } from "@/utils/apiPath";
 const FeatureJob = () => {
   const [loading, setLoading] = useState(false);
   type Job = {
+    job_id: string;
     title: string;
     description?: string;
     company_name?: string;
+    employer_company_name?: string;
     location?: string;
-    salary_min?: number | null;
-    salary_max?: number | null;
+    min_salary?: number | null;
+    max_salary?: number | null;
     min_experience?: number | null;
     max_experience?: number | null;
     posted_at?: string;
@@ -20,6 +22,11 @@ const FeatureJob = () => {
     updated_at?: string;
     job_type?: string;
     company_type?: string;
+    employer_logo?: string;
+    employer?: {
+      logo?: string;
+      company_name?: string;
+    };
   };
 
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -52,7 +59,7 @@ const FeatureJob = () => {
     if (nMin && nMax) return `${toK(nMin)} - ${toK(nMax)}`;
     if (nMin && !nMax) return `${toK(nMin)}+`;
     if (!nMin && nMax) return `Up to ${toK(nMax)}`;
-    return "—";
+    return "Salary not specified";
   };
 
   const formatExperience = (min?: number | null, max?: number | null) => {
@@ -68,12 +75,13 @@ const FeatureJob = () => {
     const fetchJobs = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get(API_PATHS.JOB.GETLISTJOB, {
-          params: { limit: 4, offset: 0 },
-        });
-        const list: Job[] = response?.data?.data ?? [];
-        setJobs(Array.isArray(list) ? list : []);
+        const response = await axiosInstance.get(API_PATHS.JOBS.LIST);
+        const jobsData = response?.data?.data || response?.data || [];
+        // Limit to 4 jobs for featured section
+        const limitedJobs = Array.isArray(jobsData) ? jobsData.slice(0, 4) : [];
+        setJobs(limitedJobs);
       } catch (error) {
+        console.error('Error fetching jobs:', error);
         setJobs([]);
       } finally {
         setLoading(false);
@@ -98,24 +106,45 @@ const FeatureJob = () => {
 
         {/* Job Cards Grid */}
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
-          {jobs.map((job, index) => {
-            const salaryLabel = formatSalary(job.salary_min, job.salary_max);
-            const experience = formatExperience(job.min_experience, job.max_experience);
-            const posted = job.posted_at || job.created_at || job.updated_at;
-            return (
-              <JobCard
-                key={index}
-                title={job.title}
-                company={job.company_name || ""}
-                location={job.location || ""}
-                timeAgo={formatTimeAgo(posted)}
-                salary={salaryLabel}
-                jobType={job.job_type || "Full Time"}
-                companyType={job.company_type || "Private"}
-                experience={experience}
-              />
-            );
-          })}
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className="h-6 w-8 bg-gray-200 rounded"></div>
+                    <div className="h-6 w-16 bg-gray-200 rounded"></div>
+                  </div>
+                  <div className="mb-2 h-6 w-3/4 bg-gray-200 rounded"></div>
+                  <div className="mb-4 h-4 w-1/2 bg-gray-200 rounded"></div>
+                  <div className="mb-4 flex gap-2">
+                    <div className="h-6 w-16 bg-gray-200 rounded"></div>
+                    <div className="h-6 w-16 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            jobs.map((job, index) => {
+              const salaryLabel = formatSalary(job.min_salary, job.max_salary);
+              const experience = formatExperience(job.min_experience, job.max_experience);
+              const posted = job.posted_at || job.created_at || job.updated_at;
+              return (
+                <JobCard
+                  key={job.job_id || index}
+                  title={job.title}
+                  company={job.company_name || job.employer_company_name || ""}
+                  location={job.location || ""}
+                  timeAgo={formatTimeAgo(posted)}
+                  salary={salaryLabel}
+                  jobType={job.job_type || "Full Time"}
+                  companyType={job.company_type || "Private"}
+                  experience={experience}
+                  companyLogo={job.employer_logo || job.employer?.logo || "/Logo_SkillSync_BR.png"}
+                />
+              );
+            })
+          )}
           {!loading && jobs.length === 0 && (
             <div className="col-span-1 md:col-span-2 text-center text-gray-500">No jobs found.</div>
           )}

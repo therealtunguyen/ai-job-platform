@@ -1,5 +1,6 @@
 import { SIDE_MENU_JOBSEEKER_DASHBOARD } from "@/utils/data";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface JobSeekerNavbarProps {
   activeMenu?: string;
@@ -8,13 +9,14 @@ interface JobSeekerNavbarProps {
 
 const JobSeekerNavbar = ({ activeMenu = "/jobseeker-dashboard", onMenuClick }: JobSeekerNavbarProps) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleMenuClick = (path: string) => {
     if (path === "/logout") {
       logout();
     } else {
       onMenuClick?.(path);
-      window.location.href = path;
+      navigate(path);
     }
   };
 
