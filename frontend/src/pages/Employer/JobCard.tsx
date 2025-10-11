@@ -1,10 +1,10 @@
 import React from "react";
 import {
   Bookmark,
-  BriefcaseBusiness,
   CircleDollarSign,
   Clock,
   MapPinned,
+  GraduationCap,
 } from "lucide-react";
 
 interface JobCardProps {
@@ -17,6 +17,7 @@ interface JobCardProps {
   companyType: string;
   urgency?: string;
   companyLogo?: string;
+  experience?: string;
 }
 
 const JobCard: React.FC<JobCardProps> = ({
@@ -29,6 +30,7 @@ const JobCard: React.FC<JobCardProps> = ({
   companyType,
   urgency,
   companyLogo = "/Logo_SkillSync_BR.png",
+  experience,
 }) => {
   return (
     <div className="group flex w-full cursor-pointer items-center justify-between rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md">
@@ -44,10 +46,6 @@ const JobCard: React.FC<JobCardProps> = ({
           </h3>
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-2 whitespace-nowrap">
-              <BriefcaseBusiness className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{company}</span>
-            </div>
-            <div className="flex items-center gap-2 whitespace-nowrap">
               <MapPinned className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">{location}</span>
             </div>
@@ -59,6 +57,12 @@ const JobCard: React.FC<JobCardProps> = ({
               <CircleDollarSign className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">{salary}</span>
             </div>
+            {experience && (
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <GraduationCap className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{experience}</span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">

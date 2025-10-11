@@ -11,9 +11,26 @@ const axiosInstance = axios.create(
   }
 )
 
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("key");
+    // Try both token storage keys for compatibility
+    const accessToken = localStorage.getItem("token") || localStorage.getItem("key");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -33,9 +50,66 @@ axiosInstance.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
     if (error.response) {
-      if (error.response.status === 401) {
+      if (error.response.status === 401 || error.response.status === 403) {
+        // Check if this is a token expiration error
+        if (error.response.data?.error?.includes("expired") || 
+            error.response.data?.error?.includes("Invalid or expired token")) {
+          
+          if (isRefreshing) {
+            // If already refreshing, queue this request
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            }).then(token => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return axiosInstance(originalRequest);
+            }).catch(err => {
+              return Promise.reject(err);
+            });
+          }
+
+          originalRequest._retry = true;
+          isRefreshing = true;
+
+          // Try to refresh the token
+          try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            if (refreshToken) {
+              const response = await axios.post(`${import.meta.env.VITE_BASE_URL || "http://localhost:3000"}/api/auth/refresh`, {
+                refreshToken: refreshToken
+              });
+              
+              if (response.data.accessToken) {
+                localStorage.setItem("token", response.data.accessToken);
+                localStorage.setItem("key", response.data.accessToken);
+                
+                if (response.data.refreshToken) {
+                  localStorage.setItem("refreshToken", response.data.refreshToken);
+                }
+                
+                processQueue(null, response.data.accessToken);
+                
+                // Retry the original request with new token
+                originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+                return axiosInstance(originalRequest);
+              }
+            }
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+            processQueue(refreshError, null);
+          } finally {
+            isRefreshing = false;
+          }
+        }
+        
+        // If refresh failed or no refresh token, redirect to login
+        localStorage.removeItem("token");
+        localStorage.removeItem("key");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
         window.location.href = "/login";
       } else if (error.response.status === 500) {
         console.error("Server error. Please try again later.");

@@ -79,24 +79,27 @@ const Login = () => {
 
       // Kiểm tra response structure - token nằm trong session
       const token = response.data?.session?.access_token || response.data?.token || response.data?.accessToken || response.data?.access_token;
+      const refreshToken = response.data?.session?.refresh_token;
       
       console.log("Extracted token:", token); // Debug log
+      console.log("Extracted refresh token:", refreshToken); // Debug log
 
       if(token) {
         // Lấy user data từ response và map user_type thành role
-        const backendUser = response.data?.user || response.data;
+        const backendUser = response.data;
+                console.log("Backend user data:", backendUser); // Debug log
         const userData = {
-          id: backendUser.user_id,
+          id: backendUser.user.user_id,
           email: formData.email,
-          role: backendUser.user_type, // Map user_type từ backend thành role cho frontend
-          name: backendUser.full_name || backendUser.company_name || formData.email
+          role: backendUser.user.user_type, // Map user_type từ backend thành role cho frontend
+          name: backendUser.name
         };
         console.log("Calling login with:", userData, token); // Debug log
-        login(userData, token);
+        login(userData, token, refreshToken);
 
-        console.log("Redirecting to /find-jobs..."); // Debug log
+        console.log("Redirecting to /jobseeker-dashboard..."); // Debug log
         // Redirect ngay lập tức thay vì chờ 2 giây
-        window.location.href = "/find-jobs";
+        window.location.href = "/jobseeker-dashboard";
       } else {
         console.error("No token found in response:", response.data);
         setFormState((prev) => ({

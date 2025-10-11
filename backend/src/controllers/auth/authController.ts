@@ -4,6 +4,8 @@ import {
     loginUser,
     logoutUser,
     getCurrentUser,
+    refreshToken,
+    updateUserEmail,
 } from "../../services/auth/authService";
 import { uploadAndSetProfileImage } from "../../services/users/profileImageService";
 import { supabase } from "../../supabaseClient";
@@ -44,11 +46,14 @@ export const register = async (req: Request, res: Response) => {
                     userId,
                     userType,
                     file: req.file,
-                    prefix: "registration" // Add a prefix to distinguish registration uploads
+                    prefix: "registration", // Add a prefix to distinguish registration uploads
                 });
 
                 if (!uploadResult.success) {
-                    console.error("Profile picture upload error during registration:", uploadResult.error);
+                    console.error(
+                        "Profile picture upload error during registration:",
+                        uploadResult.error,
+                    );
                     // Continue with registration even if profile picture fails - just log the error
                 }
             }
@@ -57,6 +62,7 @@ export const register = async (req: Request, res: Response) => {
         res.status(201).json({
             message: "User registered successfully",
             user: result.user,
+            name: result.name,
         });
     } catch (error: any) {
         console.error("Registration error:", error);
@@ -87,6 +93,7 @@ export const login = async (req: Request, res: Response) => {
             message: "Login successful",
             user: result.user,
             session: result.session,
+            name: result.name,
         });
     } catch (error: any) {
         console.error("Login error:", error);
@@ -112,6 +119,70 @@ export const logout = async (req: Request, res: Response) => {
     }
 };
 
+// Refresh token
+export const refresh = async (req: Request, res: Response) => {
+    try {
+        const { refreshToken: refreshTokenValue } = req.body;
+
+        if (!refreshTokenValue) {
+            return res.status(400).json({
+                error: "Refresh token is required",
+            });
+        }
+
+        const result = await refreshToken(refreshTokenValue);
+
+        if (result.error) {
+            return res.status(401).json({
+                error: result.error.message || "Token refresh failed",
+            });
+        }
+
+        if (!result.session) {
+            return res.status(401).json({ error: "No session returned" });
+        }
+
+        res.status(200).json({
+            message: "Token refreshed successfully",
+            accessToken: result.session.access_token,
+            refreshToken: result.session.refresh_token,
+        });
+    } catch (error: any) {
+        console.error("Token refresh error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// Update user email
+export const updateEmail = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.id;
+        const { email } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
+
+        const result = await updateUserEmail(userId, email);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        res.status(200).json({
+            message: "Email updated successfully",
+            data: result.data,
+        });
+    } catch (error: any) {
+        console.error("Update email error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 // Get current user profile
 export const getCurrentUserProfile = async (req: Request, res: Response) => {
     try {
@@ -127,7 +198,7 @@ export const getCurrentUserProfile = async (req: Request, res: Response) => {
             return res.status(401).json({ error: "User not authenticated" });
         }
 
-        res.status(200).json({ user: result.user });
+        res.status(200).json({ user: result.user, name: result.name });
     } catch (error: any) {
         console.error("Get user profile error:", error);
         res.status(500).json({ error: "Internal server error" });

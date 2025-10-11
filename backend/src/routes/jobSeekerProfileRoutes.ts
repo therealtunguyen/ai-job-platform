@@ -45,6 +45,12 @@ router.delete(
 
 // Routes for social networks
 router.get(
+    "/social-networks/available",
+    jobSeekerProfileController.getAvailableSocialNetworks.bind(
+        jobSeekerProfileController,
+    ),
+);
+router.get(
     "/social-networks",
     authenticateToken,
     requireJobSeeker,

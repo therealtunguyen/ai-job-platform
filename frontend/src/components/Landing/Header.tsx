@@ -1,12 +1,8 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import type { User } from "@/types/LandingTypes";
+import { useAuth } from "@/contexts/AuthContext";
 const Header = () => {
-  const isAuthenticated: boolean = false;
-  const user: User = {
-    fullName: "Tan",
-    role: "Employer",
-  };
+  const {user, isAuthenticated} = useAuth();
   const navigate = useNavigate();
   return (
     <motion.header
@@ -18,7 +14,9 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* logo */}
-          <div className="flex items-center px-1">
+          <div className="flex items-center px-1" onClick={() => {
+            navigate('/')
+          }}>
             <div className="">
               <img
                 src="/Logo_SkillSync_BR.png"
@@ -48,12 +46,12 @@ const Header = () => {
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
-                <span className="text-gray-700">Welcome, {user?.fullName}</span>
+                <span className="text-gray-700">Welcome, {user?.name}</span>
                 <a
                   href={
                     user?.role === "employer"
                       ? "/employer-dashboard"
-                      : "/find-jobs"
+                      : "/jobseeker-dashboard"
                   }
                  className="bg-gradient-to-r from-[#29436c] to-[#90ad71] text-white px-6 py-2 rounded-lg font-medium hover:from-[#29436c]/90 hover:to-[#90ad71]/90 transition-all duration-300 shadow-sm hover:shadow-md"
                 >
