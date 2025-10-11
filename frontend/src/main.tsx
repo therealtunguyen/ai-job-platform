@@ -11,6 +11,10 @@ import Layout from '@/pages/Layout/Layout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import { AuthProvider } from '@/contexts/AuthContext'
 import UserProfile from '@/pages/JobSeeker/UserProfile'
+import ApplicationSavedJob from '@/pages/JobSeeker/ApplicationSavedJob'
+import JobSeekerInterview from '@/pages/JobSeeker/JobSeekerInterview'
+import { User } from 'lucide-react'
+import UserHomepage from '@/pages/JobSeeker/UserHomepage'
 
 const router = createBrowserRouter([
   {
@@ -42,7 +46,19 @@ const router = createBrowserRouter([
           {
             path: '/jobseeker-profile',
             element: <UserProfile />
-          }
+          },
+          {
+            path: '/jobseeker-apply-save-job',
+            element: <ApplicationSavedJob />
+          },
+          {
+            path: '/jobseeker-interview',
+            element: <JobSeekerInterview />
+          },
+          // {
+          //   path: '/jobseeker-homepage',
+          //   element: <UserHomepage />
+          // }
         ]
       }
     ]

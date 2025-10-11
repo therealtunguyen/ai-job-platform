@@ -48,6 +48,7 @@ export const API_PATHS = {
       DELETE: "/api/jobseekers/languages/:languageId",
     },
     SOCIAL_NETWORKS: {
+      GET_AVAILABLE: "/api/jobseekers/social-networks/available",
       GET: "/api/jobseekers/social-networks",
       ADD: "/api/jobseekers/social-networks",
       UPDATE: "/api/jobseekers/social-networks/:socialNetworkId",
