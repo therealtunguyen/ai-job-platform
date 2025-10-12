@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { processCv, getCvById } from "../../services/cv/cvService";
+import { parseCv } from "../../services/cv/parsingService";
+import { supabase } from "../../supabaseClient";
 import multer from "multer";
 
 // CV upload logic with integrated authentication and error handling
@@ -51,6 +53,24 @@ export const uploadCv = (req: Request, res: Response) => {
       }
       
       console.log("CV uploaded successfully:", result.fileUrl);
+      
+      // After successful upload, extract data from the CV and update profile
+      try {
+        console.log("Starting CV data extraction and profile update...");
+        
+        // We can parse directly from the buffer to avoid downloading the file we just uploaded
+        // This function will both extract data and update the profile in the service layer
+        const parseResult = await parseCv(req.file.buffer, userId);
+        
+        if (!parseResult.success) {
+          console.error("Warning: CV parsing or profile update had issues:", parseResult.error);
+          // We continue even if extraction has issues, as the CV was uploaded successfully
+        }
+      } catch (extractError) {
+        console.error("Error during CV data extraction:", extractError);
+        // We continue even if extraction fails, as the CV was uploaded successfully
+      }
+      
       res.status(200).json({ 
         message: "CV uploaded successfully", 
         fileUrl: result.fileUrl,
