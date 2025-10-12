@@ -54,34 +54,17 @@ export const uploadCv = (req: Request, res: Response) => {
       
       console.log("CV uploaded successfully:", result.fileUrl);
       
-      // After successful upload, extract data from the CV
+      // After successful upload, extract data from the CV and update profile
       try {
-        console.log("Starting CV data extraction...");
+        console.log("Starting CV data extraction and profile update...");
         
         // We can parse directly from the buffer to avoid downloading the file we just uploaded
-        const extractedData = await parseCv(req.file.buffer);
-        console.log("Successfully extracted CV data:", extractedData);
+        // This function will both extract data and update the profile in the service layer
+        const parseResult = await parseCv(req.file.buffer, userId);
         
-        // Update the job_seeker profile with the extracted data
-        if (Object.keys(extractedData).length > 0) {
-          const updateData: any = {};
-          
-          // Add extracted fields to the update data
-          if (extractedData.full_name) updateData.full_name = extractedData.full_name;
-          if (extractedData.phone) updateData.phone = extractedData.phone;
-          if (extractedData.address) updateData.address = extractedData.address;
-          
-          // Update the job_seekers table with extracted information
-          const { error: updateError } = await supabase
-            .from("job_seekers")
-            .update(updateData)
-            .eq("user_id", userId);
-          
-          if (updateError) {
-            console.error("Error updating job seeker profile with extracted data:", updateError);
-          } else {
-            console.log("Job seeker profile updated with extracted CV data");
-          }
+        if (!parseResult.success) {
+          console.error("Warning: CV parsing or profile update had issues:", parseResult.error);
+          // We continue even if extraction has issues, as the CV was uploaded successfully
         }
       } catch (extractError) {
         console.error("Error during CV data extraction:", extractError);
