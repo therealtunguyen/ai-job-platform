@@ -45,7 +45,8 @@ export async function listJobHandler(req: Request, res: Response) {
     offset < 0
   ) {
     return res.status(400).json({
-      message: "Invalid query parameters: limit must be between 1 and 100; offset must be >= 0.",
+      message:
+        "Invalid query parameters: limit must be between 1 and 100; offset must be >= 0.",
     });
   }
   try {
@@ -64,7 +65,12 @@ export async function updateJob(req: Request, res: Response) {
   try {
     const employerId = (req as any).user.id;
     const updated = await updateJobService(req.params.id, req.body, employerId);
-    if (!updated) return res.status(404).json({ message: "Job not found or you do not have permission to update it" });
+    if (!updated)
+      return res
+        .status(404)
+        .json({
+          message: "Job not found or you do not have permission to update it",
+        });
     res.json(updated);
   } catch (e: any) {
     res.status(500).json({ message: "Failed to update job", error: e.message });
@@ -75,10 +81,14 @@ export async function deleteJob(req: Request, res: Response) {
   try {
     const employerId = (req as any).user.id;
     const ok = await deleteJobService(req.params.id, employerId);
-    if (!ok) return res.status(404).json({ message: "Job not found or you do not have permission to delete it" });
+    if (!ok)
+      return res
+        .status(404)
+        .json({
+          message: "Job not found or you do not have permission to delete it",
+        });
     res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ message: "Failed to delete job", error: e.message });
   }
 }
-

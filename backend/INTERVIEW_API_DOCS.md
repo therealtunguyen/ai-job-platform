@@ -22,46 +22,46 @@ The interview API is accessible under `/api/interviews`.
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**:
 
-    ```json
-    {
-        "jobId": "string (optional)",
-        "interviewType": "string (optional, e.g. 'technical', 'behavioral', 'general')",
-        "aiModel": "string (optional, e.g. 'gpt-3.5-turbo', 'gpt-4')",
-        "difficulty": "string (optional, one of: 'easy', 'medium', 'hard')",
-        "customConfig": {
-            "questionCount": "number (optional, default 5, max 10)"
-        }
+  ```json
+  {
+    "jobId": "string (optional)",
+    "interviewType": "string (optional, e.g. 'technical', 'behavioral', 'general')",
+    "aiModel": "string (optional, e.g. 'gpt-3.5-turbo', 'gpt-4')",
+    "difficulty": "string (optional, one of: 'easy', 'medium', 'hard')",
+    "customConfig": {
+      "questionCount": "number (optional, default 5, max 10)"
     }
-    ```
+  }
+  ```
 
 - **Success Response** (200):
 
-    ```json
-    {
-        "sessionId": "string",
-        "status": "string",
-        "startedAt": "string (ISO date)",
-        "aiConfig": "object",
-        "questions": [
-            {
-                "index": "number",
-                "prompt": "string",
-                "type": "string",
-                "difficulty": "string",
-                "entryId": "string (the entry_id for submitting answers)"
-            }
-        ],
-        "message": "string"
-    }
-    ```
+  ```json
+  {
+    "sessionId": "string",
+    "status": "string",
+    "startedAt": "string (ISO date)",
+    "aiConfig": "object",
+    "questions": [
+      {
+        "index": "number",
+        "prompt": "string",
+        "type": "string",
+        "difficulty": "string",
+        "entryId": "string (the entry_id for submitting answers)"
+      }
+    ],
+    "message": "string"
+  }
+  ```
 
 - **Error Response** (400, 401, 500):
-    ```json
-    {
-        "error": "string",
-        "details": "string (optional)"
-    }
-    ```
+  ```json
+  {
+    "error": "string",
+    "details": "string (optional)"
+  }
+  ```
 
 ### Submit an Answer to an Interview Question
 
@@ -70,31 +70,31 @@ The interview API is accessible under `/api/interviews`.
 - **URL Parameters**: `interviewId` - the session ID of the interview
 - **Request Body**:
 
-    ```json
-    {
-        "entryId": "string (the entry_id from the question in start response)",
-        "responseText": "string (the answer text)"
-    }
-    ```
+  ```json
+  {
+    "entryId": "string (the entry_id from the question in start response)",
+    "responseText": "string (the answer text)"
+  }
+  ```
 
 - **Success Response** (200):
 
-    ```json
-    {
-        "message": "Answer submitted successfully",
-        "entryId": "string",
-        "responseText": "string",
-        "aiFeedback": "object or null (AI-generated feedback)"
-    }
-    ```
+  ```json
+  {
+    "message": "Answer submitted successfully",
+    "entryId": "string",
+    "responseText": "string",
+    "aiFeedback": "object or null (AI-generated feedback)"
+  }
+  ```
 
 - **Error Response** (400, 401, 500):
-    ```json
-    {
-        "error": "string",
-        "details": "string (optional)"
-    }
-    ```
+  ```json
+  {
+    "error": "string",
+    "details": "string (optional)"
+  }
+  ```
 
 ### Get All User Interviews
 
@@ -103,33 +103,33 @@ The interview API is accessible under `/api/interviews`.
 
 - **Success Response** (200):
 
-    ```json
-    {
-        "interviews": [
-            {
-                "session_id": "string",
-                "candidate_id": "string",
-                "status": "string",
-                "started_at": "string (ISO date)",
-                "completed_at": "string (ISO date) or null",
-                "total_questions": "number or null",
-                "answered_questions": "number or null",
-                "overall_score": "number or null",
-                "config": "object"
-            }
-        ],
-        "count": "number",
-        "message": "string"
-    }
-    ```
+  ```json
+  {
+    "interviews": [
+      {
+        "session_id": "string",
+        "candidate_id": "string",
+        "status": "string",
+        "started_at": "string (ISO date)",
+        "completed_at": "string (ISO date) or null",
+        "total_questions": "number or null",
+        "answered_questions": "number or null",
+        "overall_score": "number or null",
+        "config": "object"
+      }
+    ],
+    "count": "number",
+    "message": "string"
+  }
+  ```
 
 - **Error Response** (401, 500):
-    ```json
-    {
-        "error": "string",
-        "details": "string (optional)"
-    }
-    ```
+  ```json
+  {
+    "error": "string",
+    "details": "string (optional)"
+  }
+  ```
 
 ### Get a Specific Interview
 
@@ -139,45 +139,45 @@ The interview API is accessible under `/api/interviews`.
 
 - **Success Response** (200):
 
-    ```json
-    {
-        "interview": {
-            "session_id": "string",
-            "candidate_id": "string",
-            "status": "string",
-            "started_at": "string (ISO date)",
-            "completed_at": "string (ISO date) or null",
-            "total_questions": "number or null",
-            "answered_questions": "number or null",
-            "overall_score": "number or null",
-            "config": "object"
-        },
-        "conversationEntries": [
-            {
-                "entry_id": "string",
-                "session_id": "string",
-                "question_text": "string",
-                "response_text": "string or null",
-                "question_type": "string",
-                "difficulty": "string",
-                "response_submitted_at": "string (ISO date) or null",
-                "ai_evaluation_score": "number or null",
-                "ai_feedback": "string or null",
-                "response_quality": "string or null",
-                "suggested_improvements": "string or null"
-            }
-        ],
-        "message": "string"
-    }
-    ```
+  ```json
+  {
+    "interview": {
+      "session_id": "string",
+      "candidate_id": "string",
+      "status": "string",
+      "started_at": "string (ISO date)",
+      "completed_at": "string (ISO date) or null",
+      "total_questions": "number or null",
+      "answered_questions": "number or null",
+      "overall_score": "number or null",
+      "config": "object"
+    },
+    "conversationEntries": [
+      {
+        "entry_id": "string",
+        "session_id": "string",
+        "question_text": "string",
+        "response_text": "string or null",
+        "question_type": "string",
+        "difficulty": "string",
+        "response_submitted_at": "string (ISO date) or null",
+        "ai_evaluation_score": "number or null",
+        "ai_feedback": "string or null",
+        "response_quality": "string or null",
+        "suggested_improvements": "string or null"
+      }
+    ],
+    "message": "string"
+  }
+  ```
 
 - **Error Response** (400, 401, 404, 500):
-    ```json
-    {
-        "error": "string",
-        "details": "string (optional)"
-    }
-    ```
+  ```json
+  {
+    "error": "string",
+    "details": "string (optional)"
+  }
+  ```
 
 ### Abandon an Interview Session
 
@@ -187,22 +187,22 @@ The interview API is accessible under `/api/interviews`.
 
 - **Success Response** (200):
 
-    ```json
-    {
-        "sessionId": "string",
-        "status": "string",
-        "completedAt": "string (ISO date)",
-        "message": "Interview session abandoned successfully"
-    }
-    ```
+  ```json
+  {
+    "sessionId": "string",
+    "status": "string",
+    "completedAt": "string (ISO date)",
+    "message": "Interview session abandoned successfully"
+  }
+  ```
 
 - **Error Response** (400, 401, 500):
-    ```json
-    {
-        "error": "string",
-        "details": "string (optional)"
-    }
-    ```
+  ```json
+  {
+    "error": "string",
+    "details": "string (optional)"
+  }
+  ```
 
 ## Integration Guide
 
@@ -227,7 +227,7 @@ The interview API is accessible under `/api/interviews`.
 
 - Always check the status code and error field in responses
 - Common error codes:
-    - 400: Bad request (invalid input or missing required fields)
-    - 401: Unauthorized (missing or invalid token)
-    - 404: Not found (interview session not found)
-    - 500: Internal server error (contact backend team)
+  - 400: Bad request (invalid input or missing required fields)
+  - 401: Unauthorized (missing or invalid token)
+  - 404: Not found (interview session not found)
+  - 500: Internal server error (contact backend team)

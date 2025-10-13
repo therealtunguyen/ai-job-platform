@@ -1,9 +1,11 @@
 import express from "express";
 import {
-    register,
-    login,
-    logout,
-    getCurrentUserProfile,
+  register,
+  login,
+  logout,
+  refresh,
+  updateEmail,
+  getCurrentUserProfile,
 } from "../../controllers/auth/authController";
 import { upload } from "../../utils/fileUpload";
 
@@ -17,6 +19,12 @@ router.post("/login", login);
 
 // Logout route
 router.post("/logout", logout);
+
+// Refresh token route
+router.post("/refresh", refresh);
+
+// Update email route
+router.put("/email", updateEmail);
 
 // Get current user profile
 router.get("/me", getCurrentUserProfile);

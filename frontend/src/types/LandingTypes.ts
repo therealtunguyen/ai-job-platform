@@ -1,10 +1,10 @@
 export type User = {
-  fullName: string,
-  role: string
-}
+  fullName: string;
+  role: string;
+};
 
 export type Stats = {
-  icon: any; 
+  icon: any;
   label: string;
   value: string;
-}
+};

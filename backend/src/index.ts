@@ -32,12 +32,12 @@ app.use("/api/interviews", interviewRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {
-    res.send("Backend server is running!");
+  res.send("Backend server is running!");
 });
 
 // Error Handling Middleware
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

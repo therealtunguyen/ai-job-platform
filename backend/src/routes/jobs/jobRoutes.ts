@@ -1,12 +1,15 @@
 import express from "express";
 import {
-	createJob,
-	getJob,
-	updateJob,
-	deleteJob,
-	listJobHandler,
+  createJob,
+  getJob,
+  updateJob,
+  deleteJob,
+  listJobHandler,
 } from "../../controllers/jobs/jobController";
-import { createJobValidator, updateJobValidator } from "../../middleware/validation/jobValidation";
+import {
+  createJobValidator,
+  updateJobValidator,
+} from "../../middleware/validation/jobValidation";
 import { authenticateToken } from "../../middleware/auth/jwtAuth";
 
 const router = express.Router();
@@ -21,4 +24,3 @@ router.put("/:id", authenticateToken, updateJobValidator, updateJob);
 router.delete("/:id", authenticateToken, deleteJob);
 
 export default router;
-

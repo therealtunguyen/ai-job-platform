@@ -51,9 +51,9 @@ To protect a route, simply add the `authenticateToken` middleware:
 import { authenticateToken } from "../middleware/auth/jwtAuth";
 
 router.get("/protected-route", authenticateToken, (req, res) => {
-    // The authenticated user is available as (req as any).user
-    const userId = (req as any).user.id;
-    res.json({ message: "This is a protected route", userId });
+  // The authenticated user is available as (req as any).user
+  const userId = (req as any).user.id;
+  res.json({ message: "This is a protected route", userId });
 });
 ```
 
@@ -63,11 +63,11 @@ In protected routes, the authenticated user's information is available on the re
 
 ```typescript
 export const someProtectedRoute = async (req: Request, res: Response) => {
-    const userId = (req as any).user.id;
-    const userType = (req as any).user.user_type;
+  const userId = (req as any).user.id;
+  const userType = (req as any).user.user_type;
 
-    // Use userId and userType to query user-specific data
-    // ...
+  // Use userId and userType to query user-specific data
+  // ...
 };
 ```
 
@@ -93,4 +93,3 @@ The authentication system uses the following tables from your Supabase database:
 - Client-side authentication should use the ANON_KEY (not implemented in this backend)
 - Passwords are securely hashed by Supabase Auth
 - JWT tokens are automatically validated by the authentication middleware
-

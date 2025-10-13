@@ -1,11 +1,11 @@
 import express from "express";
 import {
-    submitApplication,
-    getApplicationById,
-    updateApplicationStatus,
-    listUserApplications,
-    listJobApplications,
-    listApplicationsForJob,
+  submitApplication,
+  getApplicationById,
+  updateApplicationStatus,
+  listUserApplications,
+  listJobApplications,
+  listApplicationsForJob,
 } from "../../controllers/application/applicationController";
 import { authenticateToken } from "../../middleware/auth/jwtAuth";
 

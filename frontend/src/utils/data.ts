@@ -7,7 +7,11 @@ import {
   Shield,
   Clock,
   Award,
-} from 'lucide-react';
+  LucideLayoutDashboard,
+  LucideLogOut,
+  MessagesSquare,
+  BriefcaseBusiness,
+} from "lucide-react";
 
 export const jobSeekerFeatures = [
   {
@@ -60,5 +64,38 @@ export const employerFeatures = [
     title: "Quick Hiring",
     description:
       "Streamlined hiring process reduces time-to-hire by 60% with automated screening",
+  },
+];
+
+export const SIDE_MENU_JOBSEEKER_DASHBOARD = [
+  {
+    id: "01",
+    icon: LucideLayoutDashboard,
+    label: "Dashboard",
+    path: "/jobseeker-dashboard",
+  },
+  {
+    id: "02",
+    icon: Users,
+    label: "My Profile",
+    path: "/jobseeker-profile",
+  },
+  {
+    id: "03",
+    icon: MessagesSquare,
+    label: "Interview",
+    path: "/jobseeker-interview",
+  },
+  {
+    id: "04",
+    icon: BriefcaseBusiness,
+    label: "Apply & Save Job",
+    path: "/jobseeker-apply-save-job",
+  },
+  {
+    id: "05",
+    icon: LucideLogOut,
+    label: "Logout",
+    path: "/logout",
   },
 ];

@@ -25,13 +25,13 @@ Update job seeker profile information.
 
 ```json
 {
-    "full_name": "string",
-    "phone": "string",
-    "address": "string",
-    "preferred_location": "string",
-    "expected_salary": "number",
-    "summary": "string",
-    "status": "INCOMPLETE|COMPLETE|VERIFIED|SUSPENDED"
+  "full_name": "string",
+  "phone": "string",
+  "address": "string",
+  "preferred_location": "string",
+  "expected_salary": "number",
+  "summary": "string",
+  "status": "INCOMPLETE|COMPLETE|VERIFIED|SUSPENDED"
 }
 ```
 
@@ -39,10 +39,10 @@ Update job seeker profile information.
 
 ```json
 {
-    "message": "Job seeker profile updated successfully",
-    "data": {
-        // Updated job seeker profile data
-    }
+  "message": "Job seeker profile updated successfully",
+  "data": {
+    // Updated job seeker profile data
+  }
 }
 ```
 
@@ -59,12 +59,12 @@ Update employer profile information.
 
 ```json
 {
-    "company_name": "string",
-    "contact_person": "string",
-    "phone": "string",
-    "address": "string",
-    "description": "string",
-    "industry": "string"
+  "company_name": "string",
+  "contact_person": "string",
+  "phone": "string",
+  "address": "string",
+  "description": "string",
+  "industry": "string"
 }
 ```
 
@@ -72,10 +72,10 @@ Update employer profile information.
 
 ```json
 {
-    "message": "Employer profile updated successfully",
-    "data": {
-        // Updated employer profile data
-    }
+  "message": "Employer profile updated successfully",
+  "data": {
+    // Updated employer profile data
+  }
 }
 ```
 
@@ -94,10 +94,10 @@ Update job seeker profile information and upload a new profile image in one requ
 
 ```json
 {
-    "message": "Profile updated successfully",
-    "data": {
-        // Updated job seeker profile data
-    }
+  "message": "Profile updated successfully",
+  "data": {
+    // Updated job seeker profile data
+  }
 }
 ```
 
@@ -114,10 +114,10 @@ Update employer profile information and upload a new logo in one request.
 
 ```json
 {
-    "message": "Profile updated successfully",
-    "data": {
-        // Updated employer profile data
-    }
+  "message": "Profile updated successfully",
+  "data": {
+    // Updated employer profile data
+  }
 }
 ```
 
@@ -135,9 +135,9 @@ Get the current user's profile based on their user type (job seeker or employer)
 
 ```json
 {
-    "data": {
-        // Profile data for job seeker or employer
-    }
+  "data": {
+    // Profile data for job seeker or employer
+  }
 }
 ```
 
@@ -156,9 +156,9 @@ Upload and set a new profile image/logo.
 
 ```json
 {
-    "message": "Profile image updated successfully",
-    "publicUrl": "URL to the uploaded image",
-    "fileName": "name of the uploaded file"
+  "message": "Profile image updated successfully",
+  "publicUrl": "URL to the uploaded image",
+  "fileName": "name of the uploaded file"
 }
 ```
 
@@ -176,7 +176,7 @@ Delete the current user's profile image/logo.
 
 ```json
 {
-    "message": "Profile image deleted successfully"
+  "message": "Profile image deleted successfully"
 }
 ```
 
@@ -186,7 +186,7 @@ All endpoints return error responses in the following format:
 
 ```json
 {
-    "error": "Error message"
+  "error": "Error message"
 }
 ```
 
@@ -197,4 +197,3 @@ Status codes:
 - 403: Forbidden (user not authorized to perform action)
 - 404: Not found (user profile not found)
 - 500: Internal server error
-
