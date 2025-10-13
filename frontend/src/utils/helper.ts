@@ -1,13 +1,13 @@
-export const validateEmail = (email : string) => {
-  if (!email || !email.trim()) return 'Email is required';
+export const validateEmail = (email: string) => {
+  if (!email || !email.trim()) return "Email is required";
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return 'Please enter a valid email address';
+  if (!emailRegex.test(email)) return "Please enter a valid email address";
 
-  return '';
+  return "";
 };
 
-export const validatePassword = (password : string) => {
+export const validatePassword = (password: string) => {
   if (!password) return "Password is required";
   if (password.length < 8) return "Password must be at least 8 characters";
   if (!/(?=.*[a-z])/.test(password))
@@ -20,8 +20,7 @@ export const validatePassword = (password : string) => {
   return "";
 };
 
-
-export const validateAvatar = (file? : File) => {
+export const validateAvatar = (file?: File) => {
   if (!file) return ""; // Avatar không bắt buộc
 
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];

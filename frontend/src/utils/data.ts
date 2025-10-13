@@ -86,9 +86,9 @@ export const SIDE_MENU_JOBSEEKER_DASHBOARD = [
     label: "Interview",
     path: "/jobseeker-interview",
   },
-{
+  {
     id: "04",
-    icon: BriefcaseBusiness ,
+    icon: BriefcaseBusiness,
     label: "Apply & Save Job",
     path: "/jobseeker-apply-save-job",
   },

@@ -12,70 +12,73 @@ export const uploadCv = (req: Request, res: Response) => {
     storage: storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
     fileFilter: (req, file, cb) => {
-      if (file.mimetype === 'application/pdf') {
+      if (file.mimetype === "application/pdf") {
         cb(null, true);
       } else {
-        cb(new Error('Only PDF files are allowed'));
+        cb(new Error("Only PDF files are allowed"));
       }
-    }
-  }).single('cv');
+    },
+  }).single("cv");
 
   // Process the file upload
-  upload(req, res, async function(err) {
+  upload(req, res, async function (err) {
     // Handle multer error
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ error: `Upload error: ${err.message}` });
     } else if (err) {
       return res.status(400).json({ error: err.message });
     }
-    
+
     // Check if file exists
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
-    
+
     try {
       // Get user ID from request (set by auth middleware)
       const userId = (req as any).user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
-      
+
       // Process and store CV
       const result = await processCv(req.file, userId);
-      
+
       if (!result.success) {
         console.error("CV upload failed:", result.error);
-        return res.status(500).json({ 
-          error: "Failed to upload CV", 
-          details: result.error 
+        return res.status(500).json({
+          error: "Failed to upload CV",
+          details: result.error,
         });
       }
-      
+
       console.log("CV uploaded successfully:", result.fileUrl);
-      
+
       // After successful upload, extract data from the CV and update profile
       try {
         console.log("Starting CV data extraction and profile update...");
-        
+
         // We can parse directly from the buffer to avoid downloading the file we just uploaded
         // This function will both extract data and update the profile in the service layer
         const parseResult = await parseCv(req.file.buffer, userId);
-        
+
         if (!parseResult.success) {
-          console.error("Warning: CV parsing or profile update had issues:", parseResult.error);
+          console.error(
+            "Warning: CV parsing or profile update had issues:",
+            parseResult.error,
+          );
           // We continue even if extraction has issues, as the CV was uploaded successfully
         }
       } catch (extractError) {
         console.error("Error during CV data extraction:", extractError);
         // We continue even if extraction fails, as the CV was uploaded successfully
       }
-      
-      res.status(200).json({ 
-        message: "CV uploaded successfully", 
+
+      res.status(200).json({
+        message: "CV uploaded successfully",
         fileUrl: result.fileUrl,
         fileName: result.fileName,
-        cvId: result.cvId // Include the new CV ID in the response
+        cvId: result.cvId, // Include the new CV ID in the response
       });
     } catch (error: any) {
       console.error("Unexpected CV upload error:", error);
@@ -88,7 +91,7 @@ export const uploadCv = (req: Request, res: Response) => {
 export const getCv = async (req: Request, res: Response) => {
   try {
     const cvId = req.params.id;
-    
+
     // Get user ID from request (set by auth middleware)
     const userId = (req as any).user?.id;
     if (!userId) {
@@ -110,7 +113,7 @@ export const getCv = async (req: Request, res: Response) => {
     // Return the CV data
     res.status(200).json({
       message: "CV retrieved successfully",
-      cv: result.data
+      cv: result.data,
     });
   } catch (error: any) {
     console.error("Error getting CV:", error);

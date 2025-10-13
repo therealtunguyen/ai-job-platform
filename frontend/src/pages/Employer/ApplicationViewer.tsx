@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const ApplicationViewer = () => {
-  return (
-    <div>ApplicationViewer</div>
-  )
-}
+  return <div>ApplicationViewer</div>;
+};
 
-export default ApplicationViewer
+export default ApplicationViewer;

@@ -3,6 +3,7 @@
 This document explains how to use the Job Seeker Profile API to manage languages and social networks for job seekers.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Authentication](#authentication)
 - [API Endpoints](#api-endpoints)
@@ -28,6 +29,7 @@ Authorization: Bearer <your-jwt-token>
 ### Languages
 
 #### Get Job Seeker Languages
+
 - **Method**: `GET`
 - **URL**: `/api/jobseekers/languages`
 - **Headers**:
@@ -51,6 +53,7 @@ Authorization: Bearer <your-jwt-token>
   ```
 
 #### Add Language to Job Seeker
+
 - **Method**: `POST`
 - **URL**: `/api/jobseekers/languages`
 - **Headers**:
@@ -79,6 +82,7 @@ Authorization: Bearer <your-jwt-token>
   - 409: Language already added
 
 #### Remove Language from Job Seeker
+
 - **Method**: `DELETE`
 - **URL**: `/api/jobseekers/languages/{languageId}`
 - **Headers**:
@@ -89,6 +93,7 @@ Authorization: Bearer <your-jwt-token>
 ### Social Networks
 
 #### Get Job Seeker Social Networks
+
 - **Method**: `GET`
 - **URL**: `/api/jobseekers/social-networks`
 - **Headers**:
@@ -115,6 +120,7 @@ Authorization: Bearer <your-jwt-token>
   ```
 
 #### Add Social Network to Job Seeker
+
 - **Method**: `POST`
 - **URL**: `/api/jobseekers/social-networks`
 - **Headers**:
@@ -147,6 +153,7 @@ Authorization: Bearer <your-jwt-token>
   - 409: Social network already added
 
 #### Update Job Seeker Social Network
+
 - **Method**: `PUT`
 - **URL**: `/api/jobseekers/social-networks/{socialNetworkId}`
 - **Headers**:
@@ -166,6 +173,7 @@ Authorization: Bearer <your-jwt-token>
   - 404: Social network not found
 
 #### Remove Social Network from Job Seeker
+
 - **Method**: `DELETE`
 - **URL**: `/api/jobseekers/social-networks/{socialNetworkId}`
 - **Headers**:
@@ -199,12 +207,12 @@ Here are some examples of how to use these APIs in a frontend application:
 // Using fetch API
 const getLanguages = async () => {
   try {
-    const response = await fetch('/api/jobseekers/languages', {
-      method: 'GET',
+    const response = await fetch("/api/jobseekers/languages", {
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -214,7 +222,7 @@ const getLanguages = async () => {
     const data = await response.json();
     return data.languages;
   } catch (error) {
-    console.error('Error fetching languages:', error);
+    console.error("Error fetching languages:", error);
     throw error;
   }
 };
@@ -226,13 +234,13 @@ const getLanguages = async () => {
 // Using async/await
 const addLanguage = async (languageId) => {
   try {
-    const response = await fetch('/api/jobseekers/languages', {
-      method: 'POST',
+    const response = await fetch("/api/jobseekers/languages", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ language_id: languageId })
+      body: JSON.stringify({ language_id: languageId }),
     });
 
     if (!response.ok) {
@@ -242,7 +250,7 @@ const addLanguage = async (languageId) => {
     const data = await response.json();
     return data.language;
   } catch (error) {
-    console.error('Error adding language:', error);
+    console.error("Error adding language:", error);
     throw error;
   }
 };
@@ -254,17 +262,17 @@ const addLanguage = async (languageId) => {
 // Using async/await
 const addSocialNetwork = async (socialNetworkId, username, profileUrl) => {
   try {
-    const response = await fetch('/api/jobseekers/social-networks', {
-      method: 'POST',
+    const response = await fetch("/api/jobseekers/social-networks", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         social_network_id: socialNetworkId,
         username: username,
-        profile_url: profileUrl
-      })
+        profile_url: profileUrl,
+      }),
     });
 
     if (!response.ok) {
@@ -274,7 +282,7 @@ const addSocialNetwork = async (socialNetworkId, username, profileUrl) => {
     const data = await response.json();
     return data.social_network;
   } catch (error) {
-    console.error('Error adding social network:', error);
+    console.error("Error adding social network:", error);
     throw error;
   }
 };
@@ -286,14 +294,17 @@ const addSocialNetwork = async (socialNetworkId, username, profileUrl) => {
 // Using async/await
 const updateSocialNetwork = async (socialNetworkId, updates) => {
   try {
-    const response = await fetch(`/api/jobseekers/social-networks/${socialNetworkId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+    const response = await fetch(
+      `/api/jobseekers/social-networks/${socialNetworkId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
       },
-      body: JSON.stringify(updates)
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -302,7 +313,7 @@ const updateSocialNetwork = async (socialNetworkId, updates) => {
     const data = await response.json();
     return data.social_network;
   } catch (error) {
-    console.error('Error updating social network:', error);
+    console.error("Error updating social network:", error);
     throw error;
   }
 };
@@ -315,10 +326,10 @@ const updateSocialNetwork = async (socialNetworkId, updates) => {
 const removeLanguage = async (languageId) => {
   try {
     const response = await fetch(`/api/jobseekers/languages/${languageId}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
 
     if (!response.ok) {
@@ -327,7 +338,7 @@ const removeLanguage = async (languageId) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error removing language:', error);
+    console.error("Error removing language:", error);
     throw error;
   }
 };
@@ -336,7 +347,7 @@ const removeLanguage = async (languageId) => {
 ### React Component Example
 
 ```jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const LanguageManager = () => {
   const [languages, setLanguages] = useState([]);
@@ -349,7 +360,7 @@ const LanguageManager = () => {
         const data = await getLanguages(); // Using the function defined above
         setLanguages(data);
       } catch (error) {
-        console.error('Failed to load languages:', error);
+        console.error("Failed to load languages:", error);
       }
     };
 
@@ -360,7 +371,7 @@ const LanguageManager = () => {
         // const data = await getAllLanguages();
         // setAvailableLanguages(data);
       } catch (error) {
-        console.error('Failed to load available languages:', error);
+        console.error("Failed to load available languages:", error);
       }
     };
 
@@ -373,16 +384,16 @@ const LanguageManager = () => {
       const newLanguage = await addLanguage(languageId);
       setLanguages([...languages, newLanguage]);
     } catch (error) {
-      console.error('Failed to add language:', error);
+      console.error("Failed to add language:", error);
     }
   };
 
   const handleRemoveLanguage = async (languageId) => {
     try {
       await removeLanguage(languageId);
-      setLanguages(languages.filter(lang => lang.language_id !== languageId));
+      setLanguages(languages.filter((lang) => lang.language_id !== languageId));
     } catch (error) {
-      console.error('Failed to remove language:', error);
+      console.error("Failed to remove language:", error);
     }
   };
 
@@ -390,7 +401,7 @@ const LanguageManager = () => {
     <div>
       <h2>My Languages</h2>
       <div>
-        {languages.map(lang => (
+        {languages.map((lang) => (
           <div key={lang.language_id}>
             <span>{lang.language.name}</span>
             <button onClick={() => handleRemoveLanguage(lang.language_id)}>
@@ -399,9 +410,7 @@ const LanguageManager = () => {
           </div>
         ))}
       </div>
-      <div>
-        {/* Dropdown or list to select from available languages */}
-      </div>
+      <div>{/* Dropdown or list to select from available languages */}</div>
     </div>
   );
 };

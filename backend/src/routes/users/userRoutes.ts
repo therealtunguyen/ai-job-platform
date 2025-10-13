@@ -1,8 +1,8 @@
 import express from "express";
 import {
-    createUser,
-    getUser,
-    updateUser,
+  createUser,
+  getUser,
+  updateUser,
 } from "../../controllers/users/userController";
 import profileImageRoutes from "./profileImageRoutes";
 import profileUpdateRoutes from "./profileUpdateRoutes";

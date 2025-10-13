@@ -81,7 +81,7 @@ const FeatureJob = () => {
         const limitedJobs = Array.isArray(jobsData) ? jobsData.slice(0, 4) : [];
         setJobs(limitedJobs);
       } catch (error) {
-        console.error('Error fetching jobs:', error);
+        console.error("Error fetching jobs:", error);
         setJobs([]);
       } finally {
         setLoading(false);
@@ -106,47 +106,60 @@ const FeatureJob = () => {
 
         {/* Job Cards Grid */}
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
-          {loading ? (
-            // Loading skeleton
-            Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="animate-pulse">
-                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                  <div className="mb-4 flex items-start justify-between">
-                    <div className="h-6 w-8 bg-gray-200 rounded"></div>
-                    <div className="h-6 w-16 bg-gray-200 rounded"></div>
-                  </div>
-                  <div className="mb-2 h-6 w-3/4 bg-gray-200 rounded"></div>
-                  <div className="mb-4 h-4 w-1/2 bg-gray-200 rounded"></div>
-                  <div className="mb-4 flex gap-2">
-                    <div className="h-6 w-16 bg-gray-200 rounded"></div>
-                    <div className="h-6 w-16 bg-gray-200 rounded"></div>
+          {loading
+            ? // Loading skeleton
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div className="h-6 w-8 rounded bg-gray-200"></div>
+                      <div className="h-6 w-16 rounded bg-gray-200"></div>
+                    </div>
+                    <div className="mb-2 h-6 w-3/4 rounded bg-gray-200"></div>
+                    <div className="mb-4 h-4 w-1/2 rounded bg-gray-200"></div>
+                    <div className="mb-4 flex gap-2">
+                      <div className="h-6 w-16 rounded bg-gray-200"></div>
+                      <div className="h-6 w-16 rounded bg-gray-200"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            jobs.map((job, index) => {
-              const salaryLabel = formatSalary(job.min_salary, job.max_salary);
-              const experience = formatExperience(job.min_experience, job.max_experience);
-              const posted = job.posted_at || job.created_at || job.updated_at;
-              return (
-                <JobCard
-                  key={job.job_id || index}
-                  title={job.title}
-                  company={job.company_name || job.employer_company_name || ""}
-                  location={job.location || ""}
-                  timeAgo={formatTimeAgo(posted)}
-                  salary={salaryLabel}
-                  jobType={job.job_type || "Full Time"}
-                  companyType={job.company_type || "Private"}
-                  experience={experience}
-                  companyLogo={job.employer_logo || job.employer?.logo || "/Logo_SkillSync_BR.png"}
-                />
-              );
-            })
-          )}
+              ))
+            : jobs.map((job, index) => {
+                const salaryLabel = formatSalary(
+                  job.min_salary,
+                  job.max_salary,
+                );
+                const experience = formatExperience(
+                  job.min_experience,
+                  job.max_experience,
+                );
+                const posted =
+                  job.posted_at || job.created_at || job.updated_at;
+                return (
+                  <JobCard
+                    key={job.job_id || index}
+                    title={job.title}
+                    company={
+                      job.company_name || job.employer_company_name || ""
+                    }
+                    location={job.location || ""}
+                    timeAgo={formatTimeAgo(posted)}
+                    salary={salaryLabel}
+                    jobType={job.job_type || "Full Time"}
+                    companyType={job.company_type || "Private"}
+                    experience={experience}
+                    companyLogo={
+                      job.employer_logo ||
+                      job.employer?.logo ||
+                      "/Logo_SkillSync_BR.png"
+                    }
+                  />
+                );
+              })}
           {!loading && jobs.length === 0 && (
-            <div className="col-span-1 md:col-span-2 text-center text-gray-500">No jobs found.</div>
+            <div className="col-span-1 text-center text-gray-500 md:col-span-2">
+              No jobs found.
+            </div>
           )}
         </div>
 

@@ -1,5 +1,25 @@
 import JobSeekerLayout from "@/components/JobSeeker/JobSeekerLayout";
-import { Mail, Upload, Download, User, MapPin, Phone, DollarSign, FileText, Camera, Save, Edit3, Plus, Trash2, Globe, Linkedin, Twitter, Github, Instagram, Facebook } from "lucide-react";
+import {
+  Mail,
+  Upload,
+  Download,
+  User,
+  MapPin,
+  Phone,
+  DollarSign,
+  FileText,
+  Camera,
+  Save,
+  Edit3,
+  Plus,
+  Trash2,
+  Globe,
+  Linkedin,
+  Twitter,
+  Github,
+  Instagram,
+  Facebook,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { API_PATHS, BASE_URL } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
@@ -24,7 +44,7 @@ const UserProfile = () => {
   const [newSocialNetwork, setNewSocialNetwork] = useState({
     social_network_id: "",
     username: "",
-    profile_url: ""
+    profile_url: "",
   });
   const [showAddSocialNetwork, setShowAddSocialNetwork] = useState(false);
 
@@ -45,7 +65,7 @@ const UserProfile = () => {
               : "";
           console.log("[GETUSER] cv_file_path:", rawCvPath);
           console.log("[GETUSER] resolved CV URL:", resolvedCvUrl);
-          setProfileData(prev => ({
+          setProfileData((prev) => ({
             ...prev,
             full_name: profile?.full_name || "",
             email: user?.email || "",
@@ -70,11 +90,13 @@ const UserProfile = () => {
     fetchAvailableSocialNetworks();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -88,17 +110,21 @@ const UserProfile = () => {
         phone: profileData.phone,
         address: profileData.address,
         preferred_location: profileData.preferred_location,
-        expected_salary: profileData.expected_salary ? parseInt(profileData.expected_salary) : null,
+        expected_salary: profileData.expected_salary
+          ? parseInt(profileData.expected_salary)
+          : null,
         summary: profileData.summary,
       };
 
       await axiosInstance.put(API_PATHS.USERS.UPDATE_PROFILE, updateData);
 
       // Update email separately if it has changed
-      const currentEmail = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).email : '';
+      const currentEmail = localStorage.getItem("user")
+        ? JSON.parse(localStorage.getItem("user")!).email
+        : "";
       if (profileData.email !== currentEmail) {
         await axiosInstance.put(API_PATHS.AUTH.UPDATE_EMAIL, {
-          email: profileData.email
+          email: profileData.email,
         });
       }
 
@@ -120,7 +146,9 @@ const UserProfile = () => {
         alert("No CV uploaded yet.");
         return;
       }
-      const url = /^https?:\/\//i.test(path) ? path : `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+      const url = /^https?:\/\//i.test(path)
+        ? path
+        : `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("Error opening CV:", error);
@@ -132,7 +160,7 @@ const UserProfile = () => {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append('cv', file);
+      formData.append("cv", file);
 
       await axiosInstance.post(API_PATHS.CV.UPLOAD, formData);
 
@@ -150,7 +178,7 @@ const UserProfile = () => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file type (backend only accepts PDF)
-      if (file.type !== 'application/pdf') {
+      if (file.type !== "application/pdf") {
         alert("Please select a PDF file.");
         return;
       }
@@ -169,14 +197,17 @@ const UserProfile = () => {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append("avatar", file);
 
-      const response = await axiosInstance.post(API_PATHS.USERS.UPLOAD_IMAGE, formData);
+      const response = await axiosInstance.post(
+        API_PATHS.USERS.UPLOAD_IMAGE,
+        formData,
+      );
 
       if (response.data && response.data.publicUrl) {
-        setProfileData(prev => ({
+        setProfileData((prev) => ({
           ...prev,
-          profile_picture: response.data.publicUrl
+          profile_picture: response.data.publicUrl,
         }));
         alert("Profile image uploaded successfully!");
       }
@@ -192,7 +223,7 @@ const UserProfile = () => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         alert("Please select an image file.");
         return;
       }
@@ -211,7 +242,9 @@ const UserProfile = () => {
     try {
       setLoading(true);
       console.log("Homepage creation feature not yet implemented in backend");
-      alert("Homepage creation feature is not yet available. Please contact support.");
+      alert(
+        "Homepage creation feature is not yet available. Please contact support.",
+      );
     } catch (error) {
       console.error("Error creating homepage:", error);
     } finally {
@@ -222,7 +255,9 @@ const UserProfile = () => {
   // Social Networks Functions
   const fetchSocialNetworks = async () => {
     try {
-      const response = await axiosInstance.get(API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.GET);
+      const response = await axiosInstance.get(
+        API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.GET,
+      );
       setSocialNetworks(response.data.social_networks || []);
     } catch (error) {
       console.error("Error fetching social networks:", error);
@@ -231,7 +266,9 @@ const UserProfile = () => {
 
   const fetchAvailableSocialNetworks = async () => {
     try {
-      const response = await axiosInstance.get(API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.GET_AVAILABLE);
+      const response = await axiosInstance.get(
+        API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.GET_AVAILABLE,
+      );
       setAvailableSocialNetworks(response.data.social_networks || []);
     } catch (error) {
       console.error("Error fetching available social networks:", error);
@@ -240,15 +277,25 @@ const UserProfile = () => {
 
   const handleAddSocialNetwork = async () => {
     try {
-      if (!newSocialNetwork.social_network_id || !newSocialNetwork.profile_url) {
+      if (
+        !newSocialNetwork.social_network_id ||
+        !newSocialNetwork.profile_url
+      ) {
         alert("Please fill in both platform and URL");
         return;
       }
-      
+
       setLoading(true);
-      await axiosInstance.post(API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.ADD, newSocialNetwork);
+      await axiosInstance.post(
+        API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.ADD,
+        newSocialNetwork,
+      );
       await fetchSocialNetworks();
-      setNewSocialNetwork({ social_network_id: "", username: "", profile_url: "" });
+      setNewSocialNetwork({
+        social_network_id: "",
+        username: "",
+        profile_url: "",
+      });
       setShowAddSocialNetwork(false);
       alert("Social network added successfully!");
     } catch (error) {
@@ -266,7 +313,12 @@ const UserProfile = () => {
       }
 
       setLoading(true);
-      await axiosInstance.delete(API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.DELETE.replace(':socialNetworkId', socialNetworkId.toString()));
+      await axiosInstance.delete(
+        API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.DELETE.replace(
+          ":socialNetworkId",
+          socialNetworkId.toString(),
+        ),
+      );
       await fetchSocialNetworks();
       alert("Social network deleted successfully!");
     } catch (error) {
@@ -279,21 +331,21 @@ const UserProfile = () => {
 
   const getSocialNetworkIcon = (platformName: string) => {
     switch (platformName.toLowerCase()) {
-      case 'linkedin':
+      case "linkedin":
         return <Linkedin className="h-5 w-5" />;
-      case 'twitter':
+      case "twitter":
         return <Twitter className="h-5 w-5" />;
-      case 'github':
+      case "github":
         return <Github className="h-5 w-5" />;
-      case 'instagram':
+      case "instagram":
         return <Instagram className="h-5 w-5" />;
-      case 'facebook':
+      case "facebook":
         return <Facebook className="h-5 w-5" />;
-      case 'youtube':
+      case "youtube":
         return <Globe className="h-5 w-5" />;
-      case 'dribbble':
+      case "dribbble":
         return <Globe className="h-5 w-5" />;
-      case 'behance':
+      case "behance":
         return <Globe className="h-5 w-5" />;
       default:
         return <Globe className="h-5 w-5" />;
@@ -307,7 +359,9 @@ const UserProfile = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-            <p className="mt-2 text-gray-600">Manage your personal information and professional details</p>
+            <p className="mt-2 text-gray-600">
+              Manage your personal information and professional details
+            </p>
           </div>
 
           {/* Profile Overview Card */}
@@ -321,7 +375,7 @@ const UserProfile = () => {
                       className="h-24 w-24 rounded-full border-4 border-white shadow-lg"
                       alt="Profile"
                     />
-                    <label className="absolute -bottom-1 -right-1 cursor-pointer rounded-full bg-white p-2 shadow-md hover:bg-gray-50">
+                    <label className="absolute -right-1 -bottom-1 cursor-pointer rounded-full bg-white p-2 shadow-md hover:bg-gray-50">
                       <Camera className="h-4 w-4 text-gray-600" />
                       <input
                         type="file"
@@ -332,21 +386,25 @@ const UserProfile = () => {
                     </label>
                   </div>
                   <div className="text-white">
-                    <h2 className="text-2xl font-bold">{profileData.full_name || "User"}</h2>
+                    <h2 className="text-2xl font-bold">
+                      {profileData.full_name || "User"}
+                    </h2>
                     <div className="mt-1 flex items-center text-blue-100">
                       <Mail className="mr-2 h-4 w-4" />
                       <span>{profileData.email}</span>
                     </div>
                     <div className="mt-2 flex items-center text-blue-100">
                       <User className="mr-2 h-4 w-4" />
-                      <span>{profileData.preferred_location || "Location not set"}</span>
+                      <span>
+                        {profileData.preferred_location || "Location not set"}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex space-x-3">
                   <button
                     onClick={handleDownloadCV}
-                    className="flex items-center space-x-2 rounded-lg bg-white/20 px-4 py-2 text-white backdrop-blur-sm hover:bg-white/30 transition-colors"
+                    className="flex items-center space-x-2 rounded-lg bg-white/20 px-4 py-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
                   >
                     <Download className="h-4 w-4" />
                     <span>Download CV</span>
@@ -354,10 +412,14 @@ const UserProfile = () => {
                   <button
                     onClick={handleCreateHomepage}
                     disabled={loading}
-                    className="flex items-center space-x-2 rounded-lg bg-white px-4 py-2 text-blue-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="flex items-center space-x-2 rounded-lg bg-white px-4 py-2 text-blue-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
                   >
                     <User className="h-4 w-4" />
-                    <span>{loading ? 'Creating...' : `${profileData.full_name || 'User'}'s Homepage`}</span>
+                    <span>
+                      {loading
+                        ? "Creating..."
+                        : `${profileData.full_name || "User"}'s Homepage`}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -373,22 +435,24 @@ const UserProfile = () => {
                     <User className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      Personal Information
+                    </h3>
                     <p className="text-gray-600">Update your profile details</p>
                   </div>
                 </div>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => setIsEditing(!isEditing)}
-                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
+                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
                   >
                     <Edit3 className="h-4 w-4" />
-                    <span>{isEditing ? 'Cancel' : 'Edit Profile'}</span>
+                    <span>{isEditing ? "Cancel" : "Edit Profile"}</span>
                   </button>
                   {isEditing && (
                     <button
                       onClick={handleSaveProfile}
-                      className="flex items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 transition-colors"
+                      className="flex items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
                     >
                       <Save className="h-4 w-4" />
                       <span>Save Changes</span>
@@ -413,7 +477,7 @@ const UserProfile = () => {
                       value={profileData.full_name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                       placeholder="Enter your full name"
                     />
                   </div>
@@ -430,7 +494,7 @@ const UserProfile = () => {
                       value={profileData.preferred_location}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                       placeholder="Enter your preferred location"
                     />
                   </div>
@@ -447,7 +511,7 @@ const UserProfile = () => {
                       value={profileData.phone}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                       placeholder="Enter your phone number"
                     />
                   </div>
@@ -464,7 +528,7 @@ const UserProfile = () => {
                       value={profileData.address}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                       placeholder="Enter your address"
                     />
                   </div>
@@ -481,7 +545,7 @@ const UserProfile = () => {
                       value={profileData.expected_salary}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                       placeholder="Enter expected salary in VND"
                     />
                   </div>
@@ -498,7 +562,7 @@ const UserProfile = () => {
                       value={profileData.email}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                       placeholder="Enter your email address"
                     />
                   </div>
@@ -516,14 +580,13 @@ const UserProfile = () => {
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     rows={4}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                     placeholder="Tell us about yourself, your skills, and career goals..."
                   />
                 </div>
               </form>
             </div>
           </div>
-
 
           {/* Social Networks Section */}
           <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-xl">
@@ -534,13 +597,17 @@ const UserProfile = () => {
                     <Globe className="h-6 w-6 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Social Networks</h3>
-                    <p className="text-gray-600">Manage your social media profiles</p>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      Social Networks
+                    </h3>
+                    <p className="text-gray-600">
+                      Manage your social media profiles
+                    </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAddSocialNetwork(!showAddSocialNetwork)}
-                  className="flex items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 transition-colors"
+                  className="flex items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Add Social Network</span>
@@ -552,41 +619,67 @@ const UserProfile = () => {
               {/* Add Social Network Form */}
               {showAddSocialNetwork && (
                 <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">Add New Social Network</h4>
+                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                    Add New Social Network
+                  </h4>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Platform</label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Platform
+                      </label>
                       <select
                         value={newSocialNetwork.social_network_id}
-                        onChange={(e) => setNewSocialNetwork(prev => ({ ...prev, social_network_id: e.target.value }))}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                        onChange={(e) =>
+                          setNewSocialNetwork((prev) => ({
+                            ...prev,
+                            social_network_id: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                       >
                         <option value="">Select Platform</option>
                         {availableSocialNetworks.map((network: any) => (
-                          <option key={network.social_network_id} value={network.social_network_id}>
+                          <option
+                            key={network.social_network_id}
+                            value={network.social_network_id}
+                          >
                             {network.name}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Username</label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Username
+                      </label>
                       <input
                         type="text"
                         value={newSocialNetwork.username}
-                        onChange={(e) => setNewSocialNetwork(prev => ({ ...prev, username: e.target.value }))}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                        onChange={(e) =>
+                          setNewSocialNetwork((prev) => ({
+                            ...prev,
+                            username: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                         placeholder="Your username"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Profile URL</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Profile URL
+                    </label>
                     <input
                       type="url"
                       value={newSocialNetwork.profile_url}
-                      onChange={(e) => setNewSocialNetwork(prev => ({ ...prev, profile_url: e.target.value }))}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                      onChange={(e) =>
+                        setNewSocialNetwork((prev) => ({
+                          ...prev,
+                          profile_url: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                       placeholder="https://..."
                     />
                   </div>
@@ -594,17 +687,21 @@ const UserProfile = () => {
                     <button
                       onClick={handleAddSocialNetwork}
                       disabled={loading}
-                      className="flex items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
+                      className="flex items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                     >
                       <Plus className="h-4 w-4" />
-                      <span>{loading ? 'Adding...' : 'Add'}</span>
+                      <span>{loading ? "Adding..." : "Add"}</span>
                     </button>
                     <button
                       onClick={() => {
                         setShowAddSocialNetwork(false);
-                        setNewSocialNetwork({ social_network_id: "", username: "", profile_url: "" });
+                        setNewSocialNetwork({
+                          social_network_id: "",
+                          username: "",
+                          profile_url: "",
+                        });
                       }}
-                      className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
                     >
                       Cancel
                     </button>
@@ -615,22 +712,34 @@ const UserProfile = () => {
               {/* Social Networks List */}
               <div className="space-y-4">
                 {socialNetworks.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Globe className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">No Social Networks Added</h4>
-                    <p className="text-gray-600">Add your social media profiles to showcase your online presence</p>
+                  <div className="py-8 text-center">
+                    <Globe className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                    <h4 className="mb-2 text-lg font-medium text-gray-900">
+                      No Social Networks Added
+                    </h4>
+                    <p className="text-gray-600">
+                      Add your social media profiles to showcase your online
+                      presence
+                    </p>
                   </div>
                 ) : (
                   socialNetworks.map((social: any) => (
-                    <div key={social.social_network_id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
+                    <div
+                      key={social.social_network_id}
+                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
+                    >
                       <div className="flex items-center space-x-4">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600">
                           {getSocialNetworkIcon(social.social_network.name)}
                         </div>
                         <div>
-                          <h5 className="font-semibold text-gray-900">{social.social_network.name}</h5>
+                          <h5 className="font-semibold text-gray-900">
+                            {social.social_network.name}
+                          </h5>
                           {social.username && (
-                            <p className="text-sm text-gray-600">@{social.username}</p>
+                            <p className="text-sm text-gray-600">
+                              @{social.username}
+                            </p>
                           )}
                           {social.profile_url && (
                             <a
@@ -645,9 +754,11 @@ const UserProfile = () => {
                         </div>
                       </div>
                       <button
-                        onClick={() => handleDeleteSocialNetwork(social.social_network_id)}
+                        onClick={() =>
+                          handleDeleteSocialNetwork(social.social_network_id)
+                        }
                         disabled={loading}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors disabled:opacity-50"
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 transition-colors hover:bg-red-200 disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -666,17 +777,21 @@ const UserProfile = () => {
                   <FileText className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">CV Management</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    CV Management
+                  </h3>
                   <p className="text-gray-600">Upload and manage your resume</p>
                 </div>
               </div>
             </div>
             <div className="p-8">
-              <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center hover:border-blue-400 transition-colors">
+              <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center transition-colors hover:border-blue-400">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
                   <Upload className="h-8 w-8 text-blue-600" />
                 </div>
-                <h4 className="mb-2 text-lg font-semibold text-gray-900">Upload Your CV</h4>
+                <h4 className="mb-2 text-lg font-semibold text-gray-900">
+                  Upload Your CV
+                </h4>
                 <p className="mb-4 text-gray-600">
                   Drag and drop your CV here, or click to browse
                 </p>
@@ -694,17 +809,17 @@ const UserProfile = () => {
                 />
                 <label
                   htmlFor="cv-upload"
-                  className={`cursor-pointer rounded-lg px-6 py-2 text-white transition-colors ${loading
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
+                  className={`cursor-pointer rounded-lg px-6 py-2 text-white transition-colors ${
+                    loading
+                      ? "cursor-not-allowed bg-gray-400"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
-                  {loading ? 'Uploading...' : 'Choose File'}
+                  {loading ? "Uploading..." : "Choose File"}
                 </label>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </JobSeekerLayout>

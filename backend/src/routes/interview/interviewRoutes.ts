@@ -1,11 +1,11 @@
 import express from "express";
 import { authenticateToken } from "../../middleware/auth/jwtAuth";
 import {
-    startInterview,
-    submitAnswer,
-    getUserInterviews,
-    getInterviewById,
-    abandonInterview,
+  startInterview,
+  submitAnswer,
+  getUserInterviews,
+  getInterviewById,
+  abandonInterview,
 } from "../../controllers/interview/interviewController";
 
 const router = express.Router();

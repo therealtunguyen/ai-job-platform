@@ -7,7 +7,10 @@ interface JobSeekerNavbarProps {
   onMenuClick?: (path: string) => void;
 }
 
-const JobSeekerNavbar = ({ activeMenu = "/jobseeker-dashboard", onMenuClick }: JobSeekerNavbarProps) => {
+const JobSeekerNavbar = ({
+  activeMenu = "/jobseeker-dashboard",
+  onMenuClick,
+}: JobSeekerNavbarProps) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -25,7 +28,7 @@ const JobSeekerNavbar = ({ activeMenu = "/jobseeker-dashboard", onMenuClick }: J
       <div className="mb-8">
         <h2 className="text-xl font-bold">Job Seeker</h2>
         <p className="text-sm text-gray-500">{user?.email}</p>
-        <div className="h-px bg-black w-full mt-4" />
+        <div className="mt-4 h-px w-full bg-black" />
       </div>
 
       <nav className="space-y-2">
@@ -36,10 +39,10 @@ const JobSeekerNavbar = ({ activeMenu = "/jobseeker-dashboard", onMenuClick }: J
             <button
               key={item.id}
               onClick={() => handleMenuClick(item.path)}
-              className={`flex w-full items-center space-x-3 rounded-lg px-4 py-3 text-left transition-colors cursor-pointer ${
-                isActive 
-                  ? "bg-blue-500 text-white" 
-                  : "hover:bg-blue-200 text-gray-600"
+              className={`flex w-full cursor-pointer items-center space-x-3 rounded-lg px-4 py-3 text-left transition-colors ${
+                isActive
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 hover:bg-blue-200"
               }`}
             >
               <IconComponent className="h-5 w-5" />

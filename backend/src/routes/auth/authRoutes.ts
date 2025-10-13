@@ -1,11 +1,11 @@
 import express from "express";
 import {
-    register,
-    login,
-    logout,
-    refresh,
-    updateEmail,
-    getCurrentUserProfile,
+  register,
+  login,
+  logout,
+  refresh,
+  updateEmail,
+  getCurrentUserProfile,
 } from "../../controllers/auth/authController";
 import { upload } from "../../utils/fileUpload";
 

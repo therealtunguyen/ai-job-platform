@@ -5,6 +5,20 @@
     "frontend",
     "backend"
   ],
+  "scripts": {
+    "format": "prettier --write .",
+    "lint-staged": "lint-staged",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md,yml,yaml,graphql,gql}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.4"
+  },
   "dependencies": {
     "@faker-js/faker": "^10.0.0",
     "openai": "^6.1.0"

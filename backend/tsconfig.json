@@ -1,13 +1,13 @@
 {
-    "compilerOptions": {
-        "target": "ES2021",
-        "module": "commonjs",
-        "strict": true,
-        "esModuleInterop": true,
-        "outDir": "dist",
-        "rootDir": "src",
-        "skipLibCheck": true,
-        "typeRoots": ["./node_modules/@types", "./src/types"]
-    },
-    "include": ["src"]
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"]
+  },
+  "include": ["src"]
 }

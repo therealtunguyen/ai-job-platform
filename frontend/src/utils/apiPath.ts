@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:3000"
+export const BASE_URL = "http://localhost:3000";
 
 export const API_PATHS = {
   AUTH: {
@@ -37,7 +37,7 @@ export const API_PATHS = {
     // Job Seeker specific routes
     UPDATE_JOB_SEEKER: "/api/users/job-seeker",
     UPDATE_JOB_SEEKER_WITH_IMAGE: "/api/users/job-seeker/profile-and-image",
-    // Employer specific routes  
+    // Employer specific routes
     UPDATE_EMPLOYER: "/api/users/employer",
     UPDATE_EMPLOYER_WITH_IMAGE: "/api/users/employer/profile-and-image",
   },
@@ -65,4 +65,4 @@ export const API_PATHS = {
   MATCHING: {
     GET_MATCHES: "/api/matching/:userId",
   },
-}
+};

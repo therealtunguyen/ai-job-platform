@@ -14,7 +14,11 @@ import {
   AlertCircle,
   Loader,
 } from "lucide-react";
-import { validateAvatar, validateEmail, validatePassword } from "@/utils/helper";
+import {
+  validateAvatar,
+  validateEmail,
+  validatePassword,
+} from "@/utils/helper";
 import axiosInstance from "@/utils/axiosInstance";
 import { API_PATHS } from "@/utils/apiPath";
 
@@ -35,7 +39,6 @@ interface SignUpFormState {
 }
 
 const SignUp = () => {
-  
   const [formData, setFormData] = useState<SignUpFormData>({
     fullName: "",
     email: "",
@@ -52,7 +55,7 @@ const SignUp = () => {
     success: false,
   });
 
-  const handleInputChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -67,7 +70,7 @@ const SignUp = () => {
     }
   };
 
-  const handleRoleChange = (role : string) => {
+  const handleRoleChange = (role: string) => {
     setFormData((prev) => ({
       ...prev,
       role,
@@ -81,37 +84,37 @@ const SignUp = () => {
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  
-  if (file) {
-    const error = validateAvatar(file);
-    if (error) {
-      setFormState((prev) => ({
-        ...prev,
-        errors: { ...prev.errors, avatar: error },
-      }));
-      return;
-    }
+    const file = e.target.files?.[0];
 
-    setFormData((prev) => ({ ...prev, avatar: file }));
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result;
-      if (typeof result === 'string') {
+    if (file) {
+      const error = validateAvatar(file);
+      if (error) {
         setFormState((prev) => ({
           ...prev,
-          avatarPreview: result,
-          errors: { ...prev.errors, avatar: "" },
+          errors: { ...prev.errors, avatar: error },
         }));
+        return;
       }
-    };
-    reader.readAsDataURL(file);
-  }
-};
+
+      setFormData((prev) => ({ ...prev, avatar: file }));
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result;
+        if (typeof result === "string") {
+          setFormState((prev) => ({
+            ...prev,
+            avatarPreview: result,
+            errors: { ...prev.errors, avatar: "" },
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const validateForm = () => {
-    const errors : Record<string, string> = {
+    const errors: Record<string, string> = {
       fullName: !formData.fullName ? "Enter full name" : "",
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
@@ -141,7 +144,7 @@ const SignUp = () => {
       formDataToSend.append("password", formData.password);
       formDataToSend.append("userType", formData.role);
       formDataToSend.append("fullName", formData.fullName);
-      
+
       // Thêm avatar nếu có
       if (formData.avatar) {
         formDataToSend.append("avatar", formData.avatar);
@@ -151,13 +154,13 @@ const SignUp = () => {
         email: formData.email,
         userType: formData.role,
         fullName: formData.fullName,
-        hasAvatar: !!formData.avatar
+        hasAvatar: !!formData.avatar,
       });
 
       // Don't set Content-Type manually; let the browser add the multipart boundary
       const response = await axiosInstance.post(
         API_PATHS.AUTH.REGISTER,
-        formDataToSend
+        formDataToSend,
       );
 
       console.log("Signup response:", response.data);
@@ -207,7 +210,8 @@ const SignUp = () => {
             Account Created!
           </h2>
           <p className="mb-4 text-gray-600">
-            Welcome to JobPortal! Your account has been successfully created and you're now logged in.
+            Welcome to JobPortal! Your account has been successfully created and
+            you're now logged in.
           </p>
           <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[#29436c] border-t-transparent" />
           <p className="mt-2 text-sm text-gray-500">
@@ -224,8 +228,8 @@ const SignUp = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-      
+        className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg"
+      >
         <div className="mb-8 text-center">
           <h2 className="mb-2 text-xl font-bold text-gray-900">
             Create Account
@@ -319,7 +323,7 @@ const SignUp = () => {
                 {formState.showPassword ? (
                   <EyeOff className="h-5 w-5" />
                 ) : (
-                  <Eye className="w-5 h-5" />
+                  <Eye className="h-5 w-5" />
                 )}
               </button>
             </div>
@@ -345,7 +349,7 @@ const SignUp = () => {
                   />
                 ) : (
                   <User className="h-8 w-8 text-gray-400" />
-                )} 
+                )}
               </div>
               <div className="flex-1">
                 <input
@@ -381,7 +385,7 @@ const SignUp = () => {
               <button
                 type="button"
                 onClick={() => handleRoleChange("JOB_SEEKER")}
-                className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
+                className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
                   formData.role === "JOB_SEEKER"
                     ? "border-blue-500 bg-blue-50 text-blue-700"
                     : "border-gray-200 hover:border-gray-300"
@@ -396,7 +400,7 @@ const SignUp = () => {
               <button
                 type="button"
                 onClick={() => handleRoleChange("EMPLOYER")}
-                className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
+                className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
                   formData.role === "EMPLOYER"
                     ? "border-blue-500 bg-blue-50 text-blue-700"
                     : "border-gray-200 hover:border-gray-300"
@@ -427,7 +431,7 @@ const SignUp = () => {
           <button
             type="submit"
             disabled={formState.loading}
-            className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] py-3 font-semibold text-white transition-all duration-300 hover:from-[#213552] hover:to-[#7ea260] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] py-3 font-semibold text-white transition-all duration-300 hover:from-[#213552] hover:to-[#7ea260] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {formState.loading ? (
               <>

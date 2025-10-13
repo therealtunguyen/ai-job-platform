@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const EmployerProfilePage = () => {
-  return (
-    <div>EmployerProfilePage</div>
-  )
-}
+  return <div>EmployerProfilePage</div>;
+};
 
-export default EmployerProfilePage
+export default EmployerProfilePage;

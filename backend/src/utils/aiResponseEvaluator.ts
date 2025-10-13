@@ -2,21 +2,21 @@ import OpenAI from "openai";
 import { Json } from "../types/supabase"; // From supabase.ts
 
 interface ResponseFeedback {
-    evaluation_score: number; // 1-5 scale
-    feedback_text: string;
-    suggested_improvements: string;
-    response_quality: "excellent" | "good" | "average" | "poor";
-    key_strengths?: string[];
-    areas_for_improvement?: string[];
+  evaluation_score: number; // 1-5 scale
+  feedback_text: string;
+  suggested_improvements: string;
+  response_quality: "excellent" | "good" | "average" | "poor";
+  key_strengths?: string[];
+  areas_for_improvement?: string[];
 }
 
 interface EvaluateResponseParams {
-    question: string;
-    user_response: string;
-    question_type: string;
-    difficulty: "easy" | "medium" | "hard";
-    job_role?: string;
-    user_id: string; // For logging
+  question: string;
+  user_response: string;
+  question_type: string;
+  difficulty: "easy" | "medium" | "hard";
+  job_role?: string;
+  user_id: string; // For logging
 }
 
 const OPENAI_MODEL = "gpt-4o";
@@ -55,134 +55,130 @@ CRITICAL: Return ONLY the JSON object with no additional text, explanations, or 
 `;
 
 async function evaluateInterviewResponse(
-    params: EvaluateResponseParams,
+  params: EvaluateResponseParams,
 ): Promise<{ feedback: ResponseFeedback; rawResponse?: Json }> {
-    const {
-        question,
-        user_response,
-        question_type,
-        difficulty,
-        job_role = "general position",
-        user_id,
-    } = params;
+  const {
+    question,
+    user_response,
+    question_type,
+    difficulty,
+    job_role = "general position",
+    user_id,
+  } = params;
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-        throw new Error("OPENAI_API_KEY environment variable is required");
-    }
-    const client = new OpenAI({ apiKey, timeout: AI_TIMEOUT_MS });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY environment variable is required");
+  }
+  const client = new OpenAI({ apiKey, timeout: AI_TIMEOUT_MS });
 
-    let prompt = EVALUATION_PROMPT_TEMPLATE.replace("{question}", question)
-        .replace("{question_type}", question_type)
-        .replace("{difficulty}", difficulty)
-        .replace("{user_response}", user_response)
-        .replace("{job_role}", job_role);
+  let prompt = EVALUATION_PROMPT_TEMPLATE.replace("{question}", question)
+    .replace("{question_type}", question_type)
+    .replace("{difficulty}", difficulty)
+    .replace("{user_response}", user_response)
+    .replace("{job_role}", job_role);
 
-    let retries = 0;
-    let rawResponse: string | undefined;
-    const startTime = Date.now();
+  let retries = 0;
+  let rawResponse: string | undefined;
+  const startTime = Date.now();
 
-    while (retries <= MAX_RETRIES) {
-        try {
-            const completion = await client.chat.completions.create({
-                model: OPENAI_MODEL,
-                messages: [
-                    {
-                        role: "system",
-                        content: prompt,
-                    },
-                ],
-                max_tokens: 1500,
-                temperature: 0.3, // Lower temperature for more consistent evaluations
-            });
+  while (retries <= MAX_RETRIES) {
+    try {
+      const completion = await client.chat.completions.create({
+        model: OPENAI_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: prompt,
+          },
+        ],
+        max_tokens: 1500,
+        temperature: 0.3, // Lower temperature for more consistent evaluations
+      });
 
-            rawResponse = completion.choices[0].message.content ?? "";
-            const latency = Date.now() - startTime;
-            const tokens = completion.usage?.total_tokens ?? 0;
-            console.log(
-                `AI evaluation success: user=${user_id}, model=${OPENAI_MODEL}, tokens=${tokens}, latency=${latency}ms`,
-            );
+      rawResponse = completion.choices[0].message.content ?? "";
+      const latency = Date.now() - startTime;
+      const tokens = completion.usage?.total_tokens ?? 0;
+      console.log(
+        `AI evaluation success: user=${user_id}, model=${OPENAI_MODEL}, tokens=${tokens}, latency=${latency}ms`,
+      );
 
-            // Parse the response
-            let parsed: any;
-            try {
-                // Try to extract JSON from the response if it includes extra text
-                const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    parsed = JSON.parse(jsonMatch[0]);
-                } else {
-                    parsed = JSON.parse(rawResponse);
-                }
-            } catch (parseError) {
-                throw new Error(`Failed to parse AI response: ${rawResponse}`);
-            }
-
-            // Validate the response structure
-            if (!validateFeedback(parsed)) {
-                throw new Error("Invalid AI feedback structure");
-            }
-
-            // Type assertion to ensure correct types
-            const validatedFeedback: ResponseFeedback = {
-                evaluation_score: parsed.evaluation_score,
-                feedback_text: parsed.feedback_text,
-                suggested_improvements: parsed.suggested_improvements,
-                response_quality: parsed.response_quality as
-                    | "excellent"
-                    | "good"
-                    | "average"
-                    | "poor",
-                key_strengths: parsed.key_strengths,
-                areas_for_improvement: parsed.areas_for_improvement,
-            };
-
-            return {
-                feedback: validatedFeedback,
-                rawResponse: rawResponse as Json,
-            };
-        } catch (error: any) {
-            retries++;
-            const latency = Date.now() - startTime;
-            console.error(
-                `AI evaluation error (retry ${retries}): user=${user_id}, error=${error.message}, latency=${latency}ms`,
-            );
-            if (retries > MAX_RETRIES || error.code === "timeout") {
-                console.warn(
-                    `AI evaluation fallback triggered for user=${user_id}`,
-                );
-                // Return a fallback evaluation
-                return {
-                    feedback: {
-                        evaluation_score: 3,
-                        feedback_text: "Response received, evaluation pending.",
-                        suggested_improvements:
-                            "Please provide more specific examples to strengthen your response.",
-                        response_quality: "average",
-                        key_strengths: ["Attempted to answer the question"],
-                        areas_for_improvement: [
-                            "Add more specific details and examples",
-                        ],
-                    },
-                };
-            }
+      // Parse the response
+      let parsed: any;
+      try {
+        // Try to extract JSON from the response if it includes extra text
+        const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[0]);
+        } else {
+          parsed = JSON.parse(rawResponse);
         }
+      } catch (parseError) {
+        throw new Error(`Failed to parse AI response: ${rawResponse}`);
+      }
+
+      // Validate the response structure
+      if (!validateFeedback(parsed)) {
+        throw new Error("Invalid AI feedback structure");
+      }
+
+      // Type assertion to ensure correct types
+      const validatedFeedback: ResponseFeedback = {
+        evaluation_score: parsed.evaluation_score,
+        feedback_text: parsed.feedback_text,
+        suggested_improvements: parsed.suggested_improvements,
+        response_quality: parsed.response_quality as
+          | "excellent"
+          | "good"
+          | "average"
+          | "poor",
+        key_strengths: parsed.key_strengths,
+        areas_for_improvement: parsed.areas_for_improvement,
+      };
+
+      return {
+        feedback: validatedFeedback,
+        rawResponse: rawResponse as Json,
+      };
+    } catch (error: any) {
+      retries++;
+      const latency = Date.now() - startTime;
+      console.error(
+        `AI evaluation error (retry ${retries}): user=${user_id}, error=${error.message}, latency=${latency}ms`,
+      );
+      if (retries > MAX_RETRIES || error.code === "timeout") {
+        console.warn(`AI evaluation fallback triggered for user=${user_id}`);
+        // Return a fallback evaluation
+        return {
+          feedback: {
+            evaluation_score: 3,
+            feedback_text: "Response received, evaluation pending.",
+            suggested_improvements:
+              "Please provide more specific examples to strengthen your response.",
+            response_quality: "average",
+            key_strengths: ["Attempted to answer the question"],
+            areas_for_improvement: ["Add more specific details and examples"],
+          },
+        };
+      }
     }
-    throw new Error("AI evaluation failed after retries");
+  }
+  throw new Error("AI evaluation failed after retries");
 }
 
 function validateFeedback(feedback: any): feedback is ResponseFeedback {
-    return (
-        typeof feedback === "object" &&
-        typeof feedback.evaluation_score === "number" &&
-        feedback.evaluation_score >= 1 &&
-        feedback.evaluation_score <= 5 &&
-        typeof feedback.feedback_text === "string" &&
-        typeof feedback.suggested_improvements === "string" &&
-        (feedback.response_quality === "excellent" ||
-            feedback.response_quality === "good" ||
-            feedback.response_quality === "average" ||
-            feedback.response_quality === "poor")
-    );
+  return (
+    typeof feedback === "object" &&
+    typeof feedback.evaluation_score === "number" &&
+    feedback.evaluation_score >= 1 &&
+    feedback.evaluation_score <= 5 &&
+    typeof feedback.feedback_text === "string" &&
+    typeof feedback.suggested_improvements === "string" &&
+    (feedback.response_quality === "excellent" ||
+      feedback.response_quality === "good" ||
+      feedback.response_quality === "average" ||
+      feedback.response_quality === "poor")
+  );
 }
 
 export { evaluateInterviewResponse, type ResponseFeedback };

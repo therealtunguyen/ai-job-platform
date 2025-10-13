@@ -6,7 +6,10 @@ interface JobSeekerLayoutProps {
   activeMenu?: string;
 }
 
-const JobSeekerLayout = ({ children, activeMenu = "/jobseeker-dashboard" }: JobSeekerLayoutProps) => {
+const JobSeekerLayout = ({
+  children,
+  activeMenu = "/jobseeker-dashboard",
+}: JobSeekerLayoutProps) => {
   const [currentActiveMenu, setCurrentActiveMenu] = useState(activeMenu);
 
   // Update currentActiveMenu when activeMenu prop changes
@@ -20,17 +23,14 @@ const JobSeekerLayout = ({ children, activeMenu = "/jobseeker-dashboard" }: JobS
 
   return (
     <div className="flex min-h-screen pt-16">
-      <JobSeekerNavbar 
-        activeMenu={currentActiveMenu} 
-        onMenuClick={handleMenuClick} 
+      <JobSeekerNavbar
+        activeMenu={currentActiveMenu}
+        onMenuClick={handleMenuClick}
       />
 
-      <div className="flex-1">
-        {children}
-      </div>
+      <div className="flex-1">{children}</div>
     </div>
   );
 };
 
 export default JobSeekerLayout;
-
