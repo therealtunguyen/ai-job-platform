@@ -1,4 +1,6 @@
-export const BASE_URL = "http://localhost:3000";
+export const BASE_URL = import.meta.env.PROD
+  ? "https://ai-job-platform-backend.vercel.app/"
+  : "http://localhost:3000";
 
 export const API_PATHS = {
   AUTH: {

@@ -101,3 +101,5 @@ docs/generated/
 *.seed
 *.pid
 *.pid.lock
+
+.vercel

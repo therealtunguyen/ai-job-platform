@@ -10,7 +10,7 @@ export class JobSeekerProfileController {
   // GET /api/jobseekers/languages - Get job seeker's languages
   async getLanguages(req: Request, res: Response) {
     try {
-      const userId = req.user?.id; // Assuming authentication middleware adds user to req
+      const userId = (req as any).user?.id; // Assuming authentication middleware adds user to req
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -45,7 +45,7 @@ export class JobSeekerProfileController {
   // POST /api/jobseekers/languages - Add a language for job seeker
   async addLanguage(req: Request, res: Response) {
     try {
-      const userId = req.user?.id; // Assuming authentication middleware adds user to req
+      const userId = (req as any).user?.id; // Assuming authentication middleware adds user to req
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -103,7 +103,7 @@ export class JobSeekerProfileController {
   // DELETE /api/jobseekers/languages/:languageId - Remove a language for job seeker
   async removeLanguage(req: Request, res: Response) {
     try {
-      const userId = req.user?.id; // Assuming authentication middleware adds user to req
+      const userId = (req as any).user?.id; // Assuming authentication middleware adds user to req
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -154,7 +154,7 @@ export class JobSeekerProfileController {
   // GET /api/jobseekers/social-networks - Get job seeker's social networks
   async getSocialNetworks(req: Request, res: Response) {
     try {
-      const userId = req.user?.id; // Assuming authentication middleware adds user to req
+      const userId = (req as any).user?.id; // Assuming authentication middleware adds user to req
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -192,7 +192,7 @@ export class JobSeekerProfileController {
   // POST /api/jobseekers/social-networks - Add a social network for job seeker
   async addSocialNetwork(req: Request, res: Response) {
     try {
-      const userId = req.user?.id; // Assuming authentication middleware adds user to req
+      const userId = (req as any).user?.id; // Assuming authentication middleware adds user to req
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -252,7 +252,7 @@ export class JobSeekerProfileController {
   // PUT /api/jobseekers/social-networks/:socialNetworkId - Update a social network for job seeker
   async updateSocialNetwork(req: Request, res: Response) {
     try {
-      const userId = req.user?.id; // Assuming authentication middleware adds user to req
+      const userId = (req as any).user?.id; // Assuming authentication middleware adds user to req
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -298,7 +298,7 @@ export class JobSeekerProfileController {
   // DELETE /api/jobseekers/social-networks/:socialNetworkId - Remove a social network for job seeker
   async removeSocialNetwork(req: Request, res: Response) {
     try {
-      const userId = req.user?.id; // Assuming authentication middleware adds user to req
+      const userId = (req as any).user?.id; // Assuming authentication middleware adds user to req
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }

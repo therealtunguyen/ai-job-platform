@@ -1,5 +1,4 @@
 import { supabase } from "../../supabaseClient";
-import { PDFParse } from "pdf-parse";
 
 /**
  * Parse a CV buffer, extract key information, and optionally update job seeker profile
@@ -23,6 +22,8 @@ export const parseCv = async (
     console.log("Starting CV parsing...");
 
     // Create PDF parser with the buffer
+    const pdfParseModule = await import("pdf-parse");
+    const { PDFParse } = pdfParseModule.default;
     const parser = new PDFParse({ data: buffer });
 
     // Extract text from the PDF using the getText() method
