@@ -13,8 +13,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import UserProfile from "@/pages/JobSeeker/UserProfile";
 import ApplicationSavedJob from "@/pages/JobSeeker/ApplicationSavedJob";
 import JobSeekerInterview from "@/pages/JobSeeker/JobSeekerInterview";
-import { User } from "lucide-react";
-import UserHomepage from "@/pages/JobSeeker/UserHomepage";
 
 const router = createBrowserRouter([
   {
