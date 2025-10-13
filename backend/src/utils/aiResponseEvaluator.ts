@@ -103,6 +103,10 @@ async function evaluateInterviewResponse(
         `AI evaluation success: user=${user_id}, model=${OPENAI_MODEL}, tokens=${tokens}, latency=${latency}ms`,
       );
 
+      if (!rawResponse) {
+        throw new Error("AI evaluation returned empty response");
+      }
+
       // Parse the response
       let parsed: any;
       try {

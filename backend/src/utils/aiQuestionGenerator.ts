@@ -127,6 +127,10 @@ async function generateInterviewQuestions(
         `AI call success: user=${user_id}, model=${OPENAI_MODEL}, tokens=${tokens}, latency=${latency}ms`,
       );
 
+      if (!rawResponse) {
+        throw new Error("AI returned empty response");
+      }
+
       // Handle different possible response formats from the AI
       const parsed: any = JSON.parse(rawResponse);
       let questionArray: any[];
@@ -160,7 +164,7 @@ async function generateInterviewQuestions(
 
       return {
         questions: validatedQuestions,
-        rawResponse: rawResponse as Json,
+        rawResponse: rawResponse ? (rawResponse as Json) : undefined,
       };
     } catch (error: any) {
       retries++;
