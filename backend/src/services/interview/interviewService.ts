@@ -203,6 +203,7 @@ export const startInterviewService = async (
       .update({
         ai_raw_response: rawResponse,
         config: updatedConfig,
+        total_questions: questionCount,
         // Keep status as STARTED - will change to IN_PROGRESS only after first answer
       })
       .eq("session_id", data.session_id);
