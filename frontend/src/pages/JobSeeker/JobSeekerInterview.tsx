@@ -91,6 +91,28 @@ const JobSeekerInterview = () => {
     }
   };
 
+  // Define interface for error response
+  interface ErrorResponse {
+    response?: {
+      status?: number;
+      data?: {
+        error?: string;
+        message?: string;
+      };
+    };
+  }
+
+  // Type guard function to check if error has the expected structure
+  const isErrorResponse = (error: unknown): error is ErrorResponse => {
+    if (!error || typeof error !== "object") return false;
+    const err = error as Record<string, unknown>;
+    if (!("response" in err) || typeof err.response !== "object") return false;
+    const response = err.response as Record<string, unknown>;
+    if ("status" in response && typeof response.status !== "number")
+      return false;
+    return true;
+  };
+
   const resumeInterview = async (sessionId: string) => {
     try {
       setLoading(true);
@@ -134,17 +156,8 @@ const JobSeekerInterview = () => {
       setShowConfig(false);
     } catch (error: unknown) {
       console.error("Error resuming interview:", error);
-      if (
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "status" in error.response &&
-        typeof (error.response as Record<string, unknown>).status ===
-          "number" &&
-        (error.response as Record<string, number>).status === 404
-      ) {
+
+      if (isErrorResponse(error) && error.response?.status === 404) {
         alert("Interview not found. It may have been removed.");
       } else {
         alert("Error resuming interview. Please try again.");

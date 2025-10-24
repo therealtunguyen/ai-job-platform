@@ -267,7 +267,6 @@ const InterviewConfig: React.FC<InterviewConfigProps> = ({
                     <input
                       type="radio"
                       checked={aiModel === model.id}
-                      onChange={() => {}}
                       className="h-4 w-4 text-blue-600"
                       aria-label={`Select ${model.name}`}
                     />
