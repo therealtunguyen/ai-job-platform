@@ -1,34 +1,22 @@
 import React, { useState, useEffect } from "react";
 import JobSeekerLayout from "@/components/JobSeeker/JobSeekerLayout";
-import { API_PATHS } from "@/utils/apiPath";
-import axiosInstance from "@/utils/axiosInstance";
 import {
-  Play,
+  interviewApi,
+  type InterviewSession,
+  type InterviewSummary,
+} from "@/services/interviewApi";
+import {
   Star,
   MessageSquare,
   Trophy,
   X,
   RefreshCw,
   FileText,
-  Timer,
   Send,
+  History,
 } from "lucide-react";
-
-interface Question {
-  index: number;
-  prompt: string;
-  type: string;
-  difficulty: string;
-  entryId: string;
-}
-
-interface InterviewSession {
-  sessionId: string;
-  status: string;
-  startedAt: string;
-  aiConfig: any;
-  questions: Question[];
-}
+import InterviewConfigComponent from "@/components/Interview/InterviewConfig";
+import PastInterviews from "@/components/Interview/PastInterviews";
 
 interface Evaluation {
   entryId: string;
@@ -46,8 +34,12 @@ const JobSeekerInterview = () => {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(false);
   const [showEvaluation, setShowEvaluation] = useState(false);
-  const [interviewHistory, setInterviewHistory] = useState<any[]>([]);
+  const [interviewHistory, setInterviewHistory] = useState<InterviewSummary[]>(
+    [],
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [showConfig, setShowConfig] = useState(true);
+  const [showPastInterviews, setShowPastInterviews] = useState(false);
 
   // Load interview history on component mount
   useEffect(() => {
@@ -56,33 +48,120 @@ const JobSeekerInterview = () => {
 
   const fetchInterviewHistory = async () => {
     try {
-      const response = await axiosInstance.get(
-        API_PATHS.INTERVIEWS.GET_USER_INTERVIEWS,
-      );
-      setInterviewHistory(response.data.interviews || []);
+      const response = await interviewApi.getUserInterviews();
+      setInterviewHistory(response.interviews || []);
     } catch (error) {
       console.error("Error fetching interview history:", error);
     }
   };
 
-  const startNewInterview = async () => {
+  const startNewInterview = async (config?: {
+    questionCount: number;
+    difficulty: string;
+    aiModel: string;
+    interviewType: string;
+  }) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.post(API_PATHS.INTERVIEWS.CREATE, {
-        interviewType: "technical",
-        difficulty: "medium",
-        customConfig: {
-          questionCount: 3,
-        },
-      });
+      let response;
 
-      setCurrentInterview(response.data);
+      if (config) {
+        // Starting a new interview
+        response = await interviewApi.createInterview(config);
+      } else {
+        // This would be a default start if we need it
+        response = await interviewApi.createInterview({
+          questionCount: 3,
+          difficulty: "medium",
+          aiModel: "gpt-3.5-turbo",
+          interviewType: "technical",
+        });
+      }
+
+      setCurrentInterview(response);
       setEvaluations([]);
       setCurrentQuestionIndex(0);
       setShowEvaluation(false);
+      setShowConfig(false); // Hide config screen and show interview
     } catch (error) {
       console.error("Error starting interview:", error);
       alert("Error starting interview. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Define interface for error response
+  interface ErrorResponse {
+    response?: {
+      status?: number;
+      data?: {
+        error?: string;
+        message?: string;
+      };
+    };
+  }
+
+  // Type guard function to check if error has the expected structure
+  const isErrorResponse = (error: unknown): error is ErrorResponse => {
+    if (!error || typeof error !== "object") return false;
+    const err = error as Record<string, unknown>;
+    if (!("response" in err) || typeof err.response !== "object") return false;
+    const response = err.response as Record<string, unknown>;
+    if ("status" in response && typeof response.status !== "number")
+      return false;
+    return true;
+  };
+
+  const resumeInterview = async (sessionId: string) => {
+    try {
+      setLoading(true);
+      // For resuming an interview, we need to get the detailed interview data
+      // In a real implementation, we would need an endpoint to resume an existing session
+      // Instead, let's just get the existing interview details
+      const response = await interviewApi.getInterview(sessionId);
+
+      const interview = response.interview;
+
+      // Construct questions from conversation entries
+      const questions = response.conversationEntries.map(
+        (entry, index: number) => ({
+          index: index,
+          prompt: entry.question_text,
+          type: entry.question_type,
+          difficulty: entry.difficulty,
+          entryId: entry.entry_id,
+        }),
+      );
+
+      // Find the next unanswered question to resume from
+      const nextQuestionIndex = response.conversationEntries.findIndex(
+        (entry) => !entry.response_text,
+      );
+      const actualNextIndex =
+        nextQuestionIndex === -1 ? questions.length : nextQuestionIndex;
+
+      // Set the current interview state to the resumed one
+      setCurrentInterview({
+        sessionId: interview.session_id,
+        status: interview.status,
+        startedAt: interview.started_at,
+        aiConfig: interview.config,
+        questions: questions,
+      });
+
+      // Set to the next unanswered question
+      setCurrentQuestionIndex(actualNextIndex);
+      setShowEvaluation(false);
+      setShowConfig(false);
+    } catch (error: unknown) {
+      console.error("Error resuming interview:", error);
+
+      if (isErrorResponse(error) && error.response?.status === 404) {
+        alert("Interview not found. It may have been removed.");
+      } else {
+        alert("Error resuming interview. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -93,11 +172,8 @@ const JobSeekerInterview = () => {
 
     try {
       setLoading(true);
-      const response = await axiosInstance.post(
-        API_PATHS.INTERVIEWS.SUBMIT_ANSWER.replace(
-          ":interviewId",
-          currentInterview.sessionId,
-        ),
+      const response = await interviewApi.submitAnswer(
+        currentInterview.sessionId,
         {
           entryId,
           responseText,
@@ -107,7 +183,7 @@ const JobSeekerInterview = () => {
       const newEvaluation: Evaluation = {
         entryId,
         responseText,
-        aiFeedback: response.data.aiFeedback || {},
+        aiFeedback: response.aiFeedback || {},
       };
 
       setEvaluations((prev) => [...prev, newEvaluation]);
@@ -132,6 +208,21 @@ const JobSeekerInterview = () => {
 
     const currentQuestion = currentInterview.questions[currentQuestionIndex];
     submitAnswer(currentQuestion.entryId, responseText);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+        return "text-green-600";
+      case "in_progress":
+        return "text-yellow-600";
+      case "abandoned":
+        return "text-red-600";
+      case "started":
+        return "text-blue-600";
+      default:
+        return "text-gray-600";
+    }
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -186,7 +277,7 @@ const JobSeekerInterview = () => {
                         setCurrentInterview(null);
                         fetchInterviewHistory();
                       }}
-                      className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+                      className="cursor-pointer rounded-lg p-2 transition-colors hover:bg-gray-100"
                     >
                       <X className="h-6 w-6" />
                     </button>
@@ -310,28 +401,6 @@ const JobSeekerInterview = () => {
                       );
                     })}
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-center space-x-4 border-t border-gray-200 pt-6">
-                    <button
-                      onClick={startNewInterview}
-                      className="flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      <span>Take Another Interview</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEvaluation(false);
-                        setCurrentInterview(null);
-                        fetchInterviewHistory();
-                      }}
-                      className="flex items-center space-x-2 rounded-lg bg-gray-600 px-6 py-3 text-white transition-colors hover:bg-gray-700"
-                    >
-                      <FileText className="h-4 w-4" />
-                      <span>View History</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -344,7 +413,29 @@ const JobSeekerInterview = () => {
   if (currentInterview) {
     const currentQuestion = currentInterview.questions[currentQuestionIndex];
     const progress =
-      ((currentQuestionIndex + 1) / currentInterview.questions.length) * 100;
+      (currentQuestionIndex / currentInterview.questions.length) * 100;
+
+    const abandonInterview = async () => {
+      if (currentInterview) {
+        try {
+          await interviewApi.abandonInterview(currentInterview.sessionId);
+          setCurrentInterview(null);
+          setShowConfig(true);
+          fetchInterviewHistory();
+        } catch (error) {
+          console.error("Error abandoning interview:", error);
+          alert("Error abandoning interview. Please try again.");
+        }
+      }
+    };
+
+    const saveAndExit = async () => {
+      // For save and exit, we just go back to the config screen without changing the status on the server
+      // The backend will maintain the "in_progress" status automatically
+      setCurrentInterview(null);
+      setShowConfig(true);
+      fetchInterviewHistory(); // Refresh the history to show the in-progress interview
+    };
 
     return (
       <JobSeekerLayout activeMenu="/jobseeker-interview">
@@ -360,20 +451,26 @@ const JobSeekerInterview = () => {
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold">
-                        Technical Interview
+                        Mock Interview Session
                       </h1>
                       <p className="text-blue-100">
                         Answer the questions to get AI evaluation
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="flex items-center space-x-2 text-blue-100">
-                      <Timer className="h-4 w-4" />
-                      <span>
-                        Started: {formatTime(currentInterview.startedAt)}
-                      </span>
-                    </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={saveAndExit}
+                      className="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
+                    >
+                      Save & Exit
+                    </button>
+                    <button
+                      onClick={abandonInterview}
+                      className="cursor-pointer rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
+                    >
+                      Exit & Abandon
+                    </button>
                   </div>
                 </div>
               </div>
@@ -435,6 +532,15 @@ const JobSeekerInterview = () => {
     );
   }
 
+  if (showPastInterviews) {
+    return (
+      <PastInterviews
+        onBack={() => setShowPastInterviews(false)}
+        onResumeInterview={resumeInterview}
+      />
+    );
+  }
+
   // Main interview dashboard
   return (
     <JobSeekerLayout activeMenu="/jobseeker-interview">
@@ -450,115 +556,122 @@ const JobSeekerInterview = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {/* Start New Interview */}
-            <div className="lg:col-span-2">
-              <div className="rounded-2xl bg-white p-8 shadow-xl">
-                <div className="text-center">
-                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                    <Play className="h-8 w-8 text-blue-600" />
+          {showConfig ? (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {/* Interview Configuration */}
+              <div className="lg:col-span-2">
+                <InterviewConfigComponent
+                  onConfigComplete={startNewInterview}
+                />
+              </div>
+
+              {/* Interview Stats and Actions */}
+              <div className="space-y-6">
+                <div className="rounded-2xl bg-white p-6 shadow-xl">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                    Interview Statistics
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Total Interviews</span>
+                      <span className="font-semibold">
+                        {interviewHistory.length}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Completed</span>
+                      <span className="font-semibold text-green-600">
+                        {
+                          interviewHistory.filter(
+                            (i) => i.status.toLowerCase() === "completed",
+                          ).length
+                        }
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">In Progress</span>
+                      <span className="font-semibold text-yellow-600">
+                        {
+                          interviewHistory.filter(
+                            (i) => i.status.toLowerCase() === "in_progress",
+                          ).length
+                        }
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Avg. Score</span>
+                      <span className="font-semibold text-blue-600">
+                        {(() => {
+                          const completedInterviews = interviewHistory.filter(
+                            (i) =>
+                              i.status.toLowerCase() === "completed" &&
+                              i.overall_score !== null,
+                          );
+                          if (completedInterviews.length === 0) return "N/A";
+                          const totalScore = completedInterviews.reduce(
+                            (sum, interview) =>
+                              sum + (interview.overall_score || 0),
+                            0,
+                          );
+                          const totalQuestion = completedInterviews.reduce(
+                            (sum, interview) =>
+                              sum + (interview.total_questions || 0),
+                            0,
+                          );
+                          return (
+                            ((totalScore / (totalQuestion * 5)) * 10).toFixed(
+                              1,
+                            ) + "/10"
+                          );
+                        })()}
+                      </span>
+                    </div>
                   </div>
-                  <h2 className="mb-4 text-2xl font-bold text-gray-900">
-                    Start New Interview
-                  </h2>
-                  <p className="mb-8 text-gray-600">
-                    Get 3 random technical questions with AI-powered evaluation
-                    and feedback
-                  </p>
-                  <button
-                    onClick={startNewInterview}
-                    disabled={loading}
-                    className="mx-auto flex items-center space-x-2 rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loading ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 animate-spin" />
-                        <span>Starting...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-5 w-5" />
-                        <span>Start Interview</span>
-                      </>
+                </div>
+
+                <div className="rounded-2xl bg-white p-6 shadow-xl">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                    Recent Interviews
+                  </h3>
+                  <div className="space-y-3">
+                    {interviewHistory.slice(0, 3).map((interview) => (
+                      <div
+                        key={interview.session_id}
+                        className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                      >
+                        <div>
+                          <p className="text-sm font-medium">
+                            {formatTime(interview.started_at)}
+                          </p>
+                          <p
+                            className={`text-sm ${getStatusColor(interview.status)}`}
+                          >
+                            {interview.status}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {interviewHistory.length === 0 && (
+                      <p className="py-4 text-center text-sm text-gray-500">
+                        No interviews yet
+                      </p>
                     )}
+                  </div>
+
+                  <button
+                    onClick={() => setShowPastInterviews(true)}
+                    className="mt-6 flex w-full items-center justify-center space-x-2 rounded-lg bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                  >
+                    <History className="h-4 w-4" />
+                    <span>View All Past Interviews</span>
                   </button>
                 </div>
               </div>
             </div>
-
-            {/* Interview Stats */}
-            <div className="space-y-6">
-              <div className="rounded-2xl bg-white p-6 shadow-xl">
-                <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                  Interview Statistics
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Total Interviews</span>
-                    <span className="font-semibold">
-                      {interviewHistory.length}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Completed</span>
-                    <span className="font-semibold text-green-600">
-                      {
-                        interviewHistory.filter((i) => i.status === "completed")
-                          .length
-                      }
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">In Progress</span>
-                    <span className="font-semibold text-yellow-600">
-                      {
-                        interviewHistory.filter(
-                          (i) => i.status === "in_progress",
-                        ).length
-                      }
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-white p-6 shadow-xl">
-                <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                  Recent Interviews
-                </h3>
-                <div className="space-y-3">
-                  {interviewHistory.slice(0, 3).map((interview) => (
-                    <div
-                      key={interview.session_id}
-                      className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium">
-                          {formatTime(interview.started_at)}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          {interview.status}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        {interview.overall_score && (
-                          <span
-                            className={`font-semibold ${getScoreColor(interview.overall_score)}`}
-                          >
-                            {interview.overall_score}/15
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  {interviewHistory.length === 0 && (
-                    <p className="py-4 text-center text-sm text-gray-500">
-                      No interviews yet
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          ) : (
+            // Interview in progress - will be handled by the if blocks above
+            <div>Interview in progress...</div>
+          )}
         </div>
       </div>
     </JobSeekerLayout>
@@ -608,7 +721,7 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
         <button
           type="submit"
           disabled={loading || !answer.trim()}
-          className="flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex cursor-pointer items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>

@@ -16,6 +16,41 @@ interface DashboardStats {
   profileCompleteness: number;
 }
 
+interface Experience {
+  id?: string;
+  title?: string;
+  company?: string;
+  start_date?: string;
+  end_date?: string;
+  description?: string;
+}
+
+interface Education {
+  id?: string;
+  institution?: string;
+  degree?: string;
+  field_of_study?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
+interface UserProfileData {
+  user?: {
+    email?: string;
+  };
+  profile?: {
+    full_name?: string;
+    phone?: string;
+    summary?: string;
+    bio?: string;
+    skills?: string[];
+    experience?: Experience[];
+    education?: Education[];
+    profile_picture?: string;
+    profile_image_url?: string;
+  };
+}
+
 const JobSeekerDashBoardContent = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
@@ -83,7 +118,9 @@ const JobSeekerDashBoardContent = () => {
     fetchDashboardStats();
   }, [user?.id]);
 
-  const calculateProfileCompleteness = (profileData: any): number => {
+  const calculateProfileCompleteness = (
+    profileData: UserProfileData,
+  ): number => {
     let completeness = 0;
     const totalFields = 8;
 

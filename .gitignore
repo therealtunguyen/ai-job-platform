@@ -20,6 +20,9 @@ serviceAccountKey.json
 firebase-adminsdk*.json
 *-firebase-adminsdk-*.json
 
+# Supabase directory
+supabase/
+
 # Logs
 logs/
 *.log
