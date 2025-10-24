@@ -9,13 +9,20 @@ export interface InterviewConfig {
   jobId?: string;
 }
 
+export interface AIConfig {
+  model?: string;
+  temperature?: number;
+  max_tokens?: number;
+  [key: string]: unknown; // Allow additional properties
+}
+
 export interface InterviewSession {
   sessionId: string;
   status: string;
   startedAt: string;
-  aiConfig: any;
+  aiConfig: AIConfig;
   questions: Question[];
-  message: string;
+  message?: string;
 }
 
 export interface Question {
@@ -31,11 +38,24 @@ export interface SubmitAnswerRequest {
   responseText: string;
 }
 
+export interface AIFeedback {
+  evaluation_score?: number;
+  feedback_text?: string;
+  suggested_improvements?: string;
+  [key: string]: unknown; // Allow additional properties
+}
+
 export interface SubmitAnswerResponse {
   message: string;
   entryId: string;
   responseText: string;
-  aiFeedback: any;
+  aiFeedback: AIFeedback;
+}
+
+export interface InterviewSummaryConfig {
+  interviewType: string;
+  difficulty: string;
+  [key: string]: unknown; // Allow additional properties
 }
 
 export interface InterviewSummary {
@@ -47,7 +67,7 @@ export interface InterviewSummary {
   total_questions: number | null;
   answered_questions: number | null;
   overall_score: number | null;
-  config: any;
+  config: InterviewSummaryConfig;
 }
 
 export interface DetailedInterview {

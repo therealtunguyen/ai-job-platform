@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import JobSeekerLayout from "@/components/JobSeeker/JobSeekerLayout";
-import { interviewApi } from "@/services/interviewApi";
+import {
+  interviewApi,
+  type InterviewSession,
+  type InterviewSummary,
+} from "@/services/interviewApi";
 import {
   Star,
   MessageSquare,
@@ -11,24 +15,8 @@ import {
   Send,
   History,
 } from "lucide-react";
-import InterviewConfig from "@/components/Interview/InterviewConfig";
+import InterviewConfigComponent from "@/components/Interview/InterviewConfig";
 import PastInterviews from "@/components/Interview/PastInterviews";
-
-interface Question {
-  index: number;
-  prompt: string;
-  type: string;
-  difficulty: string;
-  entryId: string;
-}
-
-interface InterviewSession {
-  sessionId: string;
-  status: string;
-  startedAt: string;
-  aiConfig: any;
-  questions: Question[];
-}
 
 interface Evaluation {
   entryId: string;
@@ -46,7 +34,9 @@ const JobSeekerInterview = () => {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(false);
   const [showEvaluation, setShowEvaluation] = useState(false);
-  const [interviewHistory, setInterviewHistory] = useState<any[]>([]);
+  const [interviewHistory, setInterviewHistory] = useState<InterviewSummary[]>(
+    [],
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showConfig, setShowConfig] = useState(true);
   const [showPastInterviews, setShowPastInterviews] = useState(false);
@@ -113,7 +103,7 @@ const JobSeekerInterview = () => {
 
       // Construct questions from conversation entries
       const questions = response.conversationEntries.map(
-        (entry: any, index: number) => ({
+        (entry, index: number) => ({
           index: index,
           prompt: entry.question_text,
           type: entry.question_type,
@@ -124,7 +114,7 @@ const JobSeekerInterview = () => {
 
       // Find the next unanswered question to resume from
       const nextQuestionIndex = response.conversationEntries.findIndex(
-        (entry: any) => !entry.response_text,
+        (entry) => !entry.response_text,
       );
       const actualNextIndex =
         nextQuestionIndex === -1 ? questions.length : nextQuestionIndex;
@@ -142,9 +132,19 @@ const JobSeekerInterview = () => {
       setCurrentQuestionIndex(actualNextIndex);
       setShowEvaluation(false);
       setShowConfig(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error resuming interview:", error);
-      if (error.response?.status === 404) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "status" in error.response &&
+        typeof (error.response as Record<string, unknown>).status ===
+          "number" &&
+        (error.response as Record<string, number>).status === 404
+      ) {
         alert("Interview not found. It may have been removed.");
       } else {
         alert("Error resuming interview. Please try again.");
@@ -388,24 +388,6 @@ const JobSeekerInterview = () => {
                       );
                     })}
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-center space-x-4 border-t border-gray-200 pt-6">
-                    <button
-                      onClick={startNewInterview}
-                      className="flex cursor-pointer items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      <span>Take Another Interview</span>
-                    </button>
-                    <button
-                      onClick={() => setShowPastInterviews(true)}
-                      className="flex cursor-pointer items-center space-x-2 rounded-lg bg-gray-600 px-6 py-3 text-white transition-colors hover:bg-gray-700"
-                    >
-                      <FileText className="h-4 w-4" />
-                      <span>View History</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -565,7 +547,9 @@ const JobSeekerInterview = () => {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* Interview Configuration */}
               <div className="lg:col-span-2">
-                <InterviewConfig onConfigComplete={startNewInterview} />
+                <InterviewConfigComponent
+                  onConfigComplete={startNewInterview}
+                />
               </div>
 
               {/* Interview Stats and Actions */}

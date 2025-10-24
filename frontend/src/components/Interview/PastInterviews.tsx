@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { Clock, Play, FileText, Star, ArrowLeft, Eye } from "lucide-react";
 import {
-  Clock,
-  Play,
-  CheckCircle,
-  XCircle,
-  FileText,
-  Star,
-  ArrowLeft,
-  Eye,
-} from "lucide-react";
-import { interviewApi, type InterviewSummary } from "@/services/interviewApi";
+  interviewApi,
+  type InterviewSummary,
+  type DetailedInterview,
+  type ConversationEntry,
+} from "@/services/interviewApi";
 import JobSeekerLayout from "@/components/JobSeeker/JobSeekerLayout";
 
 interface PastInterviewsProps {
@@ -25,8 +21,9 @@ const PastInterviews: React.FC<PastInterviewsProps> = ({
   const [loading, setLoading] = useState(true);
   const [selectedInterview, setSelectedInterview] =
     useState<InterviewSummary | null>(null);
-  const [detailedInterview, setDetailedInterview] = useState<any>(null);
-  const [detailedLoading, setDetailedLoading] = useState(false);
+
+  const [detailedInterview, setDetailedInterview] =
+    useState<DetailedInterview | null>(null);
 
   useEffect(() => {
     fetchInterviews();
@@ -80,14 +77,11 @@ const PastInterviews: React.FC<PastInterviewsProps> = ({
 
   const viewDetailedInterview = async (interview: InterviewSummary) => {
     try {
-      setDetailedLoading(true);
       setSelectedInterview(interview);
       const response = await interviewApi.getInterview(interview.session_id);
       setDetailedInterview(response);
     } catch (error) {
       console.error("Error fetching detailed interview:", error);
-    } finally {
-      setDetailedLoading(false);
     }
   };
 
@@ -147,7 +141,7 @@ const PastInterviews: React.FC<PastInterviewsProps> = ({
 
               <div className="space-y-8">
                 {detailedInterview.conversationEntries.map(
-                  (entry: any, index: number) => (
+                  (entry: ConversationEntry, index: number) => (
                     <div
                       key={entry.entry_id}
                       className="border-b border-gray-200 pb-8 last:border-0 last:pb-0"

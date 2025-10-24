@@ -97,11 +97,6 @@ async function evaluateInterviewResponse(
       });
 
       rawResponse = completion.choices[0].message.content ?? "";
-      const latency = Date.now() - startTime;
-      const tokens = completion.usage?.total_tokens ?? 0;
-      console.log(
-        `AI evaluation success: user=${user_id}, model=${OPENAI_MODEL}, tokens=${tokens}, latency=${latency}ms`,
-      );
 
       // Parse the response
       let parsed: any;
@@ -142,12 +137,7 @@ async function evaluateInterviewResponse(
       };
     } catch (error: any) {
       retries++;
-      const latency = Date.now() - startTime;
-      console.error(
-        `AI evaluation error (retry ${retries}): user=${user_id}, error=${error.message}, latency=${latency}ms`,
-      );
       if (retries > MAX_RETRIES || error.code === "timeout") {
-        console.warn(`AI evaluation fallback triggered for user=${user_id}`);
         // Return a fallback evaluation
         return {
           feedback: {
