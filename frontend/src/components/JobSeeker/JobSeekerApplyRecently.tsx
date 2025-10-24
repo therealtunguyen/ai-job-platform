@@ -49,7 +49,7 @@ const JobSeekerApplyRecently = () => {
 
         // Fetch detailed job information for each application
         const applicationsWithJobDetails = await Promise.all(
-          recentApplications.map(async (application: any) => {
+          recentApplications.map(async (application: Application) => {
             try {
               console.log(
                 "🔍 Fetching job details for job_id:",

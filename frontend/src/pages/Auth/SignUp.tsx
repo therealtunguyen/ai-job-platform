@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import {
   User,
@@ -175,16 +174,24 @@ const SignUp = () => {
         window.location.href = "/login";
       }, 2000);
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const anyErr = error as any;
-      console.log("Signup error:", anyErr?.response?.data || anyErr);
+      // Define a type for the error response
+      interface ErrorResponse {
+        response?: {
+          data?: {
+            error?: string;
+            message?: string;
+          };
+        };
+      }
+
+      const errorResponse = error as ErrorResponse;
+      console.log("Signup error:", errorResponse?.response?.data || error);
 
       const errorMessage =
         error instanceof Error
           ? error.message
-          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            anyErr?.response?.data?.error ||
-            anyErr?.response?.data?.message ||
+          : errorResponse?.response?.data?.error ||
+            errorResponse?.response?.data?.message ||
             "Registration failed. Please try again.";
 
       setFormState((prev) => ({

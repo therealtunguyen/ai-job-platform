@@ -24,10 +24,33 @@ import { useState, useEffect } from "react";
 import { API_PATHS, BASE_URL } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
 
+interface UserProfileFields {
+  full_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  preferred_location: string;
+  expected_salary: string;
+  summary: string;
+  profile_picture: string;
+  cv_file_path: string;
+}
+
+interface SocialNetwork {
+  social_network_id: number;
+  username: string;
+  profile_url: string;
+  social_network: {
+    social_network_id: number;
+    name: string;
+    icon: string;
+  };
+}
+
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<UserProfileFields>({
     full_name: "",
     email: "",
     phone: "",
@@ -39,8 +62,16 @@ const UserProfile = () => {
     cv_file_path: "",
   });
 
-  const [socialNetworks, setSocialNetworks] = useState([]);
-  const [availableSocialNetworks, setAvailableSocialNetworks] = useState([]);
+  interface AvailableSocialNetwork {
+    social_network_id: number;
+    name: string;
+    icon: string;
+  }
+
+  const [socialNetworks, setSocialNetworks] = useState<SocialNetwork[]>([]);
+  const [availableSocialNetworks, setAvailableSocialNetworks] = useState<
+    AvailableSocialNetwork[]
+  >([]);
   const [newSocialNetwork, setNewSocialNetwork] = useState({
     social_network_id: "",
     username: "",
@@ -638,7 +669,7 @@ const UserProfile = () => {
                         className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                       >
                         <option value="">Select Platform</option>
-                        {availableSocialNetworks.map((network: any) => (
+                        {availableSocialNetworks.map((network) => (
                           <option
                             key={network.social_network_id}
                             value={network.social_network_id}
@@ -723,7 +754,7 @@ const UserProfile = () => {
                     </p>
                   </div>
                 ) : (
-                  socialNetworks.map((social: any) => (
+                  socialNetworks.map((social) => (
                     <div
                       key={social.social_network_id}
                       className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
