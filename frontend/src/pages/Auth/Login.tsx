@@ -110,7 +110,10 @@ const Login = () => {
 
         console.log("Redirecting to /jobseeker-dashboard..."); // Debug log
         // Redirect ngay lập tức thay vì chờ 2 giây
-        window.location.href = "/jobseeker-dashboard";
+        window.location.href =
+          userData.role === "EMPLOYER"
+            ? "/employer-dashboard"
+            : "/jobseeker-dashboard";
       } else {
         console.error("No token found in response:", response.data);
         setFormState((prev) => ({

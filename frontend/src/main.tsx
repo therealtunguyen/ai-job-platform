@@ -13,6 +13,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import UserProfile from "@/pages/JobSeeker/UserProfile";
 import ApplicationSavedJob from "@/pages/JobSeeker/ApplicationSavedJob";
 import JobSeekerInterview from "@/pages/JobSeeker/JobSeekerInterview";
+import EmployerProfilePage from "@/pages/Employer/EmployerProfilePage";
+import EditProfileDetail from "@/pages/Employer/EditProfileDetail";
+import JobManagement from "@/pages/Employer/JobManagement";
+import JobPosting from "@/pages/Employer/JobPosting";
+import ApplicationViewer from "@/pages/Employer/ApplicationViewer";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +57,26 @@ const router = createBrowserRouter([
           {
             path: "/jobseeker-interview",
             element: <JobSeekerInterview />,
+          },
+          {
+            path: "/employer-profile",
+            element: <EmployerProfilePage />,
+          },
+          {
+            path: "/edit-profile-detail",
+            element: <EditProfileDetail />,
+          },
+          {
+            path: "/job-management",
+            element: <JobManagement />,
+          },
+          {
+            path: "/job-posting",
+            element: <JobPosting />,
+          },
+          {
+            path: "/application-viewer",
+            element: <ApplicationViewer />,
           },
           // {
           //   path: '/jobseeker-homepage',

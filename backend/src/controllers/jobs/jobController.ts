@@ -5,6 +5,7 @@ import {
   listJobs,
   updateJob as updateJobService,
   deleteJob as deleteJobService,
+  getJobsByEmployerId,
 } from "../../services/jobs/jobService";
 import { validationResult } from "express-validator";
 
@@ -86,5 +87,31 @@ export async function deleteJob(req: Request, res: Response) {
     res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ message: "Failed to delete job", error: e.message });
+  }
+}
+
+export async function getJobsByEmployer(req: Request, res: Response) {
+  const limit = parseInt((req.query.limit as string) || "50", 10);
+  const offset = parseInt((req.query.offset as string) || "0", 10);
+
+  if (
+    Number.isNaN(limit) ||
+    Number.isNaN(offset) ||
+    limit < 1 ||
+    limit > 100 ||
+    offset < 0
+  ) {
+    return res.status(400).json({
+      message:
+        "Invalid query parameters: limit must be between 1 and 100; offset must be >= 0.",
+    });
+  }
+
+  try {
+    const employerId = (req as any).user.id;
+    const jobs = await getJobsByEmployerId(employerId, limit, offset);
+    res.json({ data: jobs, limit, offset });
+  } catch (e: any) {
+    res.status(500).json({ message: "Failed to list jobs", error: e.message });
   }
 }
