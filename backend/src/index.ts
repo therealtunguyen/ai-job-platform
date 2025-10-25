@@ -30,7 +30,7 @@ app.use("/api/applications", applicationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/jobseekers", jobSeekerProfileRoutes);
 app.use("/api/interviews", interviewRoutes);
-app.use("/api/candidate", candidateSearchRoutes);
+app.use("/api/candidate/search", candidateSearchRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {

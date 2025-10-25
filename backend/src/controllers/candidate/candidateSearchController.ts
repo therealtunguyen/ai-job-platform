@@ -14,9 +14,7 @@ export class CandidateSearchController {
       // Extract and parse query parameters
       const filters = {
         q: req.query.q as string,
-        skills: req.query.skills
-          ? (req.query.skills as string).split(",").map((s) => s.trim())
-          : undefined,
+        skills: req.query.skills as string[] | undefined,
         min_exp: req.query.min_exp as unknown as number,
         max_exp: req.query.max_exp as unknown as number,
         preferred_location: req.query.preferred_location as string,
@@ -24,11 +22,6 @@ export class CandidateSearchController {
         per_page: req.query.per_page as unknown as number,
         sort: req.query.sort as string,
       };
-
-      // If skills was provided as an array, use it directly
-      if (Array.isArray(req.query.skills)) {
-        filters.skills = req.query.skills as string[];
-      }
 
       const result =
         await this.candidateSearchService.searchCandidates(filters);

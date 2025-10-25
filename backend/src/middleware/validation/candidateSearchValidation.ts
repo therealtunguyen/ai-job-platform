@@ -65,7 +65,8 @@ export const candidateSearchValidator = [
 
   // Validate that min_exp <= max_exp if both are provided
   query().custom((value, { req }) => {
-    const { min_exp, max_exp } = req.query;
+    const min_exp = req.query?.min_exp;
+    const max_exp = req.query?.max_exp;
     if (min_exp !== undefined && max_exp !== undefined && min_exp > max_exp) {
       throw new Error(
         "Minimum experience cannot be greater than maximum experience",

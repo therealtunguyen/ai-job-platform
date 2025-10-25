@@ -13,12 +13,12 @@ type CandidateSearchFilters = {
 };
 
 type CandidateSearchResult = {
-  user_id: string;
+  user_id: string | null;
   full_name: string | null;
   summary: string | null;
   preferred_location: string | null;
-  total_experience_years: number;
-  skills_list: string;
+  total_experience_years: number | null;
+  skills_list: string | null;
   match_score: number;
   profile_picture: string | null;
   status: Database["public"]["Enums"]["profile_status_enum"] | null;
@@ -29,6 +29,47 @@ export class CandidateSearchService {
 
   constructor(supabase: SupabaseClient<Database>) {
     this.supabase = supabase;
+  }
+
+  private escapeLikePattern(value: string): string {
+    // Escape % and _ characters for SQL LIKE patterns
+    return value.replace(/%/g, "\\%").replace(/_/g, "\\_");
+  }
+
+  private applyFilters(filters: CandidateSearchFilters, query: any) {
+    if (filters.q && filters.q.trim() !== "") {
+      query = query.textSearch("search_vector", filters.q, {
+        type: "websearch",
+      });
+    }
+
+    if (filters.min_exp !== undefined) {
+      query = query.gte("total_experience_years", filters.min_exp);
+    }
+
+    if (filters.max_exp !== undefined) {
+      query = query.lte("total_experience_years", filters.max_exp);
+    }
+
+    if (
+      filters.preferred_location &&
+      filters.preferred_location.trim() !== ""
+    ) {
+      const escapedLocation = this.escapeLikePattern(
+        filters.preferred_location,
+      );
+      query = query.ilike("preferred_location", `%${escapedLocation}%`);
+    }
+
+    if (filters.skills && filters.skills.length > 0) {
+      // Check if all specified skills are present in the skills_list
+      for (const skill of filters.skills) {
+        const escapedSkill = this.escapeLikePattern(skill);
+        query = query.ilike("skills_list", `%${escapedSkill}%`);
+      }
+    }
+
+    return query;
   }
 
   async searchCandidates(filters: CandidateSearchFilters) {
@@ -49,74 +90,16 @@ export class CandidateSearchService {
         status
       `);
 
-    // Apply filters using Supabase's text search for full-text search
-    if (filters.q && filters.q.trim() !== "") {
-      // Note: Supabase doesn't directly support ts_rank in select(), so we calculate scores in code
-      query = query.textSearch("search_vector", filters.q, {
-        type: "websearch",
-      });
-    }
-
-    if (filters.min_exp !== undefined) {
-      query = query.gte("total_experience_years", filters.min_exp);
-    }
-
-    if (filters.max_exp !== undefined) {
-      query = query.lte("total_experience_years", filters.max_exp);
-    }
-
-    if (
-      filters.preferred_location &&
-      filters.preferred_location.trim() !== ""
-    ) {
-      query = query.ilike(
-        "preferred_location",
-        `%${filters.preferred_location}%`,
-      );
-    }
-
-    if (filters.skills && filters.skills.length > 0) {
-      // Check if all specified skills are present in the skills_list
-      for (const skill of filters.skills) {
-        query = query.ilike("skills_list", `%${skill}%`);
-      }
-    }
+    // Apply filters using the helper method
+    query = this.applyFilters(filters, query);
 
     // Build count query with conditional filters
     let countQuery = this.supabase
       .from("job_seekers_with_skills")
       .select("*", { count: "exact", head: true });
 
-    if (filters.q && filters.q.trim() !== "") {
-      countQuery = countQuery.textSearch("search_vector", filters.q, {
-        type: "websearch",
-      });
-    }
-
-    if (filters.min_exp !== undefined) {
-      countQuery = countQuery.gte("total_experience_years", filters.min_exp);
-    }
-
-    if (filters.max_exp !== undefined) {
-      countQuery = countQuery.lte("total_experience_years", filters.max_exp);
-    }
-
-    if (
-      filters.preferred_location &&
-      filters.preferred_location.trim() !== ""
-    ) {
-      countQuery = countQuery.ilike(
-        "preferred_location",
-        `%${filters.preferred_location}%`,
-      );
-    }
-
-    if (filters.skills && filters.skills.length > 0) {
-      // Check if all specified skills are present in the skills_list
-      for (const skill of filters.skills) {
-        countQuery = countQuery.ilike("skills_list", `%${skill}%`);
-      }
-    }
+    // Apply the same filters to the count query
+    countQuery = this.applyFilters(filters, countQuery);
 
     const { count, error: countError } = await countQuery;
 
@@ -186,11 +169,13 @@ export class CandidateSearchService {
         let expScore = 0;
         if (
           filters.min_exp !== undefined &&
+          item.total_experience_years !== null &&
           item.total_experience_years >= filters.min_exp
         )
           expScore += 0.05;
         if (
           filters.max_exp !== undefined &&
+          item.total_experience_years !== null &&
           item.total_experience_years <= filters.max_exp
         )
           expScore += 0.05;
@@ -226,11 +211,13 @@ export class CandidateSearchService {
         return results.sort((a, b) => b.match_score - a.match_score);
       case "exp_high":
         return results.sort(
-          (a, b) => b.total_experience_years - a.total_experience_years,
+          (a, b) =>
+            (b.total_experience_years || 0) - (a.total_experience_years || 0),
         );
       case "exp_low":
         return results.sort(
-          (a, b) => a.total_experience_years - b.total_experience_years,
+          (a, b) =>
+            (a.total_experience_years || 0) - (b.total_experience_years || 0),
         );
       case "name":
         return results.sort((a, b) =>
