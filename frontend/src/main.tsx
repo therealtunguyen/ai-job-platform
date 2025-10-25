@@ -13,11 +13,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import UserProfile from "@/pages/JobSeeker/UserProfile";
 import ApplicationSavedJob from "@/pages/JobSeeker/ApplicationSavedJob";
 import JobSeekerInterview from "@/pages/JobSeeker/JobSeekerInterview";
-import EmployerProfilePage from "@/pages/Employer/EmployerProfilePage";
 import EditProfileDetail from "@/pages/Employer/EditProfileDetail";
 import JobManagement from "@/pages/Employer/JobManagement";
 import JobPosting from "@/pages/Employer/JobPosting";
 import ApplicationViewer from "@/pages/Employer/ApplicationViewer";
+import EmployerProfile from "./pages/Employer/EmployerProfile";
 
 const router = createBrowserRouter([
   {
@@ -60,7 +60,7 @@ const router = createBrowserRouter([
           },
           {
             path: "/employer-profile",
-            element: <EmployerProfilePage />,
+            element: <EmployerProfile />,
           },
           {
             path: "/edit-profile-detail",
