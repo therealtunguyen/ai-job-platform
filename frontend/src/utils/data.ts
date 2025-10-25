@@ -122,8 +122,8 @@ export const SIDE_MENU_EMPLOYER_DASHBOARD = [
   {
     id: "04",
     icon: FileText,
-    label: "Post Job",
-    path: "/job-posting",
+    label: "View Applicants",
+    path: "/application-viewer",
   },
   {
     id: "05",

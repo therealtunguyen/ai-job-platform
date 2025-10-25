@@ -52,7 +52,7 @@ const Header = () => {
                 <span className="text-gray-700">Welcome, {user?.name}</span>
                 <a
                   href={
-                    user?.role === "employer"
+                    user?.role === "EMPLOYER"
                       ? "/employer-dashboard"
                       : "/jobseeker-dashboard"
                   }

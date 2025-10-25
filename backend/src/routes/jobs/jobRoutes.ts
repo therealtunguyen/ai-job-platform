@@ -19,14 +19,14 @@ const router = express.Router();
 router.get("/", listJobHandler);
 
 // Get a specific job by job ID
-router.get("/job/:jobId", getJob);
+router.get("/job/:id", getJob);
 
 // Get all jobs posted by the authenticated employer
 router.get("/my-jobs", authenticateToken, getJobsByEmployer);
 
 // Protected routes: only authenticated users can create, update, or delete jobs
 router.post("/", authenticateToken, createJobValidator, createJob);
-router.put("/job/:jobId", authenticateToken, updateJobValidator, updateJob);
-router.delete("/job/:jobId", authenticateToken, deleteJob);
+router.put("/job/:id", authenticateToken, updateJobValidator, updateJob);
+router.delete("/job/:id", authenticateToken, deleteJob);
 
 export default router;

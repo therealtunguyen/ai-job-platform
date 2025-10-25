@@ -150,7 +150,7 @@ export async function getJobsByEmployerId(
     `,
     )
     .eq("employer_id", employerId)
-    .order("posted_at", { ascending: false, nullsFirst: false })
+    .order("last_updated_at", { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
   if (error) throw error;
 
