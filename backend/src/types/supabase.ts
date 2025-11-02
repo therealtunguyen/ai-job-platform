@@ -77,6 +77,13 @@ export type Database = {
             referencedColumns: ["user_id"];
           },
           {
+            foreignKeyName: "applications_candidate_id_fkey";
+            columns: ["candidate_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
+            referencedColumns: ["user_id"];
+          },
+          {
             foreignKeyName: "applications_job_id_fkey";
             columns: ["job_id"];
             isOneToOne: false;
@@ -116,6 +123,13 @@ export type Database = {
             columns: ["job_seeker_id"];
             isOneToOne: false;
             referencedRelation: "job_seekers";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "certifications_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
             referencedColumns: ["user_id"];
           },
         ];
@@ -224,6 +238,13 @@ export type Database = {
             referencedRelation: "job_seekers";
             referencedColumns: ["user_id"];
           },
+          {
+            foreignKeyName: "cvs_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
+            referencedColumns: ["user_id"];
+          },
         ];
       };
       educations: {
@@ -266,6 +287,13 @@ export type Database = {
             columns: ["job_seeker_id"];
             isOneToOne: false;
             referencedRelation: "job_seekers";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "educations_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
             referencedColumns: ["user_id"];
           },
         ];
@@ -388,6 +416,13 @@ export type Database = {
             referencedColumns: ["user_id"];
           },
           {
+            foreignKeyName: "job_matches_candidate_id_fkey";
+            columns: ["candidate_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
+            referencedColumns: ["user_id"];
+          },
+          {
             foreignKeyName: "job_matches_job_id_fkey";
             columns: ["job_id"];
             isOneToOne: false;
@@ -454,6 +489,13 @@ export type Database = {
             referencedColumns: ["user_id"];
           },
           {
+            foreignKeyName: "job_seeker_languages_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
+            referencedColumns: ["user_id"];
+          },
+          {
             foreignKeyName: "job_seeker_languages_language_id_fkey";
             columns: ["language_id"];
             isOneToOne: false;
@@ -484,6 +526,13 @@ export type Database = {
             columns: ["job_seeker_id"];
             isOneToOne: false;
             referencedRelation: "job_seekers";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "job_seeker_skills_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
             referencedColumns: ["user_id"];
           },
           {
@@ -526,6 +575,13 @@ export type Database = {
             referencedColumns: ["user_id"];
           },
           {
+            foreignKeyName: "job_seeker_social_networks_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
+            referencedColumns: ["user_id"];
+          },
+          {
             foreignKeyName: "job_seeker_social_networks_social_network_id_fkey";
             columns: ["social_network_id"];
             isOneToOne: false;
@@ -546,6 +602,7 @@ export type Database = {
           profile_picture: string | null;
           status: Database["public"]["Enums"]["profile_status_enum"] | null;
           summary: string | null;
+          total_experience_years: number | null;
           user_id: string;
         };
         Insert: {
@@ -559,6 +616,7 @@ export type Database = {
           profile_picture?: string | null;
           status?: Database["public"]["Enums"]["profile_status_enum"] | null;
           summary?: string | null;
+          total_experience_years?: number | null;
           user_id: string;
         };
         Update: {
@@ -572,6 +630,7 @@ export type Database = {
           profile_picture?: string | null;
           status?: Database["public"]["Enums"]["profile_status_enum"] | null;
           summary?: string | null;
+          total_experience_years?: number | null;
           user_id?: string;
         };
         Relationships: [];
@@ -584,6 +643,7 @@ export type Database = {
           expires_at: string | null;
           job_id: string;
           job_type: string | null;
+          last_updated_at: string | null;
           location: string | null;
           max_experience: number | null;
           max_salary: number | null;
@@ -600,6 +660,7 @@ export type Database = {
           expires_at?: string | null;
           job_id?: string;
           job_type?: string | null;
+          last_updated_at?: string | null;
           location?: string | null;
           max_experience?: number | null;
           max_salary?: number | null;
@@ -616,6 +677,7 @@ export type Database = {
           expires_at?: string | null;
           job_id?: string;
           job_type?: string | null;
+          last_updated_at?: string | null;
           location?: string | null;
           max_experience?: number | null;
           max_salary?: number | null;
@@ -717,6 +779,13 @@ export type Database = {
             columns: ["candidate_id"];
             isOneToOne: false;
             referencedRelation: "job_seekers";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "mock_interviews_candidate_id_fkey";
+            columns: ["candidate_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
             referencedColumns: ["user_id"];
           },
         ];
@@ -841,15 +910,35 @@ export type Database = {
             referencedRelation: "job_seekers";
             referencedColumns: ["user_id"];
           },
+          {
+            foreignKeyName: "work_experiences_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
+            referencedColumns: ["user_id"];
+          },
         ];
       };
     };
     Views: {
-      [_ in never]: never;
+      job_seekers_with_skills: {
+        Row: {
+          full_name: string | null;
+          preferred_location: string | null;
+          profile_picture: string | null;
+          search_vector: unknown;
+          skills_list: string | null;
+          status: Database["public"]["Enums"]["profile_status_enum"] | null;
+          summary: string | null;
+          total_experience_years: number | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       get_user_type: {
-        Args: Record<PropertyKey, never>;
+        Args: never;
         Returns: Database["public"]["Enums"]["user_type_enum"];
       };
       update_interview_metrics: {
