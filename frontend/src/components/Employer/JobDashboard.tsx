@@ -35,7 +35,7 @@ const JobDashboard = () => {
   };
 
   const filterJobs = () => {
-    let result = jobs;
+    let result: JobType[];
 
     switch (activeTab) {
       case "active":

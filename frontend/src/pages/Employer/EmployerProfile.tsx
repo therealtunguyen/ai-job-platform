@@ -99,9 +99,8 @@ const EmployerProfile = () => {
       await axiosInstance.put(API_PATHS.USERS.UPDATE_PROFILE, updateData);
 
       // Update email separately if it has changed
-      const currentEmail = localStorage.getItem("user")
-        ? JSON.parse(localStorage.getItem("user")!).email
-        : "";
+      const userItem = localStorage.getItem("user");
+      const currentEmail = userItem ? JSON.parse(userItem).email : "";
       if (profileData.email !== currentEmail) {
         await axiosInstance.put(API_PATHS.AUTH.UPDATE_EMAIL, {
           email: profileData.email,

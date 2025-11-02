@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, Briefcase, MessageSquare, BarChart3 } from "lucide-react";
+import { Users, Briefcase, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_PATHS } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
@@ -55,9 +55,6 @@ const EmployerDashboardContent = () => {
             user.id.toString(),
           ),
         );
-
-        // Fetch scheduled interviews - using user interviews endpoint for now (not storing response to fix linting error)
-        await axiosInstance.get(API_PATHS.INTERVIEWS.GET_USER_INTERVIEWS);
 
         // Get user profile for completeness calculation
         const profileResponse = await axiosInstance.get(

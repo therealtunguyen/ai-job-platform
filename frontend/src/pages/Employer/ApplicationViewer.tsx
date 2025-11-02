@@ -7,7 +7,6 @@ import {
   type ApplicationStatus,
 } from "@/services/applicationService";
 import type { Job } from "@/services/jobService";
-import { BASE_URL } from "@/utils/apiPath";
 
 // Define application status options as per requirements
 const STATUS_OPTIONS: Exclude<ApplicationStatus, null>[] = [

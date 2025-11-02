@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import EmployerLayout from "@/components/Employer/EmployerLayout";
 import JobStepper from "@/components/Employer/JobStepper";
 import type { Job as JobType } from "@/services/jobService";
@@ -6,6 +7,7 @@ import type { Job as JobType } from "@/services/jobService";
 const JobPosting = () => {
   const [isCreating, setIsCreating] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobType | null>(null);
+  const navigate = useNavigate();
 
   const handleJobCreated = (job: JobType) => {
     // Handle job creation/publishing
@@ -18,17 +20,12 @@ const JobPosting = () => {
 
     // Optionally navigate to dashboard
     setTimeout(() => {
-      window.location.href = "/job-management";
+      navigate("/job-management");
     }, 1500);
   };
 
-  const handleEditJob = (job: JobType) => {
-    setSelectedJob(job);
-    setIsCreating(false);
-  };
-
   const handleBackToDashboard = () => {
-    window.location.href = "/job-management";
+    navigate("/job-management");
   };
 
   return (

@@ -123,9 +123,9 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
         employer_id: job.employer_id,
       };
 
-      const createdJob = await jobService.createJob(newJob);
+      await jobService.createJob(newJob);
       // Reload dashboard to show the new job
-      window.location.href = "/employer/job-posting";
+      window.location.href = "/job-posting";
     } catch (error) {
       console.error("Error duplicating job:", error);
     } finally {
