@@ -1,5 +1,12 @@
+import EmployerLayout from "@/components/Employer/EmployerLayout";
+import JobDashboard from "@/components/Employer/JobDashboard";
+
 const JobManagement = () => {
-  return <div>Job Management</div>;
+  return (
+    <EmployerLayout activeMenu="/job-management">
+      <JobDashboard />
+    </EmployerLayout>
+  );
 };
 
 export default JobManagement;

@@ -643,6 +643,7 @@ export type Database = {
           expires_at: string | null;
           job_id: string;
           job_type: string | null;
+          last_updated_at: string | null;
           location: string | null;
           max_experience: number | null;
           max_salary: number | null;
@@ -659,6 +660,7 @@ export type Database = {
           expires_at?: string | null;
           job_id?: string;
           job_type?: string | null;
+          last_updated_at?: string | null;
           location?: string | null;
           max_experience?: number | null;
           max_salary?: number | null;
@@ -675,6 +677,7 @@ export type Database = {
           expires_at?: string | null;
           job_id?: string;
           job_type?: string | null;
+          last_updated_at?: string | null;
           location?: string | null;
           max_experience?: number | null;
           max_salary?: number | null;

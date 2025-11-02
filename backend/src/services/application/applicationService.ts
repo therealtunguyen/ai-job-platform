@@ -168,7 +168,16 @@ export const updateApplicationStatus = async (
       status_updated_at: new Date().toISOString(),
     })
     .eq("application_id", applicationId)
-    .select()
+    .select(
+      `
+      application_id,
+      applied_at,
+      status,
+      status_updated_at,
+      candidate_id,
+      job_seekers(full_name, phone, profile_picture, cv_file_path, summary)
+    `,
+    )
     .single();
 
   if (error) {
@@ -232,7 +241,7 @@ export const listJobApplications = async (employerId: string) => {
       candidate_id,
       job_id,
       jobs(title),
-      job_seekers(full_name, phone)
+      job_seekers(full_name, phone, profile_picture, cv_file_path, summary)
     `,
     )
     .in("job_id", jobIdsArray)
@@ -271,7 +280,7 @@ export const listApplicationsForJob = async (
       status,
       status_updated_at,
       candidate_id,
-      job_seekers(full_name, phone)
+      job_seekers(full_name, phone, profile_picture, cv_file_path, summary)
     `,
     )
     .eq("job_id", jobId)

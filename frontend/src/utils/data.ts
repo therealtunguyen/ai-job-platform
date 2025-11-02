@@ -99,3 +99,36 @@ export const SIDE_MENU_JOBSEEKER_DASHBOARD = [
     path: "/logout",
   },
 ];
+
+export const SIDE_MENU_EMPLOYER_DASHBOARD = [
+  {
+    id: "01",
+    icon: LucideLayoutDashboard,
+    label: "Dashboard",
+    path: "/employer-dashboard",
+  },
+  {
+    id: "02",
+    icon: Users,
+    label: "My Profile",
+    path: "/employer-profile",
+  },
+  {
+    id: "03",
+    icon: BriefcaseBusiness,
+    label: "Job Management",
+    path: "/job-management",
+  },
+  {
+    id: "04",
+    icon: FileText,
+    label: "View Applicants",
+    path: "/application-viewer",
+  },
+  {
+    id: "05",
+    icon: LucideLogOut,
+    label: "Logout",
+    path: "/logout",
+  },
+];

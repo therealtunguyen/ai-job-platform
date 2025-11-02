@@ -17,10 +17,11 @@ export const API_PATHS = {
   },
   JOBS: {
     LIST: "/api/jobs/",
-    GET_BY_ID: "/api/jobs/:id",
+    GET_BY_ID: "/api/jobs/job/:id",
     CREATE: "/api/jobs/",
-    UPDATE: "/api/jobs/:id",
-    DELETE: "/api/jobs/:id",
+    UPDATE: "/api/jobs/job/:id",
+    DELETE: "/api/jobs/job/:id",
+    GET_BY_EMPLOYER: "/api/jobs/my-jobs",
   },
   APPLICATIONS: {
     SUBMIT: "/api/applications/",

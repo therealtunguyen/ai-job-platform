@@ -136,6 +136,34 @@ export async function deleteJob(
   return (count ?? 0) > 0;
 }
 
+export async function getJobsByEmployerId(
+  employerId: string,
+  limit = 50,
+  offset = 0,
+): Promise<JobWithEmployer[]> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select(
+      `
+      *,
+      employer:employer_id (logo, company_name)
+    `,
+    )
+    .eq("employer_id", employerId)
+    .order("last_updated_at", { ascending: false, nullsFirst: false })
+    .range(offset, offset + limit - 1);
+  if (error) throw error;
+
+  // Transform the data to flatten employer information
+  const jobsWithEmployer: JobWithEmployer[] = (data ?? []).map((job: any) => ({
+    ...job,
+    employer_logo: job.employer?.logo || null,
+    employer_company_name: job.employer?.company_name || null,
+  }));
+
+  return jobsWithEmployer;
+}
+
 // ---- Internal helpers ----
 function isNoRowsError(err: unknown): boolean {
   if (!err) return false;
