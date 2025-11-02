@@ -12,16 +12,16 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     title: job.title,
-    location: job.location,
-    job_type: job.job_type,
-    min_experience: job.min_experience,
-    max_experience: job.max_experience,
-    min_salary: job.min_salary,
-    max_salary: job.max_salary,
-    description: job.description,
-    responsibilities: job.responsibilities,
-    requirements: job.requirements,
-    benefits: job.benefits,
+    location: job.location || "",
+    job_type: job.job_type || null,
+    min_experience: job.min_experience || null,
+    max_experience: job.max_experience || null,
+    min_salary: job.min_salary || null,
+    max_salary: job.max_salary || null,
+    description: job.description || "",
+    responsibilities: job.responsibilities || "",
+    requirements: job.requirements || "",
+    benefits: job.benefits || "",
   });
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null); // Track which action is loading
@@ -104,24 +104,24 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
 
     setActionLoading("DUPLICATING");
     try {
-      const newJob: Omit<
-        JobType,
-        "job_id" | "posted_at" | "applicant_count" | "last_updated_at"
-      > = {
-        title: `${job.title} (Copy)`,
-        location: job.location,
-        job_type: job.job_type,
-        min_experience: job.min_experience,
-        max_experience: job.max_experience,
-        min_salary: job.min_salary,
-        max_salary: job.max_salary,
-        description: job.description,
-        responsibilities: job.responsibilities,
-        requirements: job.requirements,
-        benefits: job.benefits,
-        status: "DRAFT",
-        employer_id: job.employer_id,
-      };
+      const newJob: Omit<JobType, "job_id" | "posted_at" | "applicant_count"> =
+        {
+          title: `${job.title} (Copy)`,
+          location: job.location,
+          job_type: job.job_type,
+          min_experience: job.min_experience,
+          max_experience: job.max_experience,
+          min_salary: job.min_salary,
+          max_salary: job.max_salary,
+          description: job.description,
+          responsibilities: job.responsibilities,
+          requirements: job.requirements,
+          benefits: job.benefits,
+          expires_at: job.expires_at,
+          last_updated_at: job.last_updated_at,
+          status: "DRAFT",
+          employer_id: job.employer_id,
+        };
 
       await jobService.createJob(newJob);
       // Reload dashboard to show the new job
@@ -162,21 +162,30 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
   const handleCancelEdit = () => {
     setEditForm({
       title: job.title,
-      location: job.location,
-      job_type: job.job_type,
-      min_experience: job.min_experience,
-      max_experience: job.max_experience,
-      min_salary: job.min_salary,
-      max_salary: job.max_salary,
-      description: job.description,
-      responsibilities: job.responsibilities,
-      requirements: job.requirements,
-      benefits: job.benefits,
+      location: job.location || "",
+      job_type: job.job_type || null,
+      min_experience: job.min_experience || null,
+      max_experience: job.max_experience || null,
+      min_salary: job.min_salary || null,
+      max_salary: job.max_salary || null,
+      description: job.description || "",
+      responsibilities: job.responsibilities || "",
+      requirements: job.requirements || "",
+      benefits: job.benefits || "",
     });
     setIsEditing(false);
   };
 
-  const getStatusStyle = (status: string) => {
+  const getStatusStyle = (
+    status:
+      | "DRAFT"
+      | "ACTIVE"
+      | "PAUSED"
+      | "EXPIRED"
+      | "FILLED"
+      | "ARCHIVED"
+      | null,
+  ) => {
     switch (status) {
       case "ACTIVE":
         return "bg-green-100 text-green-800";
@@ -278,9 +287,18 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
                 Job Type
               </label>
               <select
-                value={editForm.job_type}
+                value={editForm.job_type || ""}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, job_type: e.target.value as any })
+                  setEditForm({
+                    ...editForm,
+                    job_type: e.target.value as
+                      | "FULL_TIME"
+                      | "PART_TIME"
+                      | "CONTRACT"
+                      | "INTERNSHIP"
+                      | "TEMPORARY"
+                      | null,
+                  })
                 }
                 className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
               >
@@ -301,7 +319,7 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
                   type="number"
                   min="0"
                   max="50"
-                  value={editForm.min_experience || ""}
+                  value={editForm.min_experience ?? ""}
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
@@ -323,7 +341,7 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
                   type="number"
                   min="0"
                   max="50"
-                  value={editForm.max_experience || ""}
+                  value={editForm.max_experience ?? ""}
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
@@ -346,7 +364,7 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
                 <input
                   type="number"
                   min="0"
-                  value={editForm.min_salary || ""}
+                  value={editForm.min_salary ?? ""}
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
@@ -367,7 +385,7 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
                 <input
                   type="number"
                   min="0"
-                  value={editForm.max_salary || ""}
+                  value={editForm.max_salary ?? ""}
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,

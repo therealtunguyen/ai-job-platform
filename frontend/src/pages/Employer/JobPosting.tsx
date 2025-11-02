@@ -5,8 +5,8 @@ import JobStepper from "@/components/Employer/JobStepper";
 import type { Job as JobType } from "@/services/jobService";
 
 const JobPosting = () => {
-  const [isCreating, setIsCreating] = useState(true);
-  const [selectedJob, setSelectedJob] = useState<JobType | null>(null);
+  const [isCreating] = useState(true);
+  const [selectedJob] = useState<JobType | null>(null);
   const navigate = useNavigate();
 
   const handleJobCreated = (job: JobType) => {
@@ -45,7 +45,7 @@ const JobPosting = () => {
 
         <JobStepper
           onJobCreated={handleJobCreated}
-          jobToEdit={isCreating ? undefined : selectedJob}
+          jobToEdit={isCreating ? null : selectedJob}
           isEditing={!isCreating}
         />
       </div>

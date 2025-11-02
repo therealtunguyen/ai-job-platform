@@ -5,7 +5,7 @@ import { jobService } from "@/services/jobService";
 
 interface JobStepperProps {
   onJobCreated?: (job: JobType) => void;
-  jobToEdit?: JobType;
+  jobToEdit: JobType | null;
   isEditing?: boolean;
 }
 
