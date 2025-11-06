@@ -6,6 +6,7 @@ import {
   deleteJob,
   listJobHandler,
   getJobsByEmployer,
+  filterJobsHandler,
 } from "../../controllers/jobs/jobController";
 import {
   createJobValidator,
@@ -17,6 +18,9 @@ const router = express.Router();
 
 // Public routes: anyone can list and view jobs
 router.get("/", listJobHandler);
+
+// Filter jobs with query parameters
+router.get("/filter", filterJobsHandler);
 
 // Get a specific job by job ID
 router.get("/job/:id", getJob);

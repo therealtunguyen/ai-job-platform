@@ -17,6 +17,27 @@ export type ApplicationStatus = Tables<"applications">["status"];
 // Service for managing applications
 export const applicationService = {
   /**
+   * Submit a new application
+   */
+  submitApplication: async (applicationData: {
+    job_id: string;
+    candidate_id: string;
+    cover_letter?: string;
+    status?: ApplicationStatus;
+  }): Promise<Application> => {
+    try {
+      const response = await axiosInstance.post(
+        API_PATHS.APPLICATIONS.SUBMIT,
+        applicationData,
+      );
+      return response.data.application || response.data;
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Get all applications for a specific job
    */
   getApplicationsByJob: async (jobId: string): Promise<Application[]> => {

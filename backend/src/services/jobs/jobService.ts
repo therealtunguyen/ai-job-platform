@@ -3,7 +3,6 @@ import { Tables, TablesInsert, TablesUpdate } from "../../types/supabase";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 type Job = Tables<"jobs">;
-type Employer = Tables<"employers">;
 type CreateJobDTO = TablesInsert<"jobs">;
 type UpdateJobDTO = TablesUpdate<"jobs">;
 
@@ -152,6 +151,84 @@ export async function getJobsByEmployerId(
     .eq("employer_id", employerId)
     .order("last_updated_at", { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
+  if (error) throw error;
+
+  // Transform the data to flatten employer information
+  const jobsWithEmployer: JobWithEmployer[] = (data ?? []).map((job: any) => ({
+    ...job,
+    employer_logo: job.employer?.logo || null,
+    employer_company_name: job.employer?.company_name || null,
+  }));
+
+  return jobsWithEmployer;
+}
+
+export async function filterJobs(filters: {
+  title?: string;
+  location?: string;
+  job_type?: string;
+  min_salary?: number;
+  max_salary?: number;
+  min_experience?: number;
+  max_experience?: number;
+  status?: string;
+  posted_after?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<JobWithEmployer[]> {
+  let query = supabase
+    .from(TABLE)
+    .select(
+      `
+      *,
+      employer:employer_id (logo, company_name)
+    `,
+    )
+    .order("posted_at", { ascending: false, nullsFirst: false });
+
+  // Apply filters
+  if (filters.title) {
+    query = query.ilike("title", `%${filters.title}%`);
+  }
+
+  if (filters.location) {
+    query = query.ilike("location", `%${filters.location}%`);
+  }
+
+  if (filters.job_type) {
+    query = query.eq("job_type", filters.job_type);
+  }
+
+  if (filters.min_salary !== undefined) {
+    query = query.gte("min_salary", filters.min_salary);
+  }
+
+  if (filters.max_salary !== undefined) {
+    query = query.lte("max_salary", filters.max_salary);
+  }
+
+  if (filters.min_experience !== undefined) {
+    query = query.gte("min_experience", filters.min_experience);
+  }
+
+  if (filters.max_experience !== undefined) {
+    query = query.lte("max_experience", filters.max_experience);
+  }
+
+  if (filters.status) {
+    query = query.eq("status", filters.status);
+  }
+
+  if (filters.posted_after) {
+    query = query.gte("posted_at", filters.posted_after);
+  }
+
+  // Apply pagination
+  const limit = filters.limit || 50;
+  const offset = filters.offset || 0;
+  query = query.range(offset, offset + limit - 1);
+
+  const { data, error } = await query;
   if (error) throw error;
 
   // Transform the data to flatten employer information

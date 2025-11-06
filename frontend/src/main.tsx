@@ -18,6 +18,7 @@ import JobManagement from "@/pages/Employer/JobManagement";
 import JobPosting from "@/pages/Employer/JobPosting";
 import ApplicationViewer from "@/pages/Employer/ApplicationViewer";
 import EmployerProfile from "./pages/Employer/EmployerProfile";
+import JobViews from "./pages/Landing/JobViews";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <LandingPage />,
+      },
+      {
+        path: "/find-jobs",
+        element: <JobViews />,
       },
       {
         path: "/login",

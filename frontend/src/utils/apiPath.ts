@@ -17,6 +17,7 @@ export const API_PATHS = {
   },
   JOBS: {
     LIST: "/api/jobs/",
+    FILTER: "/api/jobs/filter",
     GET_BY_ID: "/api/jobs/job/:id",
     CREATE: "/api/jobs/",
     UPDATE: "/api/jobs/job/:id",
