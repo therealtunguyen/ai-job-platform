@@ -1,10 +1,14 @@
 import { Router } from "express";
 import { JobSeekerProfileController } from "../controllers/jobSeekerProfileController";
+import { ProfileController } from "../controllers/profileController";
 import { supabase } from "../supabaseClient";
 import { authenticateToken } from "../middleware/auth/jwtAuth";
+import { ProfileService } from "../services/profile/profileService";
 
 const router = Router();
 const jobSeekerProfileController = new JobSeekerProfileController(supabase);
+const profileService = new ProfileService(supabase);
+const profileController = new ProfileController(profileService);
 
 // Middleware to check if user is authenticated as a job seeker
 const requireJobSeeker = (req: any, res: any, next: any) => {
@@ -75,6 +79,84 @@ router.delete(
   jobSeekerProfileController.removeSocialNetwork.bind(
     jobSeekerProfileController,
   ),
+);
+
+// Education routes
+router.get(
+  "/education",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.getEducation.bind(profileController),
+);
+router.post(
+  "/education",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.addEducation.bind(profileController),
+);
+router.put(
+  "/education/:educationId",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.updateEducation.bind(profileController),
+);
+router.delete(
+  "/education/:educationId",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.deleteEducation.bind(profileController),
+);
+
+// Certification routes
+router.get(
+  "/certifications",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.getCertifications.bind(profileController),
+);
+router.post(
+  "/certifications",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.addCertification.bind(profileController),
+);
+router.put(
+  "/certifications/:certId",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.updateCertification.bind(profileController),
+);
+router.delete(
+  "/certifications/:certId",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.deleteCertification.bind(profileController),
+);
+
+// Work experience routes
+router.get(
+  "/work-experiences",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.getWorkExperiences.bind(profileController),
+);
+router.post(
+  "/work-experiences",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.addWorkExperience.bind(profileController),
+);
+router.put(
+  "/work-experiences/:experienceId",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.updateWorkExperience.bind(profileController),
+);
+router.delete(
+  "/work-experiences/:experienceId",
+  authenticateToken,
+  requireJobSeeker,
+  profileController.deleteWorkExperience.bind(profileController),
 );
 
 export default router;

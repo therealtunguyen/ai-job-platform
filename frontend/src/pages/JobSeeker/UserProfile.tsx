@@ -11,18 +11,14 @@ import {
   Camera,
   Save,
   Edit3,
-  Plus,
-  Trash2,
-  Globe,
-  Linkedin,
-  Twitter,
-  Github,
-  Instagram,
-  Facebook,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { API_PATHS, BASE_URL } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
+import EducationSection from "@/components/JobSeeker/Profile/EducationSection";
+import CertificationsSection from "@/components/JobSeeker/Profile/CertificationsSection";
+import WorkExperienceSection from "@/components/JobSeeker/Profile/WorkExperienceSection";
+import SocialNetworkSection from "@/components/JobSeeker/Profile/SocialNetworkSection";
 
 interface UserProfileFields {
   full_name: string;
@@ -47,9 +43,41 @@ interface SocialNetwork {
   };
 }
 
+interface Education {
+  education_id: string;
+  institution: string;
+  degree: string | null;
+  major: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  grade: string | null;
+  description: string | null;
+}
+
+interface Certification {
+  cert_id: string;
+  name: string;
+  issuer: string | null;
+  issued_date: string | null;
+  expiry_date: string | null;
+}
+
+interface WorkExperience {
+  experience_id: string;
+  company_name: string;
+  position: string;
+  start_date: string | null;
+  end_date: string | null;
+  description: string | null;
+  is_current: boolean;
+}
+
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [educationLoading, setEducationLoading] = useState(false);
+  const [certificationLoading, setCertificationLoading] = useState(false);
+  const [workExperienceLoading, setWorkExperienceLoading] = useState(false);
   const [profileData, setProfileData] = useState<UserProfileFields>({
     full_name: "",
     email: "",
@@ -62,6 +90,15 @@ const UserProfile = () => {
     cv_file_path: "",
   });
 
+  // Education state
+  const [educations, setEducations] = useState<Education[]>([]);
+
+  // Certification state
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+
+  // Work experience state
+  const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
+
   interface AvailableSocialNetwork {
     social_network_id: number;
     name: string;
@@ -72,12 +109,6 @@ const UserProfile = () => {
   const [availableSocialNetworks, setAvailableSocialNetworks] = useState<
     AvailableSocialNetwork[]
   >([]);
-  const [newSocialNetwork, setNewSocialNetwork] = useState({
-    social_network_id: "",
-    username: "",
-    profile_url: "",
-  });
-  const [showAddSocialNetwork, setShowAddSocialNetwork] = useState(false);
 
   // Load user profile data
   useEffect(() => {
@@ -111,14 +142,28 @@ const UserProfile = () => {
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
+      }
+    };
+
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          fetchUserProfile(),
+          fetchSocialNetworks(),
+          fetchAvailableSocialNetworks(),
+          fetchEducations(),
+          fetchCertifications(),
+          fetchWorkExperiences(),
+        ]);
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProfile();
-    fetchSocialNetworks();
-    fetchAvailableSocialNetworks();
+    fetchProfileData();
   }, []);
 
   const handleInputChange = (
@@ -306,80 +351,48 @@ const UserProfile = () => {
     }
   };
 
-  const handleAddSocialNetwork = async () => {
+  // Education functions
+  const fetchEducations = async () => {
     try {
-      if (
-        !newSocialNetwork.social_network_id ||
-        !newSocialNetwork.profile_url
-      ) {
-        alert("Please fill in both platform and URL");
-        return;
-      }
-
-      setLoading(true);
-      await axiosInstance.post(
-        API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.ADD,
-        newSocialNetwork,
+      setEducationLoading(true);
+      const response = await axiosInstance.get(
+        API_PATHS.JOB_SEEKERS.EDUCATION.GET,
       );
-      await fetchSocialNetworks();
-      setNewSocialNetwork({
-        social_network_id: "",
-        username: "",
-        profile_url: "",
-      });
-      setShowAddSocialNetwork(false);
-      alert("Social network added successfully!");
+      setEducations(response.data.education || []);
     } catch (error) {
-      console.error("Error adding social network:", error);
-      alert("Error adding social network. Please try again.");
+      console.error("Error fetching educations:", error);
     } finally {
-      setLoading(false);
+      setEducationLoading(false);
     }
   };
 
-  const handleDeleteSocialNetwork = async (socialNetworkId: number) => {
+  // Certification functions
+  const fetchCertifications = async () => {
     try {
-      if (!confirm("Are you sure you want to delete this social network?")) {
-        return;
-      }
-
-      setLoading(true);
-      await axiosInstance.delete(
-        API_PATHS.JOB_SEEKERS.SOCIAL_NETWORKS.DELETE.replace(
-          ":socialNetworkId",
-          socialNetworkId.toString(),
-        ),
+      setCertificationLoading(true);
+      const response = await axiosInstance.get(
+        API_PATHS.JOB_SEEKERS.CERTIFICATIONS.GET,
       );
-      await fetchSocialNetworks();
-      alert("Social network deleted successfully!");
+      setCertifications(response.data.certifications || []);
     } catch (error) {
-      console.error("Error deleting social network:", error);
-      alert("Error deleting social network. Please try again.");
+      console.error("Error fetching certifications:", error);
     } finally {
-      setLoading(false);
+      setCertificationLoading(false);
     }
   };
 
-  const getSocialNetworkIcon = (platformName: string) => {
-    switch (platformName.toLowerCase()) {
-      case "linkedin":
-        return <Linkedin className="h-5 w-5" />;
-      case "twitter":
-        return <Twitter className="h-5 w-5" />;
-      case "github":
-        return <Github className="h-5 w-5" />;
-      case "instagram":
-        return <Instagram className="h-5 w-5" />;
-      case "facebook":
-        return <Facebook className="h-5 w-5" />;
-      case "youtube":
-        return <Globe className="h-5 w-5" />;
-      case "dribbble":
-        return <Globe className="h-5 w-5" />;
-      case "behance":
-        return <Globe className="h-5 w-5" />;
-      default:
-        return <Globe className="h-5 w-5" />;
+  // Work experience functions
+  const fetchWorkExperiences = async () => {
+    try {
+      setWorkExperienceLoading(true);
+      const response = await axiosInstance.get(
+        API_PATHS.JOB_SEEKERS.WORK_EXPERIENCES.GET,
+      );
+      setWorkExperiences(response.data.work_experiences || []);
+    } catch (error) {
+      console.error("Error fetching work experiences:", error);
+    } finally {
+      setWorkExperienceLoading(false);
     }
   };
 
@@ -620,185 +633,12 @@ const UserProfile = () => {
           </div>
 
           {/* Social Networks Section */}
-          <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-xl">
-            <div className="border-b border-gray-200 px-8 py-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="rounded-lg bg-purple-100 p-2">
-                    <Globe className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      Social Networks
-                    </h3>
-                    <p className="text-gray-600">
-                      Manage your social media profiles
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowAddSocialNetwork(!showAddSocialNetwork)}
-                  className="flex items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add Social Network</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-8">
-              {/* Add Social Network Form */}
-              {showAddSocialNetwork && (
-                <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
-                    Add New Social Network
-                  </h4>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        Platform
-                      </label>
-                      <select
-                        value={newSocialNetwork.social_network_id}
-                        onChange={(e) =>
-                          setNewSocialNetwork((prev) => ({
-                            ...prev,
-                            social_network_id: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
-                      >
-                        <option value="">Select Platform</option>
-                        {availableSocialNetworks.map((network) => (
-                          <option
-                            key={network.social_network_id}
-                            value={network.social_network_id}
-                          >
-                            {network.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        value={newSocialNetwork.username}
-                        onChange={(e) =>
-                          setNewSocialNetwork((prev) => ({
-                            ...prev,
-                            username: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
-                        placeholder="Your username"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Profile URL
-                    </label>
-                    <input
-                      type="url"
-                      value={newSocialNetwork.profile_url}
-                      onChange={(e) =>
-                        setNewSocialNetwork((prev) => ({
-                          ...prev,
-                          profile_url: e.target.value,
-                        }))
-                      }
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      onClick={handleAddSocialNetwork}
-                      disabled={loading}
-                      className="flex items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>{loading ? "Adding..." : "Add"}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAddSocialNetwork(false);
-                        setNewSocialNetwork({
-                          social_network_id: "",
-                          username: "",
-                          profile_url: "",
-                        });
-                      }}
-                      className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Social Networks List */}
-              <div className="space-y-4">
-                {socialNetworks.length === 0 ? (
-                  <div className="py-8 text-center">
-                    <Globe className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                    <h4 className="mb-2 text-lg font-medium text-gray-900">
-                      No Social Networks Added
-                    </h4>
-                    <p className="text-gray-600">
-                      Add your social media profiles to showcase your online
-                      presence
-                    </p>
-                  </div>
-                ) : (
-                  socialNetworks.map((social) => (
-                    <div
-                      key={social.social_network_id}
-                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600">
-                          {getSocialNetworkIcon(social.social_network.name)}
-                        </div>
-                        <div>
-                          <h5 className="font-semibold text-gray-900">
-                            {social.social_network.name}
-                          </h5>
-                          {social.username && (
-                            <p className="text-sm text-gray-600">
-                              @{social.username}
-                            </p>
-                          )}
-                          {social.profile_url && (
-                            <a
-                              href={social.profile_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                            >
-                              {social.profile_url}
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleDeleteSocialNetwork(social.social_network_id)
-                        }
-                        disabled={loading}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 transition-colors hover:bg-red-200 disabled:opacity-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
+          <SocialNetworkSection
+            loading={loading}
+            fetchSocialNetworks={fetchSocialNetworks}
+            socialNetworks={socialNetworks}
+            availableSocialNetworks={availableSocialNetworks}
+          />
 
           {/* CV Upload Section */}
           <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-xl">
@@ -851,6 +691,33 @@ const UserProfile = () => {
               </div>
             </div>
           </div>
+
+          {/* Education Section */}
+          <EducationSection
+            loading={loading}
+            educationLoading={educationLoading}
+            setEducationLoading={setEducationLoading}
+            fetchEducations={fetchEducations}
+            educations={educations}
+          />
+
+          {/* Certifications Section */}
+          <CertificationsSection
+            loading={loading}
+            certificationLoading={certificationLoading}
+            setCertificationLoading={setCertificationLoading}
+            fetchCertifications={fetchCertifications}
+            certifications={certifications}
+          />
+
+          {/* Work Experiences Section */}
+          <WorkExperienceSection
+            loading={loading}
+            workExperienceLoading={workExperienceLoading}
+            setWorkExperienceLoading={setWorkExperienceLoading}
+            fetchWorkExperiences={fetchWorkExperiences}
+            workExperiences={workExperiences}
+          />
         </div>
       </div>
     </JobSeekerLayout>
