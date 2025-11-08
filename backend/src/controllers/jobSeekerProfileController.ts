@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../types/supabase";
 
-type JobSeekerProfileDatabase = Database["public"]["Tables"];
-
 export class JobSeekerProfileController {
   constructor(private supabase: SupabaseClient<Database>) {}
 

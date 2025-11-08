@@ -51,6 +51,24 @@ export const API_PATHS = {
       ADD: "/api/jobseekers/languages",
       DELETE: "/api/jobseekers/languages/:languageId",
     },
+    EDUCATION: {
+      GET: "/api/jobseekers/education",
+      ADD: "/api/jobseekers/education",
+      UPDATE: "/api/jobseekers/education/:educationId",
+      DELETE: "/api/jobseekers/education/:educationId",
+    },
+    CERTIFICATIONS: {
+      GET: "/api/jobseekers/certifications",
+      ADD: "/api/jobseekers/certifications",
+      UPDATE: "/api/jobseekers/certifications/:certId",
+      DELETE: "/api/jobseekers/certifications/:certId",
+    },
+    WORK_EXPERIENCES: {
+      GET: "/api/jobseekers/work-experiences",
+      ADD: "/api/jobseekers/work-experiences",
+      UPDATE: "/api/jobseekers/work-experiences/:experienceId",
+      DELETE: "/api/jobseekers/work-experiences/:experienceId",
+    },
     SOCIAL_NETWORKS: {
       GET_AVAILABLE: "/api/jobseekers/social-networks/available",
       GET: "/api/jobseekers/social-networks",
