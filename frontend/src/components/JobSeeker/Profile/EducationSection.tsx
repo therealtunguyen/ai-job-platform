@@ -14,14 +14,11 @@ interface Education {
   description: string | null;
 }
 
-interface EducationSectionProps {
+interface EducationSectionOwnProps {
   loading: boolean;
   educationLoading: boolean;
   setEducationLoading: (loading: boolean) => void;
   fetchEducations: () => void;
-}
-
-interface EducationSectionOwnProps extends EducationSectionProps {
   educations: Education[];
 }
 

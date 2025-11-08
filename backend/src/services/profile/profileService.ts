@@ -36,7 +36,7 @@ export class ProfileService {
       .from("educations")
       .select("*")
       .eq("job_seeker_id", userId)
-      .order("start_date", { ascending: false });
+      .order("start_date", { ascending: false, nullsFirst: false });
 
     if (error) {
       throw new Error(error.message);
@@ -106,7 +106,7 @@ export class ProfileService {
       .from("certifications")
       .select("*")
       .eq("job_seeker_id", userId)
-      .order("issued_date", { ascending: false });
+      .order("issued_date", { ascending: false, nullsFirst: false });
 
     if (error) {
       throw new Error(error.message);
@@ -179,7 +179,7 @@ export class ProfileService {
       .from("work_experiences")
       .select("*")
       .eq("job_seeker_id", userId)
-      .order("start_date", { ascending: false });
+      .order("start_date", { ascending: false, nullsFirst: false });
 
     if (error) {
       throw new Error(error.message);

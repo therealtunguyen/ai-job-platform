@@ -87,13 +87,13 @@ export class ProfileController {
         userId,
         educationId,
         {
-          institution: institution || undefined,
-          degree: degree || undefined,
-          major: major || undefined,
-          start_date: start_date || undefined,
-          end_date: end_date || undefined,
-          grade: grade || undefined,
-          description: description || undefined,
+          institution: institution || null,
+          degree: degree || null,
+          major: major || null,
+          start_date: start_date || null,
+          end_date: end_date || null,
+          grade: grade || null,
+          description: description || null,
         },
       );
 
