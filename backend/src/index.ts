@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth/authRoutes";
 import jobSeekerProfileRoutes from "./routes/jobSeekerProfileRoutes";
 import interviewRoutes from "./routes/interview/interviewRoutes";
 import candidateSearchRoutes from "./routes/candidate/candidateSearchRoutes";
+import savedJobsRoutes from "./routes/savedJobs/savedJobsRoutes";
 import { errorHandler } from "./middleware/error/errorHandler";
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/jobseekers", jobSeekerProfileRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/candidate/search", candidateSearchRoutes);
+app.use("/api/saved-jobs", savedJobsRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {
