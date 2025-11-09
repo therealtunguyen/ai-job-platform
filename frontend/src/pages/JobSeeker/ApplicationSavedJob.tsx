@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import JobSeekerLayout from "@/components/JobSeeker/JobSeekerLayout";
 import { API_PATHS } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
+import { savedJobsService } from "@/services/savedJobsService";
+import type { SavedJob } from "@/services/savedJobsService";
 import {
   Search,
   MapPin,
@@ -46,14 +48,13 @@ interface Application {
 
 const ApplicationSavedJob = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
-  // const [applications, setApplications] = useState<Application[]>([]);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "applied" | "saved">(
     "all",
   );
-  // const [showJobDetails, setShowJobDetails] = useState<string | null>(null);
+  const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
 
   // Load data on component mount
   useEffect(() => {
@@ -69,18 +70,21 @@ const ApplicationSavedJob = () => {
         : null;
       if (!userId) {
         setJobs([]);
-        // setApplications([]);
         setSavedJobs([]);
         return;
       }
 
-      // Fetch user applications
-      const applicationsResponse = await axiosInstance.get(
-        API_PATHS.APPLICATIONS.GET_USER_APPLICATIONS.replace(
-          ":userId",
-          userId.toString(),
+      // Fetch user applications and saved jobs in parallel
+      const [applicationsResponse, savedJobsData] = await Promise.all([
+        axiosInstance.get(
+          API_PATHS.APPLICATIONS.GET_USER_APPLICATIONS.replace(
+            ":userId",
+            userId.toString(),
+          ),
         ),
-      );
+        savedJobsService.getSavedJobs(),
+      ]);
+
       const userApplications =
         applicationsResponse.data?.applications ||
         applicationsResponse.data ||
@@ -109,26 +113,51 @@ const ApplicationSavedJob = () => {
         }),
       );
 
-      // Create job objects from applications
+      // Create a set of saved job IDs for quick lookup
+      const savedJobIdsSet = new Set(
+        savedJobsData.map((saved: SavedJob) => saved.job_id),
+      );
+      setSavedJobIds(savedJobIdsSet);
+
+      // Create job objects from applications with saved status
       const appliedJobs = applicationsWithJobDetails
         .filter((app) => app.jobs) // Only include applications with job details
         .map((app) => ({
           ...app.jobs,
           is_applied: true,
-          is_saved: false,
+          is_saved: savedJobIdsSet.has(app.job_id),
           application_status: app.status,
           applied_at: app.applied_at,
         }));
 
       setJobs(appliedJobs);
-      // setApplications(userApplications);
 
-      // TODO: Fetch saved jobs from API when available
-      setSavedJobs([]);
+      // Transform saved jobs data to match the Job interface
+      const savedJobsList = savedJobsData
+        .filter((saved: SavedJob) => saved.job) // Only include saved jobs with job details
+        .map((saved: SavedJob) => ({
+          job_id: saved.job!.job_id,
+          title: saved.job!.title,
+          description: saved.job!.description || "",
+          company_name:
+            saved.job!.employer_company_name || saved.job!.company_name || "",
+          employer_company_name: saved.job!.employer_company_name || undefined,
+          location: saved.job!.location || "",
+          min_salary: saved.job!.salary_min || 0,
+          max_salary: saved.job!.salary_max || 0,
+          job_type: saved.job!.job_type || "",
+          posted_at: saved.job!.posted_at || "",
+          employer_logo: saved.job!.employer_logo || undefined,
+          is_saved: true,
+          is_applied: appliedJobs.some(
+            (appliedJob) => appliedJob.job_id === saved.job_id,
+          ),
+        }));
+
+      setSavedJobs(savedJobsList);
     } catch (error) {
       console.error("Error fetching data:", error);
       setJobs([]);
-      // setApplications([]);
       setSavedJobs([]);
     } finally {
       setLoading(false);
@@ -159,21 +188,53 @@ const ApplicationSavedJob = () => {
 
   const handleSaveJob = async (jobId: string) => {
     try {
-      // TODO: Implement save job API call
-      setJobs((prev) =>
-        prev.map((job) =>
-          job.job_id === jobId ? { ...job, is_saved: !job.is_saved } : job,
-        ),
-      );
+      const isSaved = savedJobIds.has(jobId);
 
-      alert(
-        jobs.find((j) => j.job_id === jobId)?.is_saved
-          ? "Job removed from saved"
-          : "Job saved successfully!",
-      );
+      if (isSaved) {
+        // Unsave the job
+        await savedJobsService.unsaveJob(jobId);
+
+        // Update local state
+        setSavedJobIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(jobId);
+          return newSet;
+        });
+
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.job_id === jobId ? { ...job, is_saved: false } : job,
+          ),
+        );
+
+        setSavedJobs((prev) => prev.filter((job) => job.job_id !== jobId));
+
+        alert("Job removed from saved");
+      } else {
+        // Save the job
+        await savedJobsService.saveJob(jobId);
+
+        // Update local state
+        setSavedJobIds((prev) => new Set(prev).add(jobId));
+
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.job_id === jobId ? { ...job, is_saved: true } : job,
+          ),
+        );
+
+        // Refresh saved jobs list to include the new save
+        await fetchData();
+
+        alert("Job saved successfully!");
+      }
     } catch (error) {
-      console.error("Error saving job:", error);
-      alert("Error saving job. Please try again.");
+      console.error("Error toggling save status:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Error saving/unsaving job. Please try again.";
+      alert(errorMessage);
     }
   };
 
@@ -213,20 +274,32 @@ const ApplicationSavedJob = () => {
     }
   };
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredJobs = (() => {
+    // Combine applied jobs and saved jobs (remove duplicates)
+    const allJobs = [...jobs];
 
-    if (filterType === "applied") {
-      return matchesSearch && job.is_applied;
-    } else if (filterType === "saved") {
-      return matchesSearch && job.is_saved;
-    }
+    // Add saved jobs that are not already applied
+    savedJobs.forEach((savedJob) => {
+      if (!allJobs.some((job) => job.job_id === savedJob.job_id)) {
+        allJobs.push(savedJob);
+      }
+    });
 
-    return matchesSearch;
-  });
+    return allJobs.filter((job) => {
+      const matchesSearch =
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.location.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (filterType === "applied") {
+        return matchesSearch && job.is_applied;
+      } else if (filterType === "saved") {
+        return matchesSearch && job.is_saved;
+      }
+
+      return matchesSearch;
+    });
+  })();
 
   // const getApplicationStatus = (jobId: string) => {
   //   const application = applications.find(app => app.job_id === jobId);
@@ -429,8 +502,9 @@ const ApplicationSavedJob = () => {
                       <div className="flex items-center text-sm text-gray-500">
                         <Clock className="mr-1 h-4 w-4" />
                         <span>
-                          Applied{" "}
-                          {formatTimeAgo(job.applied_at || job.posted_at)}
+                          {job.is_applied
+                            ? `Applied ${formatTimeAgo(job.applied_at || job.posted_at)}`
+                            : `Posted ${formatTimeAgo(job.posted_at)}`}
                         </span>
                       </div>
 
@@ -449,7 +523,7 @@ const ApplicationSavedJob = () => {
                           onClick={() => handleSaveJob(job.job_id)}
                           className={`p-2 transition-colors ${
                             job.is_saved
-                              ? "text-red-500 hover:text-red-600"
+                              ? "text-yellow-500 hover:text-yellow-600"
                               : "text-gray-400 hover:text-gray-600"
                           }`}
                           title={
@@ -457,7 +531,7 @@ const ApplicationSavedJob = () => {
                           }
                         >
                           {job.is_saved ? (
-                            <BookmarkCheck className="h-4 w-4" />
+                            <BookmarkCheck className="h-4 w-4 fill-current" />
                           ) : (
                             <Bookmark className="h-4 w-4" />
                           )}
@@ -466,11 +540,13 @@ const ApplicationSavedJob = () => {
                     </div>
 
                     {/* Applied Status */}
-                    <div className="mt-4">
-                      <div className="w-full rounded-lg bg-green-100 px-4 py-2 text-center font-medium text-green-700">
-                        ✓ Applied
+                    {job.is_applied && (
+                      <div className="mt-4">
+                        <div className="w-full rounded-lg bg-green-100 px-4 py-2 text-center font-medium text-green-700">
+                          ✓ Applied
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );

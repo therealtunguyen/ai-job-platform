@@ -6,6 +6,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { API_PATHS } from "@/utils/apiPath";
 import type { Database } from "@/types/supabase";
 import { applicationService } from "@/services/applicationService";
+import { savedJobsService } from "@/services/savedJobsService";
 
 type Job = Database["public"]["Tables"]["jobs"]["Row"];
 
@@ -18,6 +19,7 @@ const JobViews = () => {
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
   const [applyingJobs, setApplyingJobs] = useState<Set<string>>(new Set());
+  const [savingJobs, setSavingJobs] = useState<Set<string>>(new Set());
 
   // Filter states
   const [titleFilter, setTitleFilter] = useState<string>("");
@@ -40,6 +42,7 @@ const JobViews = () => {
     }
 
     fetchJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user, navigate]);
 
   const fetchJobs = async () => {
@@ -63,6 +66,21 @@ const JobViews = () => {
         setJobs(response.data);
       } else {
         setJobs([]);
+      }
+
+      // Fetch saved jobs if user is authenticated
+      if (isAuthenticated && user?.id) {
+        try {
+          const savedJobsData = await savedJobsService.getSavedJobs();
+          const savedJobIds = new Set(
+            savedJobsData.map((savedJob) => savedJob.job_id),
+          );
+          setSavedJobs(savedJobIds);
+        } catch (error) {
+          console.error("Error fetching saved jobs:", error);
+          // Don't fail the entire page if saved jobs fetch fails
+          setSavedJobs(new Set());
+        }
       }
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -109,21 +127,51 @@ const JobViews = () => {
     }
   };
 
-  const handleSaveJob = (jobId: string) => {
+  const handleSaveJob = async (jobId: string) => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
 
-    setSavedJobs((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(jobId)) {
-        newSet.delete(jobId);
+    // Prevent multiple simultaneous saves
+    if (savingJobs.has(jobId)) {
+      return;
+    }
+
+    // Add to saving state
+    setSavingJobs((prev) => new Set(prev).add(jobId));
+
+    try {
+      const isSaved = savedJobs.has(jobId);
+
+      if (isSaved) {
+        // Unsave the job
+        await savedJobsService.unsaveJob(jobId);
+        setSavedJobs((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(jobId);
+          return newSet;
+        });
       } else {
-        newSet.add(jobId);
+        // Save the job
+        await savedJobsService.saveJob(jobId);
+        setSavedJobs((prev) => new Set(prev).add(jobId));
       }
-      return newSet;
-    });
+    } catch (error) {
+      console.error("Error toggling save status:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to save/unsave job. Please try again.";
+      alert(errorMessage);
+    } finally {
+      // Remove from saving state
+      setSavingJobs((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(jobId);
+        return newSet;
+      });
+    }
   };
 
   const formatSalary = (min: number | null, max: number | null): string => {
@@ -413,10 +461,13 @@ const JobViews = () => {
                         </h3>
                         <button
                           onClick={() => handleSaveJob(job.job_id)}
-                          className={`rounded-full p-2 ${
-                            savedJobs.has(job.job_id)
-                              ? "text-red-500 hover:text-red-600"
-                              : "text-gray-400 hover:text-red-500"
+                          disabled={savingJobs.has(job.job_id)}
+                          className={`rounded-full p-2 transition-colors ${
+                            savingJobs.has(job.job_id)
+                              ? "cursor-not-allowed text-gray-300"
+                              : savedJobs.has(job.job_id)
+                                ? "text-yellow-500 hover:text-yellow-600"
+                                : "text-gray-400 hover:text-yellow-500"
                           }`}
                           aria-label={
                             savedJobs.has(job.job_id)
@@ -424,23 +475,43 @@ const JobViews = () => {
                               : "Save job"
                           }
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill={
-                              savedJobs.has(job.job_id)
-                                ? "currentColor"
-                                : "none"
-                            }
-                            stroke="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          {savingJobs.has(job.job_id) ? (
+                            <svg
+                              className="h-5 w-5 animate-spin"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill={
+                                savedJobs.has(job.job_id)
+                                  ? "currentColor"
+                                  : "none"
+                              }
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                            </svg>
+                          )}
                         </button>
                       </div>
 
