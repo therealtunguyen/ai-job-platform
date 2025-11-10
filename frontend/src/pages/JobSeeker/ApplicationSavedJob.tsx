@@ -50,6 +50,9 @@ const ApplicationSavedJob = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saveLoading, setSaveLoading] = useState<{ [key: string]: boolean }>(
+    {},
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "applied" | "saved">(
     "all",
@@ -187,6 +190,9 @@ const ApplicationSavedJob = () => {
   // };
 
   const handleSaveJob = async (jobId: string) => {
+    // Set loading state for this specific job
+    setSaveLoading((prev) => ({ ...prev, [jobId]: true }));
+
     try {
       const isSaved = savedJobIds.has(jobId);
 
@@ -217,14 +223,70 @@ const ApplicationSavedJob = () => {
         // Update local state
         setSavedJobIds((prev) => new Set(prev).add(jobId));
 
+        // Find the job in the jobs list and update its is_saved status
         setJobs((prev) =>
           prev.map((job) =>
             job.job_id === jobId ? { ...job, is_saved: true } : job,
           ),
         );
 
-        // Refresh saved jobs list to include the new save
-        await fetchData();
+        // Add the job to savedJobs if it's not already there
+        const jobToAdd = jobs.find((job) => job.job_id === jobId);
+        if (jobToAdd && !savedJobs.some((job) => job.job_id === jobId)) {
+          setSavedJobs((prev) => [...prev, { ...jobToAdd, is_saved: true }]);
+        } else {
+          // If the job was not in the jobs list, fetch it separately
+          if (!jobToAdd) {
+            const jobResponse = await axiosInstance.get(
+              API_PATHS.JOBS.GET_BY_ID.replace(":id", jobId),
+            );
+            const jobDetails = {
+              job_id: jobResponse.data.job?.job_id || jobResponse.data.job_id,
+              title: jobResponse.data.job?.title || jobResponse.data.title,
+              description:
+                jobResponse.data.job?.description ||
+                jobResponse.data.description ||
+                "",
+              company_name:
+                jobResponse.data.job?.employer_company_name ||
+                jobResponse.data.employer_company_name ||
+                "",
+              employer_company_name:
+                jobResponse.data.job?.employer_company_name ||
+                jobResponse.data.employer_company_name ||
+                undefined,
+              location:
+                jobResponse.data.job?.location ||
+                jobResponse.data.location ||
+                "",
+              min_salary:
+                jobResponse.data.job?.salary_min ||
+                jobResponse.data.salary_min ||
+                0,
+              max_salary:
+                jobResponse.data.job?.salary_max ||
+                jobResponse.data.salary_max ||
+                0,
+              job_type:
+                jobResponse.data.job?.job_type ||
+                jobResponse.data.job_type ||
+                "",
+              posted_at:
+                jobResponse.data.job?.posted_at ||
+                jobResponse.data.posted_at ||
+                "",
+              employer_logo:
+                jobResponse.data.job?.employer_logo ||
+                jobResponse.data.employer_logo ||
+                undefined,
+              is_saved: true,
+              is_applied: jobs.some(
+                (appliedJob) => appliedJob.job_id === jobId,
+              ),
+            };
+            setSavedJobs((prev) => [...prev, jobDetails]);
+          }
+        }
 
         alert("Job saved successfully!");
       }
@@ -235,6 +297,13 @@ const ApplicationSavedJob = () => {
           ? error.message
           : "Error saving/unsaving job. Please try again.";
       alert(errorMessage);
+    } finally {
+      // Remove loading state for this specific job
+      setSaveLoading((prev) => {
+        const newLoading = { ...prev };
+        delete newLoading[jobId];
+        return newLoading;
+      });
     }
   };
 
@@ -521,16 +590,38 @@ const ApplicationSavedJob = () => {
 
                         <button
                           onClick={() => handleSaveJob(job.job_id)}
+                          disabled={saveLoading[job.job_id]}
                           className={`p-2 transition-colors ${
                             job.is_saved
                               ? "text-yellow-500 hover:text-yellow-600"
                               : "text-gray-400 hover:text-gray-600"
-                          }`}
+                          } ${saveLoading[job.job_id] ? "cursor-not-allowed opacity-50" : ""}`}
                           title={
                             job.is_saved ? "Remove from Saved" : "Save Job"
                           }
                         >
-                          {job.is_saved ? (
+                          {saveLoading[job.job_id] ? (
+                            <svg
+                              className="h-4 w-4 animate-spin text-gray-400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          ) : job.is_saved ? (
                             <BookmarkCheck className="h-4 w-4 fill-current" />
                           ) : (
                             <Bookmark className="h-4 w-4" />
