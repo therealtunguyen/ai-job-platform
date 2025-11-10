@@ -87,4 +87,11 @@ export const API_PATHS = {
   MATCHING: {
     GET_MATCHES: "/api/matching/:userId",
   },
+  SAVED_JOBS: {
+    LIST: "/api/saved-jobs",
+    SAVE: "/api/saved-jobs",
+    UNSAVE: "/api/saved-jobs/:jobId",
+    CHECK: "/api/saved-jobs/check/:jobId",
+    UPDATE_NOTES: "/api/saved-jobs/:jobId/notes",
+  },
 };

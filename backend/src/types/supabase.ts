@@ -790,6 +790,52 @@ export type Database = {
           },
         ];
       };
+      saved_jobs: {
+        Row: {
+          job_id: string;
+          job_seeker_id: string;
+          notes: string | null;
+          saved_at: string | null;
+          saved_job_id: string;
+        };
+        Insert: {
+          job_id: string;
+          job_seeker_id: string;
+          notes?: string | null;
+          saved_at?: string | null;
+          saved_job_id?: string;
+        };
+        Update: {
+          job_id?: string;
+          job_seeker_id?: string;
+          notes?: string | null;
+          saved_at?: string | null;
+          saved_job_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_jobs_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "jobs";
+            referencedColumns: ["job_id"];
+          },
+          {
+            foreignKeyName: "saved_jobs_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "saved_jobs_job_seeker_id_fkey";
+            columns: ["job_seeker_id"];
+            isOneToOne: false;
+            referencedRelation: "job_seekers_with_skills";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       skills: {
         Row: {
           category: string | null;

@@ -19,6 +19,7 @@ import JobPosting from "@/pages/Employer/JobPosting";
 import ApplicationViewer from "@/pages/Employer/ApplicationViewer";
 import EmployerProfile from "./pages/Employer/EmployerProfile";
 import JobViews from "./pages/Landing/JobViews";
+import { ToastProvider } from "./contexts/ToastContext";
 
 const router = createBrowserRouter([
   {
@@ -96,7 +97,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
     </AuthProvider>
   </StrictMode>,
 );
