@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import JobSeekerLayout from "@/components/JobSeeker/JobSeekerLayout";
 import { API_PATHS } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
+import { savedJobsService } from "@/services/savedJobsService";
+import type { SavedJob } from "@/services/savedJobsService";
+import { useToast } from "@/contexts/ToastContext";
 import {
   Search,
   MapPin,
@@ -46,14 +49,17 @@ interface Application {
 
 const ApplicationSavedJob = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
-  // const [applications, setApplications] = useState<Application[]>([]);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saveLoading, setSaveLoading] = useState<{ [key: string]: boolean }>(
+    {},
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "applied" | "saved">(
     "all",
   );
-  // const [showJobDetails, setShowJobDetails] = useState<string | null>(null);
+  const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
+  const { addToast } = useToast();
 
   // Load data on component mount
   useEffect(() => {
@@ -69,18 +75,21 @@ const ApplicationSavedJob = () => {
         : null;
       if (!userId) {
         setJobs([]);
-        // setApplications([]);
         setSavedJobs([]);
         return;
       }
 
-      // Fetch user applications
-      const applicationsResponse = await axiosInstance.get(
-        API_PATHS.APPLICATIONS.GET_USER_APPLICATIONS.replace(
-          ":userId",
-          userId.toString(),
+      // Fetch user applications and saved jobs in parallel
+      const [applicationsResponse, savedJobsData] = await Promise.all([
+        axiosInstance.get(
+          API_PATHS.APPLICATIONS.GET_USER_APPLICATIONS.replace(
+            ":userId",
+            userId.toString(),
+          ),
         ),
-      );
+        savedJobsService.getSavedJobs(),
+      ]);
+
       const userApplications =
         applicationsResponse.data?.applications ||
         applicationsResponse.data ||
@@ -109,71 +118,172 @@ const ApplicationSavedJob = () => {
         }),
       );
 
-      // Create job objects from applications
+      // Create a set of saved job IDs for quick lookup
+      const savedJobIdsSet = new Set(
+        savedJobsData.map((saved: SavedJob) => saved.job_id),
+      );
+      setSavedJobIds(savedJobIdsSet);
+
+      // Create job objects from applications with saved status
       const appliedJobs = applicationsWithJobDetails
         .filter((app) => app.jobs) // Only include applications with job details
         .map((app) => ({
           ...app.jobs,
           is_applied: true,
-          is_saved: false,
+          is_saved: savedJobIdsSet.has(app.job_id),
           application_status: app.status,
           applied_at: app.applied_at,
         }));
 
       setJobs(appliedJobs);
-      // setApplications(userApplications);
 
-      // TODO: Fetch saved jobs from API when available
-      setSavedJobs([]);
+      // Transform saved jobs data to match the Job interface
+      const savedJobsList = savedJobsData
+        .filter((saved: SavedJob) => saved.job) // Only include saved jobs with job details
+        .map((saved: SavedJob) => ({
+          job_id: saved.job!.job_id,
+          title: saved.job!.title,
+          description: saved.job!.description || "",
+          company_name:
+            saved.job!.employer_company_name || saved.job!.company_name || "",
+          employer_company_name: saved.job!.employer_company_name || undefined,
+          location: saved.job!.location || "",
+          min_salary: saved.job!.salary_min || 0,
+          max_salary: saved.job!.salary_max || 0,
+          job_type: saved.job!.job_type || "",
+          posted_at: saved.job!.posted_at || "",
+          employer_logo: saved.job!.employer_logo || undefined,
+          is_saved: true,
+          is_applied: appliedJobs.some(
+            (appliedJob) => appliedJob.job_id === saved.job_id,
+          ),
+        }));
+
+      setSavedJobs(savedJobsList);
     } catch (error) {
       console.error("Error fetching data:", error);
       setJobs([]);
-      // setApplications([]);
       setSavedJobs([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // const handleApplyJob = async (jobId: string) => {
-  //   try {
-  //     const response = await axiosInstance.post(API_PATHS.APPLICATIONS.SUBMIT, {
-  //       job_id: jobId
-  //     });
-
-  //     if (response.data) {
-  //       // Update job status
-  //       setJobs(prev => prev.map(job =>
-  //         job.job_id === jobId
-  //           ? { ...job, is_applied: true }
-  //           : job
-  //       ));
-
-  //       alert('Application submitted successfully!');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error applying to job:', error);
-  //     alert('Error applying to job. Please try again.');
-  //   }
-  // };
-
   const handleSaveJob = async (jobId: string) => {
-    try {
-      // TODO: Implement save job API call
-      setJobs((prev) =>
-        prev.map((job) =>
-          job.job_id === jobId ? { ...job, is_saved: !job.is_saved } : job,
-        ),
-      );
+    // Set loading state for this specific job
+    setSaveLoading((prev) => ({ ...prev, [jobId]: true }));
 
-      alert(
-        jobs.find((j) => j.job_id === jobId)?.is_saved
-          ? "Job removed from saved"
-          : "Job saved successfully!",
-      );
+    try {
+      const isSaved = savedJobIds.has(jobId);
+
+      if (isSaved) {
+        // Unsave the job
+        await savedJobsService.unsaveJob(jobId);
+
+        // Update local state
+        setSavedJobIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(jobId);
+          return newSet;
+        });
+
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.job_id === jobId ? { ...job, is_saved: false } : job,
+          ),
+        );
+
+        setSavedJobs((prev) => prev.filter((job) => job.job_id !== jobId));
+
+        addToast("Job removed from saved", "success");
+      } else {
+        // Save the job
+        await savedJobsService.saveJob(jobId);
+
+        // Update local state
+        setSavedJobIds((prev) => new Set(prev).add(jobId));
+
+        // Find the job in the jobs list and update its is_saved status
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.job_id === jobId ? { ...job, is_saved: true } : job,
+          ),
+        );
+
+        // Add the job to savedJobs if it's not already there
+        const jobToAdd = jobs.find((job) => job.job_id === jobId);
+        if (jobToAdd && !savedJobs.some((job) => job.job_id === jobId)) {
+          setSavedJobs((prev) => [...prev, { ...jobToAdd, is_saved: true }]);
+        } else {
+          // If the job was not in the jobs list, fetch it separately
+          if (!jobToAdd) {
+            const jobResponse = await axiosInstance.get(
+              API_PATHS.JOBS.GET_BY_ID.replace(":id", jobId),
+            );
+            const jobDetails = {
+              job_id: jobResponse.data.job?.job_id || jobResponse.data.job_id,
+              title: jobResponse.data.job?.title || jobResponse.data.title,
+              description:
+                jobResponse.data.job?.description ||
+                jobResponse.data.description ||
+                "",
+              company_name:
+                jobResponse.data.job?.employer_company_name ||
+                jobResponse.data.employer_company_name ||
+                "",
+              employer_company_name:
+                jobResponse.data.job?.employer_company_name ||
+                jobResponse.data.employer_company_name ||
+                undefined,
+              location:
+                jobResponse.data.job?.location ||
+                jobResponse.data.location ||
+                "",
+              min_salary:
+                jobResponse.data.job?.salary_min ||
+                jobResponse.data.salary_min ||
+                0,
+              max_salary:
+                jobResponse.data.job?.salary_max ||
+                jobResponse.data.salary_max ||
+                0,
+              job_type:
+                jobResponse.data.job?.job_type ||
+                jobResponse.data.job_type ||
+                "",
+              posted_at:
+                jobResponse.data.job?.posted_at ||
+                jobResponse.data.posted_at ||
+                "",
+              employer_logo:
+                jobResponse.data.job?.employer_logo ||
+                jobResponse.data.employer_logo ||
+                undefined,
+              is_saved: true,
+              is_applied: jobs.some(
+                (appliedJob) => appliedJob.job_id === jobId,
+              ),
+            };
+            setSavedJobs((prev) => [...prev, jobDetails]);
+          }
+        }
+
+        addToast("Job saved successfully!", "success");
+      }
     } catch (error) {
-      console.error("Error saving job:", error);
-      alert("Error saving job. Please try again.");
+      console.error("Error toggling save status:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Error saving/unsaving job. Please try again.";
+      addToast(errorMessage, "error");
+    } finally {
+      // Remove loading state for this specific job
+      setSaveLoading((prev) => {
+        const newLoading = { ...prev };
+        delete newLoading[jobId];
+        return newLoading;
+      });
     }
   };
 
@@ -213,20 +323,32 @@ const ApplicationSavedJob = () => {
     }
   };
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredJobs = (() => {
+    // Combine applied jobs and saved jobs (remove duplicates)
+    const allJobs = [...jobs];
 
-    if (filterType === "applied") {
-      return matchesSearch && job.is_applied;
-    } else if (filterType === "saved") {
-      return matchesSearch && job.is_saved;
-    }
+    // Add saved jobs that are not already applied
+    savedJobs.forEach((savedJob) => {
+      if (!allJobs.some((job) => job.job_id === savedJob.job_id)) {
+        allJobs.push(savedJob);
+      }
+    });
 
-    return matchesSearch;
-  });
+    return allJobs.filter((job) => {
+      const matchesSearch =
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.location.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (filterType === "applied") {
+        return matchesSearch && job.is_applied;
+      } else if (filterType === "saved") {
+        return matchesSearch && job.is_saved;
+      }
+
+      return matchesSearch;
+    });
+  })();
 
   // const getApplicationStatus = (jobId: string) => {
   //   const application = applications.find(app => app.job_id === jobId);
@@ -429,8 +551,9 @@ const ApplicationSavedJob = () => {
                       <div className="flex items-center text-sm text-gray-500">
                         <Clock className="mr-1 h-4 w-4" />
                         <span>
-                          Applied{" "}
-                          {formatTimeAgo(job.applied_at || job.posted_at)}
+                          {job.is_applied
+                            ? `Applied ${formatTimeAgo(job.applied_at || job.posted_at)}`
+                            : `Posted ${formatTimeAgo(job.posted_at)}`}
                         </span>
                       </div>
 
@@ -447,17 +570,39 @@ const ApplicationSavedJob = () => {
 
                         <button
                           onClick={() => handleSaveJob(job.job_id)}
+                          disabled={saveLoading[job.job_id]}
                           className={`p-2 transition-colors ${
                             job.is_saved
-                              ? "text-red-500 hover:text-red-600"
+                              ? "text-yellow-500 hover:text-yellow-600"
                               : "text-gray-400 hover:text-gray-600"
-                          }`}
+                          } ${saveLoading[job.job_id] ? "cursor-not-allowed opacity-50" : ""}`}
                           title={
                             job.is_saved ? "Remove from Saved" : "Save Job"
                           }
                         >
-                          {job.is_saved ? (
-                            <BookmarkCheck className="h-4 w-4" />
+                          {saveLoading[job.job_id] ? (
+                            <svg
+                              className="h-4 w-4 animate-spin text-gray-400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          ) : job.is_saved ? (
+                            <BookmarkCheck className="h-4 w-4 fill-current" />
                           ) : (
                             <Bookmark className="h-4 w-4" />
                           )}
@@ -466,11 +611,13 @@ const ApplicationSavedJob = () => {
                     </div>
 
                     {/* Applied Status */}
-                    <div className="mt-4">
-                      <div className="w-full rounded-lg bg-green-100 px-4 py-2 text-center font-medium text-green-700">
-                        ✓ Applied
+                    {job.is_applied && (
+                      <div className="mt-4">
+                        <div className="w-full rounded-lg bg-green-100 px-4 py-2 text-center font-medium text-green-700">
+                          ✓ Applied
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );

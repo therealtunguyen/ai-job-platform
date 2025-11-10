@@ -8,6 +8,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { API_PATHS } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
+import { savedJobsService } from "@/services/savedJobsService";
 
 interface DashboardStats {
   appliedJobs: number;
@@ -81,6 +82,9 @@ const JobSeekerDashBoardContent = () => {
           API_PATHS.INTERVIEWS.GET_USER_INTERVIEWS,
         );
 
+        // Fetch saved jobs
+        const savedJobsData = await savedJobsService.getSavedJobs();
+
         // Get user profile for completeness calculation
         const profileResponse = await axiosInstance.get(
           API_PATHS.USERS.GET_PROFILE,
@@ -98,7 +102,7 @@ const JobSeekerDashBoardContent = () => {
             interviewsResponse.data?.interviews?.length ||
             interviewsResponse.data?.length ||
             0,
-          savedJobs: 0, // This would need a saved jobs API
+          savedJobs: savedJobsData?.length || 0,
           profileCompleteness,
         });
       } catch (error) {
