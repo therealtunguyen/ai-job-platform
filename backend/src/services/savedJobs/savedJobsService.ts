@@ -3,7 +3,6 @@ import { Database } from "../../types/supabase";
 
 type SavedJobRow = Database["public"]["Tables"]["saved_jobs"]["Row"];
 type SavedJobInsert = Database["public"]["Tables"]["saved_jobs"]["Insert"];
-type SavedJobUpdate = Database["public"]["Tables"]["saved_jobs"]["Update"];
 
 // Define type for saved job with job details
 type SavedJobWithDetails = SavedJobRow & {
@@ -57,7 +56,7 @@ export const saveJob = async (
   }
 
   // Check if the job is already saved
-  const { data: existingSavedJob, error: existingError } = await supabase
+  const { data: existingSavedJob } = await supabase
     .from("saved_jobs")
     .select("saved_job_id")
     .eq("job_seeker_id", userId)
@@ -110,7 +109,7 @@ export const unsaveJob = async (
   }
 
   // Check if the saved job exists
-  const { data: existingSavedJob, error: existingError } = await supabase
+  const { data: existingSavedJob } = await supabase
     .from("saved_jobs")
     .select("saved_job_id")
     .eq("job_seeker_id", userId)

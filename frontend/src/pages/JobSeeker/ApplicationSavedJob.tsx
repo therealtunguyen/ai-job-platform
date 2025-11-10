@@ -4,6 +4,7 @@ import { API_PATHS } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
 import { savedJobsService } from "@/services/savedJobsService";
 import type { SavedJob } from "@/services/savedJobsService";
+import { useToast } from "@/contexts/ToastContext";
 import {
   Search,
   MapPin,
@@ -58,6 +59,7 @@ const ApplicationSavedJob = () => {
     "all",
   );
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
+  const { addToast } = useToast();
 
   // Load data on component mount
   useEffect(() => {
@@ -167,28 +169,6 @@ const ApplicationSavedJob = () => {
     }
   };
 
-  // const handleApplyJob = async (jobId: string) => {
-  //   try {
-  //     const response = await axiosInstance.post(API_PATHS.APPLICATIONS.SUBMIT, {
-  //       job_id: jobId
-  //     });
-
-  //     if (response.data) {
-  //       // Update job status
-  //       setJobs(prev => prev.map(job =>
-  //         job.job_id === jobId
-  //           ? { ...job, is_applied: true }
-  //           : job
-  //       ));
-
-  //       alert('Application submitted successfully!');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error applying to job:', error);
-  //     alert('Error applying to job. Please try again.');
-  //   }
-  // };
-
   const handleSaveJob = async (jobId: string) => {
     // Set loading state for this specific job
     setSaveLoading((prev) => ({ ...prev, [jobId]: true }));
@@ -215,7 +195,7 @@ const ApplicationSavedJob = () => {
 
         setSavedJobs((prev) => prev.filter((job) => job.job_id !== jobId));
 
-        alert("Job removed from saved");
+        addToast("Job removed from saved", "success");
       } else {
         // Save the job
         await savedJobsService.saveJob(jobId);
@@ -288,7 +268,7 @@ const ApplicationSavedJob = () => {
           }
         }
 
-        alert("Job saved successfully!");
+        addToast("Job saved successfully!", "success");
       }
     } catch (error) {
       console.error("Error toggling save status:", error);
@@ -296,7 +276,7 @@ const ApplicationSavedJob = () => {
         error instanceof Error
           ? error.message
           : "Error saving/unsaving job. Please try again.";
-      alert(errorMessage);
+      addToast(errorMessage, "error");
     } finally {
       // Remove loading state for this specific job
       setSaveLoading((prev) => {

@@ -13,8 +13,8 @@ export interface SavedJob {
     title: string;
     company_name: string | null;
     location: string | null;
-    salary_min: number | null;
-    salary_max: number | null;
+    min_salary: number | null;
+    max_salary: number | null;
     job_type: string | null;
     description: string | null;
     requirements: string | null;

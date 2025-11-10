@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import axiosInstance from "@/utils/axiosInstance";
 import { API_PATHS } from "@/utils/apiPath";
 import type { Database } from "@/types/supabase";
@@ -12,6 +13,7 @@ type Job = Database["public"]["Tables"]["jobs"]["Row"];
 
 const JobViews = () => {
   const { user, isAuthenticated } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<boolean>(true); // For initial page load
@@ -97,7 +99,7 @@ const JobViews = () => {
     }
 
     if (!user?.id) {
-      alert("User information not available. Please log in again.");
+      addToast("User information not available. Please log in again.", "error");
       return;
     }
 
@@ -113,10 +115,10 @@ const JobViews = () => {
       });
 
       setAppliedJobs((prev) => new Set(prev).add(jobId));
-      alert("Application submitted successfully!");
+      addToast("Application submitted successfully!", "success");
     } catch (error) {
       console.error("Error applying for job:", error);
-      alert("Failed to apply for the job. Please try again.");
+      addToast("Failed to apply for the job. Please try again.", "error");
     } finally {
       // Remove job from applying state
       setApplyingJobs((prev) => {
@@ -163,7 +165,7 @@ const JobViews = () => {
         error instanceof Error
           ? error.message
           : "Failed to save/unsave job. Please try again.";
-      alert(errorMessage);
+      addToast(errorMessage, "error");
     } finally {
       // Remove from saving state
       setSavingJobs((prev) => {
@@ -583,7 +585,10 @@ const JobViews = () => {
                           <button
                             onClick={() => {
                               if (appliedJobs.has(job.job_id)) {
-                                alert("You have already applied for this job!");
+                                addToast(
+                                  "You have already applied for this job!",
+                                  "warning",
+                                );
                               } else {
                                 handleApply(job.job_id);
                               }
