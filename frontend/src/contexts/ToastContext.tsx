@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  type ReactNode,
+} from "react";
 
 type ToastType = "success" | "error" | "info" | "warning";
 
@@ -77,7 +83,6 @@ interface ToastItemProps {
 
 const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
   const dispatch = useContext(ToastDispatchContext);
-  if (!dispatch) return null;
 
   const bgColor = {
     success: "bg-green-500",
@@ -86,13 +91,17 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
     warning: "bg-yellow-500",
   }[toast.type];
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!dispatch) return;
+
     const timer = setTimeout(() => {
       dispatch({ type: "REMOVE_TOAST", payload: { id: toast.id } });
     }, toast.duration || 3000);
 
     return () => clearTimeout(timer);
   }, [toast.id, dispatch, toast.duration]);
+
+  if (!dispatch) return null;
 
   return (
     <div
@@ -123,33 +132,4 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
   );
 };
 
-const useToast = () => {
-  const context = useContext(ToastDispatchContext);
-  const stateContext = useContext(ToastStateContext);
-
-  if (!context || !stateContext) {
-    throw new Error("useToast must be used within a ToastProvider");
-  }
-
-  const addToast = (message: string, type: ToastType, duration?: number) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    context({ type: "ADD_TOAST", payload: { id, message, type, duration } });
-  };
-
-  const removeToast = (id: string) => {
-    context({ type: "REMOVE_TOAST", payload: { id } });
-  };
-
-  const clearToasts = () => {
-    context({ type: "CLEAR_TOASTS" });
-  };
-
-  return {
-    toasts: stateContext.toasts,
-    addToast,
-    removeToast,
-    clearToasts,
-  };
-};
-
-export { ToastProvider, useToast };
+export { ToastProvider, ToastStateContext, ToastDispatchContext };

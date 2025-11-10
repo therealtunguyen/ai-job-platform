@@ -4,7 +4,7 @@ import { API_PATHS } from "@/utils/apiPath";
 import axiosInstance from "@/utils/axiosInstance";
 import { savedJobsService } from "@/services/savedJobsService";
 import type { SavedJob } from "@/services/savedJobsService";
-import { useToast } from "@/contexts/ToastContext";
+import { useToast } from "@/hooks/useToast";
 import {
   Search,
   MapPin,
@@ -148,8 +148,8 @@ const ApplicationSavedJob = () => {
             saved.job!.employer_company_name || saved.job!.company_name || "",
           employer_company_name: saved.job!.employer_company_name || undefined,
           location: saved.job!.location || "",
-          min_salary: saved.job!.salary_min || 0,
-          max_salary: saved.job!.salary_max || 0,
+          min_salary: saved.job!.min_salary || 0,
+          max_salary: saved.job!.max_salary || 0,
           job_type: saved.job!.job_type || "",
           posted_at: saved.job!.posted_at || "",
           employer_logo: saved.job!.employer_logo || undefined,
