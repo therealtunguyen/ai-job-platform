@@ -43,7 +43,7 @@ const JobModal: React.FC<JobModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -52,13 +52,13 @@ const JobModal: React.FC<JobModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             {/* Header */}
             <div className="sticky top-0 z-10 bg-gradient-to-r from-[#29436c] to-[#90ad71] px-6 py-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 pr-4">
-                  <h2 className="text-2xl font-bold text-white mb-2">
+                  <h2 className="mb-2 text-2xl font-bold text-white">
                     {job.title}
                   </h2>
                   <div className="flex flex-wrap gap-3 text-sm text-white/90">
@@ -127,23 +127,23 @@ const JobModal: React.FC<JobModalProps> = ({
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-6">
+            <div className="max-h-[calc(90vh-180px)] overflow-y-auto px-6 py-6">
               {/* Quick Info Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="rounded-lg bg-blue-50 p-4">
-                  <div className="text-sm text-gray-600 mb-1">Job Type</div>
+                  <div className="mb-1 text-sm text-gray-600">Job Type</div>
                   <div className="text-lg font-semibold text-gray-900">
                     {job.job_type || "Not specified"}
                   </div>
                 </div>
                 <div className="rounded-lg bg-green-50 p-4">
-                  <div className="text-sm text-gray-600 mb-1">Salary Range</div>
+                  <div className="mb-1 text-sm text-gray-600">Salary Range</div>
                   <div className="text-lg font-semibold text-gray-900">
                     {formatSalary(job.min_salary, job.max_salary)}
                   </div>
                 </div>
                 <div className="rounded-lg bg-purple-50 p-4">
-                  <div className="text-sm text-gray-600 mb-1">Experience</div>
+                  <div className="mb-1 text-sm text-gray-600">Experience</div>
                   <div className="text-lg font-semibold text-gray-900">
                     {job.min_experience !== null && job.max_experience !== null
                       ? `${job.min_experience} - ${job.max_experience} years`
@@ -158,10 +158,10 @@ const JobModal: React.FC<JobModalProps> = ({
 
               {/* Job Description */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <h3 className="mb-3 flex items-center text-lg font-semibold text-gray-900">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2 text-[#29436c]"
+                    className="mr-2 h-5 w-5 text-[#29436c]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -175,7 +175,7 @@ const JobModal: React.FC<JobModalProps> = ({
                   </svg>
                   Job Description
                 </h3>
-                <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-line">
+                <div className="prose prose-sm max-w-none whitespace-pre-line text-gray-700">
                   {job.description || "No description provided"}
                 </div>
               </div>
@@ -183,10 +183,10 @@ const JobModal: React.FC<JobModalProps> = ({
               {/* Requirements */}
               {job.requirements && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <h3 className="mb-3 flex items-center text-lg font-semibold text-gray-900">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2 text-[#29436c]"
+                      className="mr-2 h-5 w-5 text-[#29436c]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -200,7 +200,7 @@ const JobModal: React.FC<JobModalProps> = ({
                     </svg>
                     Requirements
                   </h3>
-                  <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-line">
+                  <div className="prose prose-sm max-w-none whitespace-pre-line text-gray-700">
                     {job.requirements}
                   </div>
                 </div>
@@ -209,10 +209,10 @@ const JobModal: React.FC<JobModalProps> = ({
               {/* Benefits */}
               {job.benefits && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <h3 className="mb-3 flex items-center text-lg font-semibold text-gray-900">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2 text-[#29436c]"
+                      className="mr-2 h-5 w-5 text-[#29436c]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -226,14 +226,14 @@ const JobModal: React.FC<JobModalProps> = ({
                     </svg>
                     Benefits
                   </h3>
-                  <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-line">
+                  <div className="prose prose-sm max-w-none whitespace-pre-line text-gray-700">
                     {job.benefits}
                   </div>
                 </div>
               )}
 
               {/* Additional Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-1 gap-4 border-t border-gray-200 pt-4 md:grid-cols-2">
                 <div>
                   <span className="text-sm font-medium text-gray-600">
                     Status:
@@ -262,8 +262,8 @@ const JobModal: React.FC<JobModalProps> = ({
             </div>
 
             {/* Footer Actions */}
-            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200">
-              <div className="flex flex-wrap gap-3 justify-end">
+            <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 px-6 py-4">
+              <div className="flex flex-wrap justify-end gap-3">
                 <button
                   onClick={() => onSave(job.job_id)}
                   disabled={isSaving}
@@ -272,13 +272,13 @@ const JobModal: React.FC<JobModalProps> = ({
                       ? "cursor-not-allowed bg-gray-200 text-gray-500"
                       : isSaved
                         ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                        : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   {isSaving ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                        className="mr-2 -ml-1 h-4 w-4 animate-spin"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -303,7 +303,7 @@ const JobModal: React.FC<JobModalProps> = ({
                     <>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 mr-2"
+                        className="mr-2 h-5 w-5"
                         viewBox="0 0 20 20"
                         fill={isSaved ? "currentColor" : "none"}
                         stroke="currentColor"
@@ -327,7 +327,7 @@ const JobModal: React.FC<JobModalProps> = ({
                   {isApplying ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
