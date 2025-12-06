@@ -8,6 +8,7 @@ import { API_PATHS } from "@/utils/apiPath";
 import type { Database } from "@/types/supabase";
 import { applicationService } from "@/services/applicationService";
 import { savedJobsService } from "@/services/savedJobsService";
+import JobModal from "@/pages/JobSeeker/JobModal";
 
 type Job = Database["public"]["Tables"]["jobs"]["Row"];
 
@@ -22,6 +23,10 @@ const JobViews = () => {
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
   const [applyingJobs, setApplyingJobs] = useState<Set<string>>(new Set());
   const [savingJobs, setSavingJobs] = useState<Set<string>>(new Set());
+
+  // Modal states
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filter states
   const [titleFilter, setTitleFilter] = useState<string>("");
@@ -635,9 +640,10 @@ const JobViews = () => {
                             )}
                           </button>
                           <button
-                            onClick={() =>
-                              navigate(`/job-details/${job.job_id}`)
-                            }
+                            onClick={() => {
+                              setSelectedJob(job);
+                              setIsModalOpen(true);
+                            }}
                             className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
                           >
                             View Details
@@ -658,6 +664,22 @@ const JobViews = () => {
           </>
         )}
       </div>
+
+      {/* Job Modal */}
+      <JobModal
+        job={selectedJob}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedJob(null);
+        }}
+        onApply={handleApply}
+        onSave={handleSaveJob}
+        isApplied={selectedJob ? appliedJobs.has(selectedJob.job_id) : false}
+        isSaved={selectedJob ? savedJobs.has(selectedJob.job_id) : false}
+        isApplying={selectedJob ? applyingJobs.has(selectedJob.job_id) : false}
+        isSaving={selectedJob ? savingJobs.has(selectedJob.job_id) : false}
+      />
     </div>
   );
 };

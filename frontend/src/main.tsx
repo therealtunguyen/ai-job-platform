@@ -13,17 +13,17 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import UserProfile from "@/pages/JobSeeker/UserProfile";
 import ApplicationSavedJob from "@/pages/JobSeeker/ApplicationSavedJob";
 import JobSeekerInterview from "@/pages/JobSeeker/JobSeekerInterview";
-import EditProfileDetail from "@/pages/Employer/EditProfileDetail";
 import JobManagement from "@/pages/Employer/JobManagement";
 import JobPosting from "@/pages/Employer/JobPosting";
 import ApplicationViewer from "@/pages/Employer/ApplicationViewer";
 import EmployerProfile from "./pages/Employer/EmployerProfile";
 import JobViews from "./pages/Landing/JobViews";
 import { ToastProvider } from "./contexts/ToastContext";
+import FindEmployer from "@/pages/Employer/FindEmployer";
 
 const router = createBrowserRouter([
   {
-    element: <Layout />, // Layout có Header cho tất cả pages
+    element: <Layout />,
     children: [
       {
         path: "/",
@@ -32,6 +32,10 @@ const router = createBrowserRouter([
       {
         path: "/find-jobs",
         element: <JobViews />,
+      },
+      {
+        path: "/find-employers",
+        element: <FindEmployer />,
       },
       {
         path: "/login",
@@ -67,10 +71,6 @@ const router = createBrowserRouter([
           {
             path: "/employer-profile",
             element: <EmployerProfile />,
-          },
-          {
-            path: "/edit-profile-detail",
-            element: <EditProfileDetail />,
           },
           {
             path: "/job-management",
