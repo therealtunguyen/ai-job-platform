@@ -175,7 +175,24 @@ export async function filterJobs(filters: {
   posted_after?: string;
   limit?: number;
   offset?: number;
+  excludeAppliedByUser?: string; // User ID to exclude jobs they've applied to
 }): Promise<JobWithEmployer[]> {
+  // If we need to exclude jobs the user has applied to, fetch those job IDs first
+  let appliedJobIds: string[] = [];
+  if (filters.excludeAppliedByUser) {
+    const { data: applications, error: appError } = await supabase
+      .from("applications")
+      .select("job_id")
+      .eq("candidate_id", filters.excludeAppliedByUser);
+
+    if (appError) {
+      console.error("Error fetching user applications:", appError);
+      // Continue without filtering if there's an error
+    } else {
+      appliedJobIds = (applications ?? []).map((app) => app.job_id);
+    }
+  }
+
   let query = supabase
     .from(TABLE)
     .select(
@@ -185,6 +202,11 @@ export async function filterJobs(filters: {
     `,
     )
     .order("posted_at", { ascending: false, nullsFirst: false });
+
+  // Exclude jobs the user has already applied to
+  if (appliedJobIds.length > 0) {
+    query = query.not("job_id", "in", `(${appliedJobIds.join(",")})`);
+  }
 
   // Apply filters
   if (filters.title) {
