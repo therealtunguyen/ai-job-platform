@@ -2,20 +2,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EmployerLayout from "@/components/Employer/EmployerLayout";
 import JobStepper from "@/components/Employer/JobStepper";
+import { useToast } from "@/hooks/useToast";
 import type { Job as JobType } from "@/services/jobService";
 
 const JobPosting = () => {
   const [isCreating] = useState(true);
   const [selectedJob] = useState<JobType | null>(null);
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const handleJobCreated = (job: JobType) => {
     // Handle job creation/publishing
     console.log("Job created:", job);
-    alert(
+    addToast(
       job.status === "ACTIVE"
         ? "Job published successfully!"
         : "Job saved as draft successfully!",
+      "success",
     );
 
     // Optionally navigate to dashboard

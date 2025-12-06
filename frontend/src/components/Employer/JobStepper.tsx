@@ -152,16 +152,20 @@ const JobStepper = ({
       newErrors["step1.title"] = "Title must be at most 120 characters";
     }
 
-    // Validate description according to backend requirements
-    if (!formData.step3.description.trim()) {
-      newErrors["step3.description"] = "Description is required";
-    } else if (formData.step3.description.trim().length < 10) {
-      newErrors["step3.description"] =
-        "Description must be at least 10 characters";
-    } else if (formData.step3.description.trim().length > 5000) {
-      newErrors["step3.description"] =
-        "Description must be at most 5000 characters";
+    // Validate description only when publishing (not for drafts)
+    if (status === "ACTIVE") {
+      if (!formData.step3.description.trim()) {
+        newErrors["step3.description"] = "Description is required";
+      } else if (formData.step3.description.trim().length < 10) {
+        newErrors["step3.description"] =
+          "Description must be at least 10 characters";
+      } else if (formData.step3.description.trim().length > 5000) {
+        newErrors["step3.description"] =
+          "Description must be at most 5000 characters";
+      }
     }
+
+    console.log("Submitting job with data:", formData, "and status:", status);
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);

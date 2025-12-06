@@ -112,7 +112,7 @@ const FindEmployer = () => {
               className="mb-10 rounded-xl bg-white p-6 shadow-lg"
             >
               <h2 className="mb-4 text-xl font-semibold text-gray-800">
-                Lọc Employers
+                Filter for Employers
               </h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {/* Company Name Filter */}
@@ -323,7 +323,7 @@ const FindEmployer = () => {
               ) : (
                 <div className="col-span-full py-12 text-center">
                   <div className="text-lg text-gray-500">
-                    Không tìm thấy employer nào với bộ lọc hiện tại.
+                    No employers found matching the criteria.
                   </div>
                 </div>
               )}
