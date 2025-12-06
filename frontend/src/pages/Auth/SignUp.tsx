@@ -9,7 +9,6 @@ import {
   EyeOff,
   UserCheck,
   Building2,
-  CheckCircle,
   AlertCircle,
   Loader,
 } from "lucide-react";
@@ -170,9 +169,6 @@ const SignUp = () => {
         errors: {},
         success: true,
       }));
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 2000);
     } catch (error) {
       // Define a type for the error response
       interface ErrorResponse {
@@ -187,12 +183,14 @@ const SignUp = () => {
       const errorResponse = error as ErrorResponse;
       console.log("Signup error:", errorResponse?.response?.data || error);
 
+      // Check response.data.error first (backend error message),
+      // then fall back to generic error message
       const errorMessage =
-        error instanceof Error
+        errorResponse?.response?.data?.error ||
+        errorResponse?.response?.data?.message ||
+        (error instanceof Error
           ? error.message
-          : errorResponse?.response?.data?.error ||
-            errorResponse?.response?.data?.message ||
-            "Registration failed. Please try again.";
+          : "Registration failed. Please try again.");
 
       setFormState((prev) => ({
         ...prev,
@@ -212,18 +210,27 @@ const SignUp = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md rounded-xl bg-white p-8 text-center shadow-lg"
         >
-          <CheckCircle className="mx-auto mb-4 h-16 w-16 text-green-500" />
+          <Mail className="mx-auto mb-4 h-16 w-16 text-blue-500" />
           <h2 className="mb-2 text-2xl font-bold text-gray-900">
-            Account Created!
+            Check Your Email
           </h2>
           <p className="mb-4 text-gray-600">
-            Welcome to JobPortal! Your account has been successfully created and
-            you're now logged in.
+            We've sent a confirmation link to{" "}
+            <span className="font-medium text-gray-900">{formData.email}</span>.
+            Please check your inbox and click the link to activate your account.
           </p>
-          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[#29436c] border-t-transparent" />
-          <p className="mt-2 text-sm text-gray-500">
-            Redirecting to your dashboard...
-          </p>
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+            <p className="text-sm text-blue-700">
+              Didn't receive the email? Check your spam folder or wait a few
+              minutes for it to arrive.
+            </p>
+          </div>
+          <a
+            href="/login"
+            className="inline-block rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] px-6 py-2 font-semibold text-white transition-all duration-300 hover:from-[#213552] hover:to-[#7ea260]"
+          >
+            Go to Login
+          </a>
         </motion.div>
       </div>
     );

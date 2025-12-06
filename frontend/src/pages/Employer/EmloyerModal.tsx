@@ -31,7 +31,7 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -40,13 +40,13 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             {/* Header */}
             <div className="sticky top-0 z-10 bg-gradient-to-r from-[#29436c] to-[#90ad71] px-6 py-5">
               <div className="flex items-start justify-between">
                 <div className="flex-1 pr-4">
-                  <h2 className="text-3xl font-bold text-white mb-2">
+                  <h2 className="mb-2 text-3xl font-bold text-white">
                     {employer.company_name || "Unnamed Company"}
                   </h2>
                   <div className="flex flex-wrap gap-3 text-sm text-white/90">
@@ -119,15 +119,15 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-160px)] px-6 py-6">
+            <div className="max-h-[calc(90vh-160px)] overflow-y-auto px-6 py-6">
               {/* Quick Info Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
                 {employer.contact_person && (
                   <div className="rounded-lg bg-blue-50 p-4">
-                    <div className="text-sm text-gray-600 mb-1 flex items-center">
+                    <div className="mb-1 flex items-center text-sm text-gray-600">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
+                        className="mr-1 h-4 w-4"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -149,10 +149,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
 
                 {employer.phone && (
                   <div className="rounded-lg bg-green-50 p-4">
-                    <div className="text-sm text-gray-600 mb-1 flex items-center">
+                    <div className="mb-1 flex items-center text-sm text-gray-600">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
+                        className="mr-1 h-4 w-4"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -174,10 +174,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
 
                 {employer.email && (
                   <div className="rounded-lg bg-purple-50 p-4">
-                    <div className="text-sm text-gray-600 mb-1 flex items-center">
+                    <div className="mb-1 flex items-center text-sm text-gray-600">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
+                        className="mr-1 h-4 w-4"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -191,7 +191,7 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                       </svg>
                       Email
                     </div>
-                    <div className="text-base font-semibold text-gray-900 break-all">
+                    <div className="text-base font-semibold break-all text-gray-900">
                       {employer.email}
                     </div>
                   </div>
@@ -201,10 +201,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
               {/* Company Description */}
               {employer.description && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <h3 className="mb-3 flex items-center text-lg font-semibold text-gray-900">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2 text-[#29436c]"
+                      className="mr-2 h-5 w-5 text-[#29436c]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -218,21 +218,21 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                     </svg>
                     About Company
                   </h3>
-                  <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-line bg-gray-50 rounded-lg p-4">
+                  <div className="prose prose-sm max-w-none rounded-lg bg-gray-50 p-4 whitespace-pre-line text-gray-700">
                     {employer.description}
                   </div>
                 </div>
               )}
 
               {/* Company Details Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Company Size */}
                 {employer.company_size && (
                   <div className="rounded-lg border border-gray-200 p-4">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                    <h4 className="mb-2 flex items-center text-sm font-medium text-gray-600">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1.5 text-[#29436c]"
+                        className="mr-1.5 h-4 w-4 text-[#29436c]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -246,7 +246,7 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                       </svg>
                       Company Size
                     </h4>
-                    <p className="text-gray-900 font-medium">
+                    <p className="font-medium text-gray-900">
                       {employer.company_size}
                     </p>
                   </div>
@@ -255,10 +255,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                 {/* Website */}
                 {employer.website && (
                   <div className="rounded-lg border border-gray-200 p-4">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                    <h4 className="mb-2 flex items-center text-sm font-medium text-gray-600">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1.5 text-[#29436c]"
+                        className="mr-1.5 h-4 w-4 text-[#29436c]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -276,7 +276,7 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                       href={employer.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#29436c] hover:text-[#90ad71] font-medium break-all hover:underline"
+                      className="font-medium break-all text-[#29436c] hover:text-[#90ad71] hover:underline"
                     >
                       {employer.website}
                     </a>
@@ -286,10 +286,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                 {/* Founded Year */}
                 {employer.founded_year && (
                   <div className="rounded-lg border border-gray-200 p-4">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                    <h4 className="mb-2 flex items-center text-sm font-medium text-gray-600">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1.5 text-[#29436c]"
+                        className="mr-1.5 h-4 w-4 text-[#29436c]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -303,7 +303,7 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                       </svg>
                       Founded Year
                     </h4>
-                    <p className="text-gray-900 font-medium">
+                    <p className="font-medium text-gray-900">
                       {employer.founded_year}
                     </p>
                   </div>
@@ -312,10 +312,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                 {/* Full Address */}
                 {employer.address && (
                   <div className="rounded-lg border border-gray-200 p-4">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                    <h4 className="mb-2 flex items-center text-sm font-medium text-gray-600">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1.5 text-[#29436c]"
+                        className="mr-1.5 h-4 w-4 text-[#29436c]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -335,7 +335,7 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                       </svg>
                       Full Address
                     </h4>
-                    <p className="text-gray-900 font-medium">
+                    <p className="font-medium text-gray-900">
                       {employer.address}
                     </p>
                   </div>
@@ -346,11 +346,11 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
               {(employer.linkedin_url ||
                 employer.facebook_url ||
                 employer.twitter_url) && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <div className="mt-6 border-t border-gray-200 pt-6">
+                  <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-900">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2 text-[#29436c]"
+                      className="mr-2 h-5 w-5 text-[#29436c]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -370,10 +370,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                         href={employer.linkedin_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                        className="inline-flex items-center rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100"
                       >
                         <svg
-                          className="h-5 w-5 mr-2"
+                          className="mr-2 h-5 w-5"
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -387,10 +387,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                         href={employer.facebook_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                        className="inline-flex items-center rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100"
                       >
                         <svg
-                          className="h-5 w-5 mr-2"
+                          className="mr-2 h-5 w-5"
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -404,10 +404,10 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
                         href={employer.twitter_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center rounded-lg bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 hover:bg-sky-100 transition-colors"
+                        className="inline-flex items-center rounded-lg bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 transition-colors hover:bg-sky-100"
                       >
                         <svg
-                          className="h-5 w-5 mr-2"
+                          className="mr-2 h-5 w-5"
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -422,11 +422,11 @@ const EmployerModal: React.FC<EmployerModalProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 px-6 py-4">
               <div className="flex justify-end">
                 <button
                   onClick={onClose}
-                  className="rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] px-6 py-2 font-medium text-white shadow-sm hover:from-[#29436c]/90 hover:to-[#90ad71]/90 hover:shadow-md transition-all"
+                  className="rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] px-6 py-2 font-medium text-white shadow-sm transition-all hover:from-[#29436c]/90 hover:to-[#90ad71]/90 hover:shadow-md"
                 >
                   Close
                 </button>

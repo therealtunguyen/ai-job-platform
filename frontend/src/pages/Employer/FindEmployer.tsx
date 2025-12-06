@@ -99,7 +99,8 @@ const FindEmployer = () => {
                 Find <span className="text-[#29436c]">Employers</span>
               </h1>
               <p className="mx-auto max-w-3xl text-lg text-gray-600">
-                Explore companies and businesses using the platform and find the one that suits you.
+                Explore companies and businesses using the platform and find the
+                one that suits you.
               </p>
             </motion.div>
 
@@ -258,10 +259,10 @@ const FindEmployer = () => {
 
                       <div className="mb-4 text-sm text-gray-600">
                         {employer.contact_person && (
-                          <div className="flex items-center mb-1">
+                          <div className="mb-1 flex items-center">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4 mr-1"
+                              className="mr-1 h-4 w-4"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -280,7 +281,7 @@ const FindEmployer = () => {
                           <div className="flex items-center">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4 mr-1"
+                              className="mr-1 h-4 w-4"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -311,7 +312,7 @@ const FindEmployer = () => {
                             setSelectedEmployer(employer);
                             setIsModalOpen(true);
                           }}
-                          className="rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] px-4 py-2 font-medium text-white shadow-sm hover:from-[#29436c]/90 hover:to-[#90ad71]/90 hover:shadow-md transition-all"
+                          className="rounded-lg bg-gradient-to-r from-[#29436c] to-[#90ad71] px-4 py-2 font-medium text-white shadow-sm transition-all hover:from-[#29436c]/90 hover:to-[#90ad71]/90 hover:shadow-md"
                         >
                           View Details
                         </button>
