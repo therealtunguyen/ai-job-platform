@@ -77,6 +77,9 @@ export const API_PATHS = {
       DELETE: "/api/jobseekers/social-networks/:socialNetworkId",
     },
   },
+  EMPLOYERS: {
+    LIST: "/api/employers",
+  },
   INTERVIEWS: {
     CREATE: "/api/interviews/create",
     SUBMIT_ANSWER: "/api/interviews/:interviewId/submit",

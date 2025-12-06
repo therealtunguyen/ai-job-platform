@@ -39,7 +39,7 @@ const Header = () => {
               Find Jobs
             </a>
             <a
-              onClick={() => navigate("/employer-dashboard")}
+              onClick={() => navigate("/find-employers")}
               className="cursor-pointe cursor-pointer font-medium text-gray-600 transition-colors hover:text-gray-900"
             >
               For Employers
