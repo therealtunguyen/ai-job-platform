@@ -176,16 +176,7 @@ const JobCard = ({ job, onJobUpdate }: JobCardProps) => {
     setIsEditing(false);
   };
 
-  const getStatusStyle = (
-    status:
-      | "DRAFT"
-      | "ACTIVE"
-      | "PAUSED"
-      | "EXPIRED"
-      | "FILLED"
-      | "ARCHIVED"
-      | null,
-  ) => {
+  const getStatusStyle = (status: string | null) => {
     switch (status) {
       case "ACTIVE":
         return "bg-green-100 text-green-800";

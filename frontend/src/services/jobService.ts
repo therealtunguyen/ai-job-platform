@@ -5,7 +5,6 @@ import { API_PATHS } from "@/utils/apiPath";
 export interface Job {
   job_id: string;
   applicant_count: number | null;
-  benefits: string | null;
   description: string | null;
   employer_id: string;
   expires_at: string | null;
@@ -15,6 +14,7 @@ export interface Job {
     | "CONTRACT"
     | "INTERNSHIP"
     | "TEMPORARY"
+    | string
     | null;
   last_updated_at: string | null;
   location: string | null;
@@ -23,8 +23,6 @@ export interface Job {
   min_experience: number | null;
   min_salary: number | null;
   posted_at: string | null;
-  requirements: string | null;
-  responsibilities: string | null;
   status:
     | "DRAFT"
     | "ACTIVE"
@@ -32,8 +30,13 @@ export interface Job {
     | "EXPIRED"
     | "FILLED"
     | "ARCHIVED"
+    | string
     | null;
   title: string;
+  // Fields not in the database but needed
+  benefits?: string | null;
+  requirements?: string | null;
+  responsibilities?: string | null;
 }
 
 // API service functions for job management

@@ -22,7 +22,21 @@ const JobStepper = ({
       location: jobToEdit?.location || "",
     },
     step2: {
-      job_type: jobToEdit?.job_type || "FULL_TIME",
+      job_type: (jobToEdit?.job_type &&
+      [
+        "FULL_TIME",
+        "PART_TIME",
+        "CONTRACT",
+        "INTERNSHIP",
+        "TEMPORARY",
+      ].includes(jobToEdit.job_type)
+        ? jobToEdit.job_type
+        : "FULL_TIME") as
+        | "FULL_TIME"
+        | "PART_TIME"
+        | "CONTRACT"
+        | "INTERNSHIP"
+        | "TEMPORARY",
       min_experience: jobToEdit?.min_experience || null,
       max_experience: jobToEdit?.max_experience || null,
       min_salary: jobToEdit?.min_salary || null,
