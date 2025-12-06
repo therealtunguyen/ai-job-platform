@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { supabase } from "../../supabaseClient";
+import * as employerService from "../../services/employer/employerService";
 
 // GET /api/employers
 // Public listing of employers with basic filters
@@ -7,36 +7,29 @@ export const getEmployers = async (req: Request, res: Response) => {
   try {
     const { company_name, industry, address } = req.query;
 
-    let query = supabase.from("employers").select("*");
+    // Validate query parameters
+    const filters: employerService.EmployerFilters = {};
 
     if (company_name && typeof company_name === "string") {
-      query = query.ilike("company_name", `%${company_name}%`);
+      filters.company_name = company_name;
     }
 
     if (industry && typeof industry === "string") {
-      query = query.ilike("industry", `%${industry}%`);
+      filters.industry = industry;
     }
 
     if (address && typeof address === "string") {
-      query = query.ilike("address", `%${address}%`);
+      filters.address = address;
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching employers:", error);
-      return res
-        .status(500)
-        .json({ error: "Failed to fetch employers", details: error.message });
-    }
+    const data = await employerService.getEmployers(filters);
 
     return res.status(200).json({ data });
   } catch (error: any) {
-    console.error("Unexpected error fetching employers:", error);
+    console.error("Error fetching employers:", error);
     return res.status(500).json({
-      error: "Internal server error",
+      error: "Failed to fetch employers",
       details: error.message || "Unknown error",
     });
   }
 };
-
