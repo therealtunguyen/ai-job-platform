@@ -135,6 +135,10 @@ export async function filterJobsHandler(req: Request, res: Response) {
   }
 
   try {
+    // Check if user is authenticated and is a job seeker
+    const user = (req as any).user;
+    const isJobSeeker = user?.user_type === "JOB_SEEKER";
+
     // Extract filter parameters from query
     const filters = {
       title: req.query.title as string | undefined,
@@ -160,6 +164,8 @@ export async function filterJobsHandler(req: Request, res: Response) {
       posted_after: req.query.posted_after as string | undefined,
       limit,
       offset,
+      // Exclude jobs the user has already applied to (only for job seekers)
+      excludeAppliedByUser: isJobSeeker ? user.id : undefined,
     };
 
     // Validate numeric parameters

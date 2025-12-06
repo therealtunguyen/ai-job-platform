@@ -12,15 +12,18 @@ import {
   createJobValidator,
   updateJobValidator,
 } from "../../middleware/validation/jobValidation";
-import { authenticateToken } from "../../middleware/auth/jwtAuth";
+import {
+  authenticateToken,
+  optionalAuthenticateToken,
+} from "../../middleware/auth/jwtAuth";
 
 const router = express.Router();
 
 // Public routes: anyone can list and view jobs
 router.get("/", listJobHandler);
 
-// Filter jobs with query parameters
-router.get("/filter", filterJobsHandler);
+// Filter jobs with query parameters (optional auth to exclude applied jobs for logged-in users)
+router.get("/filter", optionalAuthenticateToken, filterJobsHandler);
 
 // Get a specific job by job ID
 router.get("/job/:id", getJob);
