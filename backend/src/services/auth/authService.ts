@@ -74,6 +74,18 @@ export const registerUser = async (
       return { user: null, session: null, error: error, name: null };
     }
 
+    // Detect existing user via empty identities array
+    // When email confirmation is enabled, Supabase returns a fake user object
+    // for existing accounts instead of an error (to prevent email enumeration)
+    if (data.user && data.user.identities?.length === 0) {
+      return {
+        user: null,
+        session: null,
+        error: { message: "User already exists" },
+        name: null,
+      };
+    }
+
     if (data.user) {
       // Create user profile in the database
       const newUserProfile: NewUser = {
